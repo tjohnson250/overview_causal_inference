@@ -1,0 +1,1369 @@
+---
+title: "A Brief Overview of Causal Inference"
+subtitle: ""
+author: "Todd R. Johnson, PhD"
+institute: "UTHealth School of Biomedical Informatics" 
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    css: ["default",  "my-fonts.css", "my-theme.css"]
+    lib_dir: libs
+    self-contained: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9'
+      navigation:
+        scroll: false # disable slide transitions by scrolling
+        
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(dagitty)
+library(ggdag)
+library(tidyverse)
+library(ggpmisc)
+#library(hexbin)
+library(plotly)
+library(widgetframe)
+library(DT)
+library(kableExtra)
+library(pcalg)
+library(Rgraphviz)
+library(rcausal)
+library(DOT)
+```
+
+# Pearl's Three Layer Causal Hierarchy
+
+```{r, echo=FALSE}
+text_tbl <- data.frame(
+Level = c("1. Association<br><&nbsp>\\(\\mathbf{P(y|x)}\\)", "2. Intervention<br>\\(\\mathbf{P(y|do(x), z)}\\)", "3. Counterfactuals<br>\\(\\mathbf{P(y_x|x',y')}\\)"),
+"Typical Activity" = c(
+"Seeing",
+"Doing,<br>Intervening",
+"Imagining,<br>Retrospecting"
+),
+"Typical Questions" = c("What is?<br>How would seeing X change my belief in Y?", "What if?<br>What if I do X?", "Why?<br>Was it X that caused Y?<br>What if I had acted differently?"),
+Examples = c("What does a symptom tell me about a disease?<br>What does a survey tell us about the election results?", "What if I take aspirin, will my headache be cured?<br>What if we ban cigarettes?", "Was it the aspirin that stopped my headache?<br>Would Kennedy be alive had Oswald not shot him?<br>What if I had not been smoking the past 2 years?")
+)
+text_tbl %>% knitr::kable(format="html", booktabs = FALSE, escape=FALSE, booktabs = TRUE) %>%
+kable_styling(full_width = F) %>%
+column_spec(1, bold = T, color = "#1c5253") %>%
+column_spec(2, width = "8em") %>%
+column_spec(3, width = "8em") 
+```
+
+---
+class: middle
+
+### Part I: Causation
+
+### Part II: Inferring Causal Effects from Observational Data
+
+### Part III: Causal Discovery
+
+### Part IV: Counterfactual Reasoning
+
+---
+class: center, middle
+
+# Part I: Causation
+
+---
+
+# Definitions
+
+**Causal Infererence** is the process of inferring the **causal effect** of one random variable on a second random variable.
+
+The **Causal Effect** of $X$ on $Y$ is the change in $Y$ when we **intervene** and directly change $X$ from one value to another.
+
+**Intervening** on $X$ means to force $X$ to take a specific value, independent of any of the variables that normally influence the value of $X$
+
+ - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
+  
+ - This is why RCTs are considered the gold standard for identifying causal effects
+
+---
+# Example: Age, Exercise and Cholesterol
+Suppose that the following model accurately describes how age, exercise, and cholesterol are related
+
+.pull-left[
+```{r codeCAEObs, tidy=FALSE}
+n <- 10000
+a <- rnorm(n, mean = 50, sd = 10)
+e <- 0.3*a + rnorm(n)
+c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+```{r, echo=FALSE, fig.height=4}
+dobs <- tibble(E = e, A = a, C=c)
+gobs <- dagitty('dag{
+  A [pos="1,1"]
+  E [pos="0,0"]
+  C [pos="2,0"]
+  A -> C A->E  E->C }')
+pgobs <- ggdag(gobs, text_size=11) + theme_dag_gray()
+pgobs
+```
+]
+
+.pull-right[
+From the model, the causal effect of exercise on cholesterol is $-1e$:
+
+  - For every unit increase in excercise, cholesterol decreases by $1$
+  
+Causal DAG (Directed Acyclic Graph)
+  - Graphical representation of the data generating model
+  - Links represent *possible* direct causal effects
+  - Missing links indicate the strong assumption of no direct causal effect
+  - Must include all common causes of any pair of variables already in the DAG
+]
+
+---
+## Intervening Changes the Generative Model
+Intervene by randomly setting $E$ from $0 - 20$
+.pull-left[
+### Observational Model
+```{r, eval=FALSE}
+n <- 10000
+a <- rnorm(n, mean = 50, sd = 10)
+{{e <- 0.3*a + rnorm(n)}}
+c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+```{r, echo=FALSE, fig.height=3}
+pgobs
+```
+]
+
+--
+
+.pull-right[
+### Interventional Model
+```{r codeCAEint}
+n <- 10000
+a <- rnorm(n, mean = 50, sd = 10)
+{{e <- sample(0:20, n, replace = TRUE)}}
+c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+```{r, echo=FALSE, fig.height=3}
+dint <- tibble(E = e, A = a, C=c)
+gint <- dagitty('dag{
+  A [pos="1,1"]
+  E [pos="0,0"]
+  C [pos="2,0"]
+  A -> C E->C }')
+pgint <- ggdag(gint, text_size=11) + theme_dag_gray()
+pgint
+```
+]
+
+---
+## Intervening Changes The Distribution
+
+.pull-left[
+### Observational Distribution
+```{r, echo=FALSE, out.width="70%"}
+formula <- y ~ x
+pobs <- ggplot(dobs, aes(x = E, y = C)) + geom_point() + geom_smooth(method = "lm", formula = formula)
+pobs
+#p <- ggplotly(p)
+#frameWidget(p, width='350', height='350')
+fitobs = lm(C ~ E, dobs)
+Cobs <- coef(fitobs)
+```
+
+$c = `r round(Cobs[1], digits=2)`+`r round(Cobs[2], digits=2)`e \space `r ifelse(summary(fitobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
+]
+
+--
+
+.pull-right[
+### Interventional Distribution
+```{r, echo=FALSE, out.width="70%"}
+formula <- y ~ x
+pint <- ggplot(dint, aes(x = E, y = C)) + geom_point() + geom_smooth(method = "lm", formula = formula) +
+   stat_poly_eq(aes(label =  paste(stat(eq.label), stat(rr.label), sep = "~~~~")),
+                formula = formula, parse = TRUE)       
+pint
+fitint = lm(C ~ E, dint)
+Cint <- coef(fitint)
+```
+
+$c = `r round(Cint[1], digits=2)`+`r round(Cint[2], digits=2)`e \space `r ifelse(summary(fitint)$coefficients[2,4] < .001, "(p<.001)", "")`$
+]
+
+???
+The coefficient for $e$ on the observational distribution is way off, but the coefficient for the interventional distribution is close. Both coefficents are statistically significant at the p = .001 level.
+
+---
+# Difference Between Seeing and Doing
+.pull-left[
+### Observational Association
+$E(C|e)$: The expected value of Cholesterol given that we observe a specific level of exercise
+]
+.pull-right[
+### Interventional Association (Causal Effect)
+$E(C|do(e))$: The expected value of Cholesterol given that we intervene and set exercise to a specific value, independent of any of the variables that normally influence the value of $E$.
+
+$do()$ is called the do-operator.
+]
+
+---
+### Average Causal Effect (ACE) for a Population
+Contrast of the mean values of $Y$ (outcome) given two specific interventions on $X$ (treatment)
+
+- Dichotomous (binary) outcomes: 
+
+    $$P(Y=1|do(X = 1)-P(Y=1|do(X = 0)))$$
+    
+    $$P(Survival|do(Treat))-P(Survival|do(Don't Treat))$$
+
+- Continuous outcomes:  
+
+    $$E(Y|do(X=x)) - E(Y|do(X=x^{\prime})$$
+
+First equation is a special case, since for dichotomous outcomes 
+  $$E(Y|do(X=x)) = P(Y=1|do(X = x))$$
+
+---
+## Estimating ACE of Exercise on Cholesterol Using the Interventional Dataset
+Step 1: Estimate functional relationship between C and E using linear regression on the **interventional dataset**:
+
+```{r, echo=FALSE}
+fit = lm(C ~ E, dint)
+new <- data.frame(E = c(1, 2))
+est = predict(fit, new)
+```
+
+$$c = `r round(Cint[1], digits=2)`+`r round(Cint[2], digits=2)`e \space `r ifelse(summary(fit)$coefficients[2,4] < .001, "(p<.001)", "")`$$
+
+$$E(C|do(E=e))=`r round(Cint[1], digits=2)`+`r round(Cint[2], digits=2)`e \space `r ifelse(summary(fit)$coefficients[2,4] < .001, "(p<.001)", "")`$$
+
+Step 2: Use regression equation to calculate ACE
+
+$$
+\begin{align}
+  ACE &= E(Y|do(E=1))-E(Y|do(E=2)) \\
+      &= (`r round(Cint[1], digits=2)`+`r round(Cint[2], digits=2)`*1) - (`r round(Cint[1], digits=2)`+`r round(Cint[2], digits=2)`*2) \\
+      &= `r round(est[2], 2)` - `r round(est[1], 2)` \\
+      &= `r round(est[2]-est[1], 2)`
+\end{align}
+$$
+Equivalently: The regression coefficent on $e$ directly tells us how much $C$ will change for each unit increase in $E$.
+
+---
+class: center, middle, Large
+
+We say that $\mathbf{X}$ **causes** $\mathbf{Y}$ in a population when the **average causal effect** of $X$ on $Y$ is non-zero.
+
+---
+class: center, middle
+
+## Part II: Estimating Causal Effects from
+## Observational Data
+
+---
+## With Observational Data...
+.pull-left[
+#### using E to predict C gives an incorrect estimate,
+```{r, echo=FALSE, out.width="70%"}
+#formula <- y ~ x
+#p <- ggplot(dobs, aes(x = E, y = C)) + geom_point() + geom_smooth(method = "lm", formula = formula)
+pobs
+#p <- ggplotly(p)
+#frameWidget(p, width='350', height='350')
+fit = lm(C ~ E, dobs)
+Cobs <- coef(fit)
+```
+
+$c = `r round(Cobs[1], digits=2)`+`r round(Cobs[2], digits=2)`e \space `r ifelse(summary(fit)$coefficients[2,4] < .001, "(p<.001)", "")`$
+]
+
+--
+
+.pull-right[
+#### but using E and A to Predict C gives the correct estimate
+```{r, echo=FALSE, out.width="70%") #, fig.width=8, fig.height=5}
+#dobsstrat <- dobs %>% mutate(abin=cut(a, 10))
+#ggplot(d, aes(E, C)) + geom_point(aes(color=abin))
+ggplot(dobs, aes(E, C)) + geom_point() + geom_smooth(method="lm", aes(group = cut(A, 10), color=cut(A, 10)), se = FALSE)
+fitobsstrat = lm(C ~ E + A, dobs)
+Cintadjusted <- coef(fitobsstrat)
+```
+
+$c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \space `r ifelse(summary(fitobsstrat)$coefficients[2,4] < .001, "(p<.001)", "")`$
+]
+
+---
+## Adjustment
+Stratifying by age $(A)$ or including $A$ as a covariate in the regression $(C = {\beta_1}+{\beta_2}A + {\beta_3}E)$ is called **adjusting**, **conditioning**, or **controlling for A**
+
+In R code, regression using the observational dataset (`dobs`):
+.pull-left[
+Unadjusted for $A$
+```{r}
+lm(C ~ E, dobs)
+```
+]
+.pull-right[
+Adjusted for $A$
+```{r}
+lm(C ~ E + A, dobs)
+```
+]
+---
+### What about the Causal Effect of Age on Cholesterol?
+Using the observational dataset, regressing $C$ on $A$ and $E$ gave us: $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a$
+.pull-left[
+```{r, tidy=FALSE, eval=FALSE}
+n <- 10000
+a <- rnorm(n, mean = 50, sd = 10)
+e <- 0.3*a + rnorm(n)
+c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+```{r, echo=FALSE, fig.height=4}
+pgobs
+```
+]
+.pull-right[
+From the model, the **direct causal effect** of $A$ on $C$ is $0.5a$
+
+  - The coefficent on $A$ above closely estimates this effect.
+
+  - However $A$ also affects $C$ through $E$
+
+The **total causal effect** of $A$ on $C$ includes the effect of $A$ through both paths,  which from the model is:
+
+$$
+\begin{align}
+  c &= .5a + -1\mathbf{e} \\
+    &= 0.5a + -1\mathbf{(0.3a)} \\
+      &= 0.5a\mathbf{- 0.3a} \\
+      &= 0.2a \\
+\end{align}
+$$
+
+]
+
+---
+### The total effect of $A$ on $C$ can be obtained from the observational data only by leaving $E$ out of the analysis
+.pull-left[
+```{r, echo=FALSE, out.width="70%"}
+formula <- y ~ x
+p <- ggplot(dobs, aes(x = A, y = C)) + geom_point() + geom_smooth(method = "lm", formula = formula)
+p
+
+fitCAobs = lm(C ~ A, dobs)
+CAobs <- coef(fitCAobs)
+```
+
+$c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
+]
+.pull-right[
+To estimate total effect of $A$ on $C$
+  - must regress C on A without adjusting for E
+  
+To estimate direct effect of A on C
+  - must regress $C$ on $A$ and $E$ (adjusting for $E$)
+  
+To estimate Total (and direct) effect of $E$ on $C$
+  - must regress $C$ on $A$ and $E$ (adjusting for $A$)
+  
+Simply throwing all covariates into a single regression is insufficient
+]
+
+
+---
+# Lessons so far...
+Git rid of this slide...
+
+We can (sometimes) estimate causal effects from observational data
+
+However, even with this simple 3 variable dataset,
+  - We need two different regression analyses to estimate causal effects of $A$ and $E$ on $C$
+  
+    $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \space `r ifelse(summary(fitobsstrat)$coefficients[2,4] < .001, "(p<.001)", "")`$: Total effect of $E$, Direct effect of $A$
+    
+    $c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$: Total effect of $A$
+    
+
+---
+class: center, middle
+
+.Large[How do we know when and what to adjust for?]
+
+---
+## Paths in Causal DAGs
+.pull-left[
+Observational Causal DAG
+```{r echo=FALSE, out.width="70%"}
+pgobs
+```
+]
+.pull-right[
+A **path** is a sequence of non-intersecting adjacent edges
+  - Non-intersecting means a path cannot cross a node more than once
+  - Direction of the arrows doesn't matter
+
+Examples:
+  - $A \rightarrow E$
+  - $A \rightarrow E \rightarrow C$
+  - $E \leftarrow A \rightarrow C$
+  
+All associations are transmitted along paths,
+but not all paths transmit association!
+]
+
+???
+Source: https://www.ssc.wisc.edu/~felwert/causality/wp-content/uploads/2013/06/2-elwert_dags.pdf
+See here for how to cite sources using refmanager package: https://github.com/yihui/xaringan/wiki/Bibliography-and-citations
+
+---
+class: center, middle
+.Large[Two Kinds of Paths: **Causal** and **Non-Causal**]
+
+---
+## Causal Paths
+.pull-left[
+Observational Causal DAG
+```{r echo=FALSE, out.width="70%"}
+pgobs
+```
+]
+.pull-right[
+**Causal Path:** A path in which all arrows point away from the treatment to the outcome
+ - Causal path for Treatment $E$ and Outcome $C$
+    * $E \rightarrow C$
+  
+ - Causal paths for Treatment $A$ and Outcome $C$
+    * $A \rightarrow E \rightarrow C$
+    * $A \rightarrow C$
+    
+The **total causal effect** of a treatment on an outcome consists of association transmitted along all causal paths connecting them
+]
+
+---
+## Non-Causal Paths
+.pull-left[
+Observational Causal DAG
+```{r echo=FALSE, out.width="70%"}
+pgobs
+```
+]
+.pull-right[
+**Non-Causal Path:** A path from the treatment to the outcome in which at least one arrow points back to the treatment
+ - Non-Causal path for Treatment E and Outcome C
+    * $E \leftarrow A \rightarrow C$
+  
+ - Non-Causal paths for Treatment $A$ and Outcome C
+    * None
+    
+Non-causal paths are potential spurious sources of association between treatment and outcome
+]
+
+---
+## Paths for Treatment E and Outcome C
+.pull-left[
+Observational Causal DAG
+```{r echo=FALSE, out.width="70%"}
+pgobs
+```
+]
+.pull-right[
+Causal path:
+  - $E \rightarrow C$
+  
+Non-Causal path:
+  - $E \leftarrow A \rightarrow C$
+
+    
+The non-causal path is a source of confounding because it transmits spurious association between $E$ and $C$
+
+Adjusting for $A$ in the observational data blocks this path, allowing us to use the observational data to estimate the causal effect of $E$ on $C$
+]
+
+---
+## Identifiability
+The causal effect of $T$ on $Y$ is **identifiable** if
+we can adjust for a set of variables that
+
+ - blocks all non-causal paths between $T$ and $Y$
+ - without blocking any causal paths between $T$ and $Y$
+
+---
+### All Sources of Association Between Two Variables
+All Causal DAGs can be constructed from these three patterns
+
+.pull-left[
+```{r, echo=FALSE, out.width="70%", fig.height=2}
+glinear <- dagitty('dag{
+  A [pos="0,0"]
+  E [pos="1,0"]
+  C [pos="2,0"]
+  A -> E E->C}')
+ggdag(glinear, text_size=11) + theme_dag_gray()
+```
+```{r, echo=FALSE, out.width="70%", fig.height=3}
+gdiverging <- dagitty('dag{
+  E [pos="1,2"]
+  A [pos="0,1"]
+  C [pos="1,0"]
+  A -> E A->C}')
+ggdag(gdiverging, text_size=11) + theme_dag_gray()
+```
+```{r, echo=FALSE, out.width="70%", fig.height=3}
+gconverging <- dagitty('dag{
+  A [pos="0,2"]
+  E [pos="0,0"]
+  C [pos="1,1"]
+  A -> C E->C}')
+ggdag(gconverging, text_size=11) + theme_dag_gray()
+```
+]
+.pull-right[
+**Linear Path (or Chain)**
+
+  - Adjusting for $E$ (a mediator) blocks the path between $A$ and $C$
+
+**Common Cause**
+
+  - Adjusting for $A$ blocks the path between $E$ and $C$
+
+$$\space$$
+
+**Common Effect**
+
+  - $C$ is called a collider
+  - Unadjusted colliders block the path, adjusted colliders open the path
+  - Adjusting for $C$ (or a descendent of $C$)  **opens** the path
+]
+
+---
+## Identifying the Effect of $A$ on $C$
+.pull-left[
+Observational Causal DAG
+```{r echo=FALSE, out.width="70%"}
+pgobs
+```
+]
+.pull-right[
+**Total Effect of $A$ on $C$**
+
+No adjustments needed
+
+  - All paths from $A$ to $C$ are causal
+
+  * $A \rightarrow C$
+  * $A \rightarrow E \rightarrow C$
+
+**Direct Effect of $A$ on $C$**
+
+Adjusting for $E$ blocks the path $A \rightarrow E \rightarrow C$ leaving only the direct path $A \rightarrow C$
+]
+
+---
+## Identifying the Effect of $A$ on $E$
+.pull-left[
+Observational Causal DAG
+```{r echo=FALSE, out.width="70%"}
+pgobs
+```
+]
+.pull-right[
+**Total (and Direct) Effect of $A$ on $E$**
+
+No adjustments needed
+
+  * Causal path
+
+    - $A \rightarrow E$
+
+  * Non-causal path, blocked by collider $C$
+  
+    - $A \rightarrow C \leftarrow  E$
+    
+    - Adjusting for $C$ would distort the effect estimate
+]
+
+---
+## Backdoor Criterion (Pearl 1995)
+A set of variables $\{Z\}$ (possibly empty) satisfies the **backdoor criterion** relative to an ordered pair of variables $\{X, Y\}$ in a DAG if:
+
+  1. no node in $\{Z\}$ is a descendent of $X$, and
+  
+  2. $\{Z\}$ blocks every path between $X$ and $Y$ that contain an arrow into $X$ (the "backdoor paths")
+  
+If $\{Z\}$ meets the backdoor criterion, the total causal effect of $X$ on $Y$ is non-parametrically identifiable given $\{Z\}$, such that:
+
+$$ P(Y|do(X)) = \sum_{Z} P(Y|X,Z)P(Z)$$
+
+The backdoor criterion recognizes that all paths that descend from $X$ are either causal or blocked
+---
+
+## Multiple Adjustment Sets
+.pull-left[
+```{r, echo=FALSE, out.width="70%"}
+g1 <- dagitty( "dag {
+    Y <- X <- Z1 <- V -> Z2 -> Y
+    Z1 <- W1 -> W2 -> Z2
+    X <- W1 -> Y
+    X <- W2 -> Y
+}")
+pg1 <- ggdag(g1, text_size=11) + theme_dag_gray()
+pg1
+```
+]
+.pull-right[
+Adjustment sets for $X \rightarrow Y$:
+
+```{r, echo=FALSE}
+print( adjustmentSets(g1, 'X', 'Y'))
+```
+
+Adjusting for any one of these sets of variables eliminates confouding for causal effect of $X$ on $Y$
+
+For a linear model this means regressing $Y$ on $X$, including as covariates only one set of these variables 
+
+In R, any of these statements will estimate the total effect of $X$ on $Y$ from observational data `obsdata`:
+
+```{r, eval=FALSE}
+lm(obsdata, Y ~ X + W1 + W2 + Z2)
+lm(obsdata, Y ~ X + V + W1 + W2)
+lm(obsdata, Y ~ X + W1 + W2 + Z1)
+```
+]
+
+---
+# Adjustment Sets for $X \rightarrow Y$
+
+```{r, echo=FALSE, fig.width=15}
+ggdag_adjustment_set(g1, exposure='X', outcome='Y') + theme_dag_gray()
+```
+???
+Bold edges are unadjusted, light edges are adjusted
+
+---
+# Frontdoor Adjustment Criterion
+.pull-left[
+U unmeasured: Cannot block backdoor path from $X \rightarrow Y$
+
+```{r, echo=FALSE, out.width="70%"}
+gfront <- dagitty( 'dag {
+    X [pos="0,0"]
+    Z [pos="1,0"]
+    Y [pos="2,0"]
+    U [pos="1,1"]
+    X -> Z -> Y
+    U -> X
+    U -> Y
+}')
+pgfront <- ggdag(gfront, text_size=11) + theme_dag_gray()
+pgfront
+```
+]
+.pull-right[
+$X \rightarrow Y$ is still identifiable using a two step process:
+
+Step 1. Identify $X \rightarrow Z$:
+
+  * Backdoor path blocked by collider $Y$
+  
+$$X \leftarrow U \rightarrow Y \leftarrow Z$$
+
+Step 2. Identify $Z \rightarrow Y$:
+
+  * Backdoor path blocked by adjusting for $X$
+
+$$Z \leftarrow X \leftarrow U \rightarrow Y$$
+]
+
+---
+## Frontdoor Adjustment Criterion (Pearl 1995)
+A set of variables $\{Z\}$ satisfies the **frontdoor criterion** relative to an ordered pair of variables $\{X, Y\}$ in a DAG if:
+
+  1. $\{Z\}$ intercepts all directed paths from $X$ to $Y$,
+  
+  2. there is no backdoor path between $X$ and $Z$,
+  
+  3. every backdoor path between $Z$ and $Y$ is blocked by $X$
+  
+If $\{Z\}$ meets the frontdoor criterion, the causal effect of $X$ on $Y$ is identifiable given $\{Z\}$, such that:
+
+$$P(y|do(x)) = \sum_{z} P(z|x)\sum_{x'}P(y|x', z)P(x')$$
+
+$x$ is the value of $X$ in $do(x)$, $x'$ refers to all values of $X$
+
+---
+## Instrumental Variables
+
+---
+## Causal Inference Requires a Causal Model of the Data Generating Process
+
+* Confounding is a causal concept
+* The data alone are insufficient to identify confounders or control for confouding
+* Without a model, observational data is limited to associational models that do not tell us how to intervene
+  + This includes all current machine learning and statistical approaches
+  + Example: If an associational predictive model finds a few highly predictive "risk factors" we cannot assume that intervening on those risk factors will decrease risk.
+  
+---
+## Model Testability
+Causal DAG's imply independence relations
+
+.pull-left[
+```{r, echo=FALSE, out.width="70%", fig.height=2}
+ggdag(glinear, text_size=11) + theme_dag_gray()
+```
+```{r, echo=FALSE, out.width="70%", fig.height=3}
+ggdag(gdiverging, text_size=11) + theme_dag_gray()
+```
+```{r, echo=FALSE, out.width="70%", fig.height=3}
+ggdag(gconverging, text_size=11) + theme_dag_gray()
+```
+]
+.pull-right[
+**Linear Path (or Chain)**
+
+  - $A \perp\!\!\!\perp C | E$
+
+
+
+**Common Cause**
+
+  - $E  \perp\!\!\!\perp  C | A$
+
+$$\space$$
+$$\space$$
+
+**Common Effect**
+
+  - $A  \perp\!\!\!\perp  E$
+  - $A  \not\!\perp\!\!\!\perp  E | C$
+]
+
+---
+## Example: Independence Relations
+Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project. *International Journal of Obesity.* 2004 Aug;28(8):1082.
+
+.pull-left[
+```{r, echo=FALSE, out.width="70%"}
+gmonica <- dagitty('dag{
+    eage [pos="0,3"]
+    eageg [pos="0,2"]
+    sex [pos="1,3"]
+    height [pos="2,2"]
+    weight [pos="3, 2"]
+    bmi [pos="0,1"]
+    chol [pos="2, 1"]
+    bmigrp [pos="0,0"]
+    hychol [pos="2,0"]
+    eage -> {eageg weight chol}
+    sex -> {chol height weight}
+    height -> {weight bmi}
+    weight -> bmi
+    bmi -> chol
+    bmi -> bmigrp
+    chol -> hychol
+}')
+pgmonica <- ggdag(gmonica) + theme_dag_gray()
+pgmonica
+```
+]
+
+.pull-right[
+This Causal DAG implies the following conditional independencies
+
+.scroll-box-8[
+```{r, echo=FALSE, out.width="70%", comment=NA}
+impliedConditionalIndependencies( gmonica, max.results = Inf )
+```
+]
+
+Given data on these variables, we can test for these statistical relationships.
+]
+
+---
+## Evaluate Model by Testing Independencies in Observed Data
+
+.pull-left[
+```{r, echo=FALSE, out.width="70%"}
+pgmonica
+```
+]
+
+.pull-right[
+Independence Tests for all implied independencies:
+
+
+```{r, echo=FALSE, out.width="100%", comment=NA}
+monica <- as_tibble(read.csv("monica-chol.csv"))
+r <- localTests( gmonica, monica, "cis" )
+DT::datatable(r %>% select(estimate, p.value), fillContainer = FALSE, class = "nowrap hover", options = list(pageLength=3, dom = 'tp')) %>% formatRound(c("estimate", "p.value"), 2)
+```
+
+Given data on these variables, we can test for these statistical relationships.
+]
+
+---
+# Coefficients where $p < .05$
+
+```{r, echo=FALSE, fig.height=6}
+r$p.value <- p.adjust(r$p.value)
+r <- r[r$p.value<0.05,] 
+pr <- ggplot(r, aes(x=estimate, y=rownames(r))) + geom_point() + geom_errorbarh(mapping=aes(y=rownames(r), xmin=!!sym("2.5%"), xmax = !!sym("97.5%")), height=0) +theme_bw(base_size = 15)
+pr
+```
+---
+## Add $eage \rightarrow height$ and Retest
+
+.pull-left[
+```{r, echo=FALSE, out.width="70%"}
+gmonica <- dagitty('dag{
+    eage [pos="0,3"]
+    eageg [pos="0,2"]
+    sex [pos="1,3"]
+    height [pos="2,2"]
+    weight [pos="3, 2"]
+    bmi [pos="0,1"]
+    chol [pos="2, 1"]
+    bmigrp [pos="0,0"]
+    hychol [pos="2,0"]
+    eage -> {eageg weight chol height}
+    sex -> {chol height weight}
+    height -> {weight bmi}
+    weight -> bmi
+    bmi -> chol
+    bmi -> bmigrp
+    chol -> hychol
+}')
+pgmonica <- ggdag(gmonica) + theme_dag_gray()
+pgmonica
+```
+]
+
+.pull-right[
+Coefficients where $p < .05$
+
+```{r, echo=FALSE, fig.height=6}
+r <- localTests( gmonica, monica, "cis" )
+r$p.value <- p.adjust(r$p.value)
+r <- r[r$p.value<0.05,] 
+pr <- ggplot(r, aes(x=estimate, y=rownames(r))) + geom_point() + geom_errorbarh(mapping=aes(y=rownames(r), xmin=!!sym("2.5%"), xmax = !!sym("97.5%")), height=0) +theme_bw(base_size = 15)
+pr
+```
+]
+---
+## Age, Exercise, Cholesterol Model Implies No Independence Relations
+.pull-left[
+```{r, echo=FALSE, out.width="70%"}
+ggdag(gobs, text_size=11)
+```
+]
+.pull-right[
+```{r}
+print( impliedConditionalIndependencies( gobs ) )
+```
+* C is a collider between $A$ and $E$, but $A \rightarrow E$ **shields** the collider, rendering $A$ and $E$ dependent even when $C$ is not conditioned on
+
+There is no way to test this model from observational data
+]
+
+---
+## Independence (d-separation) Equivalence
+.pull-left[
+Two Causal DAGs over the same set of variables are independence equivalent iff they have:
+
+* the same adjacencies (edges between variables ignoring direction)
+* the same unshielded colliders (any two nodes pointing into the collider are not adjacent)
+
+These graphs are all independence equivalent.  (Verma and Pearl, 1988)
+]
+.pull-right[
+```{r, echo=FALSE, fig.height = 7}
+ggdag_equivalent_dags(gobs) + theme_dag_gray()
+```
+]
+???
+From https://www.youtube.com/watch?v=TISSNwWDfw4&list=PLO5mmwQolPRX858CyOOIHqYnmdzlHjIgS&index=8
+
+Around 28 minutes into the presentation (CCD Summer short course 2016:Day 2 Part 1)
+
+---
+### CPDAG (Completed Partially Directed Acyclic Graph)
+.pull-left[
+```{r, echo=FALSE, fig.height = 7}
+# ggdag_equivalent_class(gobs) # Bug as of 5/24/19. See https://github.com/malcolmbarrett/ggdag/issues/8
+# Use dagitty function instead
+plot(equivalenceClass(gobs))
+```
+]
+.pull-right[
+A CPDAG represents an equivalance class of independence equivalent graphs
+
+* A directed edge is shared by all graphs in the class
+* An undirected edge is reversible as long as no cycles or additional unshielded colliders are introduced
+]
+
+---
+### Age, Sex, Gender, BMI, and Cholesterol
+.pull-left[
+Graph implied by [Nature paper]
+
+```{r, echo=FALSE, out.width="70%"}
+gmonica <- dagitty('dag{
+    eage [pos="0,3"]
+    eageg [pos="0,2"]
+    sex [pos="1,3"]
+    height [pos="2,2"]
+    weight [pos="3, 2"]
+    bmi [pos="0,1"]
+    chol [pos="2, 1"]
+    bmigrp [pos="0,0"]
+    hychol [pos="2,0"]
+    eage -> {eageg weight chol}
+    sex -> {chol height weight}
+    height -> {weight bmi}
+    weight -> bmi
+    bmi -> chol
+    bmi -> bmigrp
+    chol -> hychol
+}')
+pgmonica <- ggdag(gmonica) + theme_dag_gray()
+pgmonica
+```
+]
+.pull-right[
+CPDAG
+
+```{r, echo=FALSE, fig.height=4}
+# ggdag_equivalent_class(gobs) # Bug as of 5/24/19. See https://github.com/malcolmbarrett/ggdag/issues/8
+# Use dagitty function instead
+plot(equivalenceClass(gmonica))
+```
+]
+
+---
+class: middle, center
+# Part III: Causal Discovery
+
+---
+# Causal Discovery: Inferring Causal Structure from Data
+
+Causal DAGs imply certain conditional independencies
+
+Independencies in data imply possible DAGs
+
+---
+### Results of the PC Algorithm (Spirtes et al. 1991) on Who Monica Dataset 
+
+.pull-left[
+```{r, echo=FALSE, fig.height=6}
+suffStat <- list(C = cor(monica), n = nrow(monica))
+pc.monica <- pc(suffStat, indepTest = gaussCItest, labels = names(monica), alpha = 0.05, skel.method="stable")
+plot(pc.monica)
+```
+]
+
+.pull-right[
+Graph implied by [Nature paper]
+```{r, echo=FALSE, fig.height=6}
+pgmonica
+```
+]
+
+---
+# tetrad PC algo
+```{r}
+res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .05, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE)
+library(DOT)
+graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
+dot(graph_dot)
+```
+---
+## Adding Knowledge: Required Edges
+
+`TRUE` means the pair of variables must be connected by an edge
+
+```{r, echo=FALSE}
+# Required Edges
+k <- matrix(FALSE, nrow = length(names(monica)), ncol = length(names(monica)))
+rownames(k)<-names(monica)
+colnames(k)<-names(monica)
+k[["bmi", "bmigrp"]] <- TRUE # bmi must `cause` bmigrp
+k[["bmigrp", "bmi"]] <- TRUE
+k[["height", "bmi"]] <- TRUE
+k[["bmi", "height"]] <- TRUE
+k[["weight", "bmi"]] <- TRUE
+k[["bmi", "weight"]] <- TRUE
+k[["eage", "eageg"]] <- TRUE
+k[["eageg", "eage"]] <- TRUE
+k[["height", "weight"]] <- TRUE
+k[["weight", "height"]] <- TRUE
+k[["chol", "hychol"]] <- TRUE
+k[["hychol", "chol"]] <- TRUE
+as_tibble(k, rownames="id") %>% mutate_all(~cell_spec(.x, color = ifelse(.x == TRUE, "red", "gray"))) %>% knitr::kable(format="html", booktabs = FALSE, escape=FALSE, booktabs = TRUE) %>%
+kable_styling(full_width = F)
+```
+
+---
+## Adding Knowledge: Forbidden Edges
+
+A $1$ means the row variable (e.g., `height`) must not have direct edge to the column variable (e.g., `bmi`)
+
+```{r, echo=FALSE}
+# Forbidden Edges
+kf <- matrix(FALSE, nrow = length(names(monica)), ncol = length(names(monica)))
+rownames(kf)<-names(monica)
+colnames(kf)<-names(monica)
+kf["sex",] <- c(TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,TRUE,TRUE)
+kf["eage",] <- c(FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,TRUE)
+kf["eageg",] <- c(TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE)
+kf["chol",] <- c(FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE)
+kf["weight",] <- c(FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE)
+kf["height",] <- c(FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE)
+kf["bmi",] <- c(TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE)
+kf["hychol",] <- c(TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE)
+kf["bmigrp",] <- c(TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE)
+
+as_tibble(kf, rownames="id") %>% mutate_all(~cell_spec(.x, color = ifelse(.x == TRUE, "red", "gray"))) %>% knitr::kable(format="html", booktabs = FALSE, escape=FALSE, booktabs = TRUE) %>%
+kable_styling(full_width = F)
+```
+---
+
+### Results of the PC Algorithm With Background Knowledge 
+
+.pull-left[
+```{r, echo=FALSE, fig.height=6}
+suffStat <- list(C = cor(monica), n = nrow(monica))
+pc.monica <- pc(suffStat, indepTest = gaussCItest, labels = names(monica), alpha = 0.05, skel.method="stable", fixedEdges = k, fixedGaps = kf)
+plot(pc.monica)
+```
+]
+
+.pull-right[
+Graph implied by [Nature paper]
+```{r, echo=FALSE, fig.height=6}
+pgmonica
+```
+]
+
+---
+# Associative vs. Causal Predictive Models
+  
+If we just want to predict, an associative predictive model is sufficient and may be better than a causal model.
+
+Suppose diet affects weight and chol directly, but we don't know diet. BMI still allows us to predict chol in an associative model, but not intervene.
+
+---
+# Estimating Causal Expressions from Data
+
+Adjustment stratifies data, which can lead to difficulties estimating causal expressions from actual (non-infinite) data
+
+A number of statistical estimation methods are available
+
+Propensity score example
+
+---
+### Modified Y Structure Equivalence Class
+.pull-left[
+Original Graph
+
+```{r, echo=FALSE, out.width="70%"}
+gyp <- dagitty('dag{
+    X0 [pos="0,1"]
+    X1 [pos="0,2"]
+    X2 [pos="0,0"]
+    X3 [pos="1,1"]
+    X4 [pos="2,1"]
+    X1 -> X3 -> X4
+    X2 -> X3
+    X0 -> X3
+    X0 -> X2
+}')
+pgyp <- ggdag(gyp)
+pgyp
+```
+]
+.pull-right[
+CPDAG
+
+```{r, echo=FALSE, fig.height=4}
+# ggdag_equivalent_class(gobs) # Bug as of 5/24/19. See https://github.com/malcolmbarrett/ggdag/issues/8
+# Use dagitty function instead
+plot(equivalenceClass(gyp))
+#ggdag_equivalent_class(gyp)
+```
+]
+
+---
+### Independence Implications Can be Tested Against a Dataset
+.pull-left[
+Original Graph
+
+```{r, echo=FALSE, out.width="70%"}
+impliedConditionalIndependencies(gfront)
+#localTests(gfront, dobs, "cis")
+```
+]
+.pull-right[
+CPDAG
+
+```{r, echo=FALSE, fig.height=4}
+# ggdag_equivalent_class(gobs) # Bug as of 5/24/19. See https://github.com/malcolmbarrett/ggdag/issues/8
+# Use dagitty function instead
+plot(equivalenceClass(gyp))
+#ggdag_equivalent_class(gyp)
+```
+]
+
+---
+class: center, middle
+
+## Part III: Counterfactual Reasoning
+
+---
+## Classic Definition of Confounder 
+.pull-left[
+A counfounder of $X$ (the treatment) and $Y$ (the outcome) is a variable $Z$ that is
+
+1. associated with $X$
+
+2. is a cause of $Y$; and
+
+3. does not reside on the causal pathway between $X$ and $Y$
+]
+.pull-right[
+Z is a confounder of $X \rightarrow Y$
+```{r, echo=FALSE, fig.height=4}
+gconfounder <- dagitty('dag{
+  Z [pos="1,1"]
+  X [pos="0,0"]
+  Y [pos="2,0"]
+  Z -> Y Z->X  X->Y }')
+ggdag(gconfounder, text_size=11)
+```
+]
+???
+This definition may be correct, though it is limited
+
+reference for classical definition: Rothman KJ, Lash TL, Greenland S. Modern Epidemiology, 3rd ed. Philadelphia, PA: Lippincott Williams & Wilkins; 2008. p. 195.
+
+---
+
+
+---
+### Does Estrogen Replacement Therapy (ERT) Cause Uterine Cancer?
+In the 1970's
+
+- ERT widely prescribed to women after menopause
+- Several studies found an association between ERT and uterine cancer
+- ERT known to cause bleeding in some women
+- Uterine cancer can cause bleeding
+
+Two Hypotheses
+
+- ERT causes uterine cancer
+- ERT does not cause cancer, but causes bleeding, leading to a uterine exam, which increases the chance of finding undiagnosed uterine cancer
+
+Yale researchers proposed limiting data analysis to women who have bled
+
+Harvard researchers argued that such an analysis could find an association between ERT and Cancer even if ERT did not cause cancer
+
+---
+## Causal DAGs for each hypothesis
+.pull-left[
+```{r, echo=FALSE}
+gERTspurious <- dagitty('dag{
+  ERT [pos="0,1"]
+  B [pos="1,1"]
+  DC [pos="2,1"]
+  UC [pos="0,0"]
+  ERT -> B B -> DC UC -> B UC-> DC}')
+ggdag(gERTspurious, text_size=4) #, use_labels="label")
+```
+]
+---
+## Adjust done at data collection or analysis (from Elwert)
+
+
+
+
+
+
+
+
+---
+## Causal DAGs and Joint Probability Distributions
+Too complex. Use adjustment instead by showing how the observational dist for cholesterol can give the correct result when stratifying by age, as can regression when including Age as a covariate.
+
+Then demonstrate why that doesn't always work by analyzing causal effect of age, discussing the total and direct effects from program, then that regression C ~ A + E only gives direct effect. So you must regress C ~ A to get total effect. In other words, you can't stratify by E for A.
+
+Stratification is one way to adjust for variables to eliminate non-causal associations
+.pull-left[
+Any distribution generated by a Markovian causal DAG $M$, can be written as:
+
+$$P(v_1,v_2,...,v_n) = \prod_{i} P(v_{i}|pa_i)$$
+
+where $V_1, V_2,..., V_n$ are the variables in $M$, and $pa_i$ are the values of the parents of $V_i$ in M.
+]
+
+.pull-right[
+```{r, echo=FALSE, fig.height=3}
+ggdag(gobs, text_size=11)
+```
+
+$$P(a,e,c)=P(a)*P(e|a)*P(c|a, e)$$
+]
+
+For example, the probability that a patient has A=50, E = 5, and C = 120 is given by:
+
+$$P(A=50,E=5,C=120)=P(a=50)*P(e=5|a=50)*P(c=120|a=50, e=5)$$
+
+
+.whisper[Technical notes: A graph is Markovian if there are no cycles and all error terms jointly indpendent.]
+
+---
+##Formal Definitions
+For treatment X and outcome Y...
+### Causal Effect
+Value of Y given a specific intervention on X
+
+  - Dichotomous (binary) outcomes: $P(Y=1|do(X = x)$
+
+  - Continuous outcomes:  $E(Y|do(X=x))$
+  
+---
+# Overadjustment Bias
+
+---
+# In General, No single multivariable regression can identify multiple causal effects
+
+---
+# Causal Inference Requires extra-Data Information
+- There is not enough information in the data to determine causal effects
+- An analyst must use a causal model
+- Conclusions are always relative to the model
+
+---
+#Observational Results: Age and Exercise(!) Increase Cholesterol
+```{r, echo=FALSE, out.width="100%"}
+
+#pairs(x2)
+
+#ggplot(x2, aes(A))+geom_histogram(binwidth = 10)
+#r = lm(C ~ A + E, x2)
+#coef(summary(r))
+```
+.pull-left[
+### Cholesterol vs Age
+```{r, echo=FALSE, out.width="70%"}
+ggplot(dobs, aes(A,C))+geom_point()+geom_smooth(method="lm")
+# Observation and interventional distributions are the same for P(C|do(A)), so just use dobs to
+# find the total causal effect of A on C
+fit = lm(C ~ A, dobs)
+Cobs <- coef(fit)
+```
+$c = `r round(Cobs[1], digits=2)`+`r round(Cobs[2], digits=2)`a \space `r ifelse(summary(fit)$coefficients[2,4] < .001, "(p<.001)", "")`$ (obs and int dist identical)
+]
+.pull-right[
+### Wrong: Cholesterol vs Exercise
+```{r, echo=FALSE, out.width="70%"}
+ggplot(dobs, aes(E,C))+geom_point()+geom_smooth(method="lm")
+```
+]
+
+---
+## Intervening Changes the Generative Model
+.pull-left[
+Dichotomous Observational Generative Model
+```{r}
+n <- 10000
+g <- rbinom(n, 1, .5)
+{{p_x_g <- c(1/3, 2/3)
+x <- rbinom(n, 1, p_x_g[g])}} # Male: 1/3, Female: 2/3 
+# gender  treatment p(heart attack)
+#  male       0           .3
+#  male       1           .4
+# female      0           .05
+# female      1           .07
+p_h_gx = c(.3, .4, .05, .075)
+h <- rbinom(n, 1, p_h_gx[g*2+x+1])
+```
+```{r, echo=FALSE, out.width="100%"}
+dobs <- tibble(G = g, X = x, H=h)
+library(dagitty)
+library(ggdag)
+coords <- list(
+    x = c(x = 0, g = 1, h = 2),
+    y = c(x = 0, g = 1, h = 0)
+    )
+gobs <- dagify(
+    x ~ g,
+    h ~ g + x,
+    exposure = "x",
+    outcome = "h",
+    labels = c("h" = "Heart\n Attack", 
+                  "g" = "Gender",
+                  "x" = "Treatment"),
+    coords = coords)
+
+ggdag(gobs, text = FALSE, use_labels = "label")
+```
+]
+.pull-right[
+Dichotomous Interventional Generative Model
+```{r}
+n <- 10000
+g <- rbinom(n, 1, .5) 
+{{x <- rbinom(n, 1, .5)}} # Random chance
+#          m¬t  mt  f¬t  ft
+p_h_gx = c(.3, .4, .05, .075) # p(H|M,T)
+h <- rbinom(n, 1, p_h_gx[g*2+x+1])
+```
+```{r, echo=FALSE, out.width="100%"}
+dint <- tibble(G = g, X = x, H=h)
+library(dagitty)
+library(ggdag)
+coords <- list(
+    x = c(x = 0, g = 1, h = 2),
+    y = c(x = 0, g = 1, h = 0)
+    )
+gint <- dagify(
+    h ~ g + x,
+    exposure = "x",
+    outcome = "h",
+    labels = c("h" = "Heart\n Attack", 
+                  "g" = "Gender",
+                  "x" = "Treatment"),
+    coords = coords)
+
+ggdag(gint, text = FALSE, use_labels = "label")
+```
+```{r}
+# CPT of h given g and x
+p_h = dint %>% group_by(G, X) %>% summarise(p_h = sum(H == 1)/n())
+xtabs(p_h ~ G+X, p_h)
+```
+]
+
+---
+P(h|g,x)
+```{r}
+# CPT of h given g and x, with marginals
+p_h = dint %>% group_by(G, X) %>% summarise(p_h = sum(H == 1)/n())
+addmargins(xtabs(p_h ~ G+X, p_h))
+```
+
+---
+## GGPlotly graph
+```{r, echo=FALSE}
+set.seed(100)
+d <- diamonds[sample(nrow(diamonds), 1000), ]
+p <- ggplot( data = d, aes(x = carat, y = price, text = paste("Clarity:", clarity)) ) +
+  geom_point() +
+  facet_wrap(~ cut) +
+ geom_smooth(aes(group=cut, color=cut, fill=cut), method='loess') 
+p <- ggplotly(p)
+frameWidget(p)
+```

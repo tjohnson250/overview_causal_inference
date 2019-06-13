@@ -1,0 +1,70 @@
+---
+title: "Who Monica Data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Parse the Who Monica Survey Core Data
+
+Data available at: <https://thl.fi/publications/monica/monograph_cd/formats/survey.htm>
+
+
+```{r}
+library(tidyverse)
+monicaform048 <- read_fwf("form04_1.zip", fwf_cols(form = c(1,2), versn=c(3,3), centre=c(4,5), runit=c(6,7), serial=c(8,13), numsur=c(14,14), samunit=c(15,17), dexam=c(18,25), mbirth=c(26,33), agegrp=c(34,34), sex=c(35,35), marit=c(36,36), edlevel=c(37,37), school=c(38,39), cigs=c(40,40), numcigs=c(41,43), daycigs=c(44,44), evercig=c(45,45), stop=c(46,49), iflyear=c(50,50), maxcigs=c(51.53), cigage=c(54,55), cigarsm=c(56,56), cigar=c(57,59), pipesm=c(60,60), pipe=c(61,63), othersm=c(64,65), hibp=c(66,66), drugs=c(67,67), bprecd=c(68,68), high=c(69,69), chdt=c(70,70), chrx=c(71,71), chrecd=c(72,72), asp=c(73,73), menop=c(74,74), agem=c(75,76), horm=c(77,77), pill=c(78,78), syst1=c(79,81), diast1=c(82,84), rz1=c(85,86), syst2=c(87,89), diast2=c(90,92), rz2=c(93,94), cuff=c(95,95), arm=c(96,97), bpcoder=c(98,99), timebp=c(100,103), rtemp=c(104,105), chol=c(106,108), choldl=c(109,111), dchol=c(112,119), hdl=c(120,122), hdldl=c(123,125), dhdl=c(126,133), scn=c(134,136), cotin=c(137,140), carbmon=c(141,142), height=c(143,145), weight=c(146,149), waist=c(150,153), hip=c(154,157), whcoder=c(158,159), oversion=c(160,160), eage=c(161,162), eageg=c(163,163), cohort1=c(164,164), cohort2=c(165,165), edtert1=c(166,166), edtert2=c(167,167), systm=c(168,171), diastm=c(172,175), chola=c(176,179), hdla=c(180,183)))
+monicaform048
+```
+
+## Parse dates
+
+```{r}
+library(lubridate)
+mf = monicaform048 %>% mutate(dexam=parse_date_time(gsub("(99)+", "", dexam), orders=c("dmy", "my", "y")), mbirth=parse_date_time(gsub("99", "", substr(mbirth, 3, nchar(mbirth))), orders=c("my", "y")),
+                              agem = as.integer(agem),
+                              dchol=dmy(dchol),
+                              chol=as.integer(chol)/10,
+                              choldl=as.integer(choldl),
+                              hdl=as.integer(hdl)/100.,
+                              hdldl=as.integer(hdldl),
+                              height=as.integer(height)/100,
+                              weight=as.integer(weight)*100) # recorded in 100 g units
+mf <- mf %>% select(sex, eage, eageg, chol, choldl, weight, height)
+mf
+mf <- mf %>% filter(eageg < 9, chol < 99.9, eage < 99, choldl < 999, (chol < 88.8 | choldl < 888), weight < 999900, height < 9.99) %>% mutate(weight=weight/1000) %>% mutate(bmi=weight/height^2) %>% mutate(chol=ifelse(chol < 88.8, chol, choldl*0.02586)) %>% mutate(hychol=ifelse(chol>=6.5, 1, 0), bmigrp=case_when(bmi<25 ~ 1, bmi<30~2, TRUE ~3)) %>% select(-choldl)
+mf
+write_csv(mf, "monica-chol.csv")
+```
+
+```{r}
+ggplot(mf, aes(x = eage, y = chol)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x)
+ggplot(mf, aes(x = bmi, y = chol)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x)
+ggplot(mf, aes(x = eage, y = weight)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x)
+```
+```{r}
+library(plotly)
+ggplotly(ggplot(mf, aes(x=bmi, fill=as.factor(sex))) + geom_histogram(binwidth = 1, alpha = 0.3, position="identity"))
+```
+```{r}
+plot_histogram <- function(df, feature) {
+    plt <- ggplot(df, aes(x=eval(parse(text=feature)))) +
+    geom_histogram(aes(y = ..density..), alpha=0.7, fill="#33AADE", color="black") +
+    geom_density(alpha=0.3, fill="red") +
+    geom_vline(aes(xintercept=mean(eval(parse(text=feature)))), color="black", linetype="dashed", size=1) +
+    labs(x=feature, y = "Density")
+    print(plt)
+}
+
+plot_multi_histogram <- function(df, feature, label_column) {
+    plt <- ggplot(df, aes(x=eval(parse(text=feature)), fill=eval(parse(text=label_column)))) +
+    geom_histogram(alpha=0.7, position="identity", aes(y = ..density..), color="black") +
+    geom_density(alpha=0.7) +
+    geom_vline(aes(xintercept=mean(eval(parse(text=feature)))), color="black", linetype="dashed", size=1) +
+    labs(x=feature, y = "Density")
+    plt + guides(fill=guide_legend(title=label_column))
+}
+
+plot_multi_histogram(mf %>% mutate(sex=as.factor(sex)), 'bmi', 'sex')
+```

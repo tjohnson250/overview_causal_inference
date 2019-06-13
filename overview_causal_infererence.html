@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>A Brief Overview of Causal Inference</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Todd R. Johnson, PhD" />
+    <meta name="date" content="2019-06-13" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <script src="libs/kePrint/kePrint.js"></script>
+    <script src="libs/htmlwidgets/htmlwidgets.js"></script>
+    <script src="libs/jquery/jquery.min.js"></script>
+    <link href="libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+    <script src="libs/datatables-binding/datatables.js"></script>
+    <link href="libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+    <script src="libs/dt-core/js/jquery.dataTables.min.js"></script>
+    <link href="libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+    <script src="libs/crosstalk/js/crosstalk.min.js"></script>
+    <script src="libs/pymjs/pym.v1.js"></script>
+    <script src="libs/widgetframe-binding/widgetframe.js"></script>
+    <link rel="stylesheet" href="my-fonts.css" type="text/css" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# A Brief Overview of Causal Inference
+### Todd R. Johnson, PhD
+### UTHealth School of Biomedical Informatics
+### 2019-06-13
+
+---
+
+
+
+
+# Pearl's Three Layer Causal Hierarchy
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Level &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Typical.Activity &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Typical.Questions &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Examples &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;font-weight: bold;color: #1c5253 !important;"&gt; 1. Association&lt;br&gt;\(\mathbf{P(y|x)}\) &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; Seeing &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; What is?&lt;br&gt;How would seeing X change my belief in Y? &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; What does a symptom tell me about a disease?&lt;br&gt;What does a survey tell us about the election results? &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;font-weight: bold;color: #1c5253 !important;"&gt; 2. Intervention&lt;br&gt;\(\mathbf{P(y|do(x), z)}\) &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; Doing,&lt;br&gt;Intervening &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; What if?&lt;br&gt;What if I do X? &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; What if I take aspirin, will my headache be cured?&lt;br&gt;What if we ban cigarettes? &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;font-weight: bold;color: #1c5253 !important;"&gt; 3. Counterfactuals&lt;br&gt;\(\mathbf{P(y_x|x',y')}\) &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; Imagining,&lt;br&gt;Retrospecting &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; Why?&lt;br&gt;Was it X that caused Y?&lt;br&gt;What if I had acted differently? &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Was it the aspirin that stopped my headache?&lt;br&gt;Would Kennedy be alive had Oswald not shot him?&lt;br&gt;What if I had not been smoking the past 2 years? &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+class: middle
+
+### Part I: Causation
+
+### Part II: Inferring Causal Effects from Observational Data
+
+### Part III: Causal Discovery
+
+### Part IV: Counterfactual Reasoning
+
+---
+class: center, middle
+
+# Part I: Causation
+
+---
+
+# Definitions
+
+**Causal Infererence** is the process of inferring the **causal effect** of one random variable on a second random variable.
+
+The **Causal Effect** of `\(X\)` on `\(Y\)` is the change in `\(Y\)` when we **intervene** and directly change `\(X\)` from one value to another.
+
+**Intervening** on `\(X\)` means to force `\(X\)` to take a specific value, independent of any of the variables that normally influence the value of `\(X\)`
+
+ - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
+  
+ - This is why RCTs are considered the gold standard for identifying causal effects
+
+---
+# Example: Age, Exercise and Cholesterol
+Suppose that the following model accurately describes how age, exercise, and cholesterol are related
+
+.pull-left[
+
+```r
+n &lt;- 10000
+a &lt;- rnorm(n, mean = 50, sd = 10)
+e &lt;- 0.3*a + rnorm(n)
+c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+From the model, the causal effect of exercise on cholesterol is `\(-1e\)`:
+
+  - For every unit increase in excercise, cholesterol decreases by `\(1\)`
+  
+Causal DAG (Directed Acyclic Graph)
+  - Graphical representation of the data generating model
+  - Links represent *possible* direct causal effects
+  - Missing links indicate the strong assumption of no direct causal effect
+  - Must include all common causes of any pair of variables already in the DAG
+]
+
+---
+## Intervening Changes the Generative Model
+Intervene by randomly setting `\(E\)` from `\(0 - 20\)`
+.pull-left[
+### Observational Model
+
+```r
+n &lt;- 10000
+a &lt;- rnorm(n, mean = 50, sd = 10)
+*e &lt;- 0.3*a + rnorm(n)
+c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+]
+
+--
+
+.pull-right[
+### Interventional Model
+
+```r
+n &lt;- 10000
+a &lt;- rnorm(n, mean = 50, sd = 10)
+*e &lt;- sample(0:20, n, replace = TRUE)
+c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+]
+
+---
+## Intervening Changes The Distribution
+
+.pull-left[
+### Observational Distribution
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-6-1.png" width="70%" /&gt;
+
+`\(c = 102.55+0.5e \space (p&lt;.001)\)`
+]
+
+--
+
+.pull-right[
+### Interventional Distribution
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-7-1.png" width="70%" /&gt;
+
+`\(c = 125.07+-1e \space (p&lt;.001)\)`
+]
+
+???
+The coefficient for `\(e\)` on the observational distribution is way off, but the coefficient for the interventional distribution is close. Both coefficents are statistically significant at the p = .001 level.
+
+---
+# Difference Between Seeing and Doing
+.pull-left[
+### Observational Association
+`\(E(C|e)\)`: The expected value of Cholesterol given that we observe a specific level of exercise
+]
+.pull-right[
+### Interventional Association (Causal Effect)
+`\(E(C|do(e))\)`: The expected value of Cholesterol given that we intervene and set exercise to a specific value, independent of any of the variables that normally influence the value of `\(E\)`.
+
+`\(do()\)` is called the do-operator.
+]
+
+---
+### Average Causal Effect (ACE) for a Population
+Contrast of the mean values of `\(Y\)` (outcome) given two specific interventions on `\(X\)` (treatment)
+
+- Dichotomous (binary) outcomes: 
+
+    `$$P(Y=1|do(X = 1)-P(Y=1|do(X = 0)))$$`
+    
+    `$$P(Survival|do(Treat))-P(Survival|do(Don't Treat))$$`
+
+- Continuous outcomes:  
+
+    `$$E(Y|do(X=x)) - E(Y|do(X=x^{\prime})$$`
+
+First equation is a special case, since for dichotomous outcomes 
+  `$$E(Y|do(X=x)) = P(Y=1|do(X = x))$$`
+
+---
+## Estimating ACE of Exercise on Cholesterol Using the Interventional Dataset
+Step 1: Estimate functional relationship between C and E using linear regression on the **interventional dataset**:
+
+
+
+`$$c = 125.07+-1e \space (p&lt;.001)$$`
+
+`$$E(C|do(E=e))=125.07+-1e \space (p&lt;.001)$$`
+
+Step 2: Use regression equation to calculate ACE
+
+$$
+`\begin{align}
+  ACE &amp;= E(Y|do(E=1))-E(Y|do(E=2)) \\
+      &amp;= (125.07+-1*1) - (125.07+-1*2) \\
+      &amp;= 123.06 - 124.06 \\
+      &amp;= -1
+\end{align}`
+$$
+Equivalently: The regression coefficent on `\(e\)` directly tells us how much `\(C\)` will change for each unit increase in `\(E\)`.
+
+---
+class: center, middle, Large
+
+We say that `\(\mathbf{X}\)` **causes** `\(\mathbf{Y}\)` in a population when the **average causal effect** of `\(X\)` on `\(Y\)` is non-zero.
+
+---
+class: center, middle
+
+## Part II: Estimating Causal Effects from
+## Observational Data
+
+---
+## With Observational Data...
+.pull-left[
+#### using E to predict C gives an incorrect estimate,
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-9-1.png" width="70%" /&gt;
+
+`\(c = 102.55+0.5e \space (p&lt;.001)\)`
+]
+
+--
+
+.pull-right[
+#### but using E and A to Predict C gives the correct estimate
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
+
+`\(c = 100.11+-0.95e + 0.48a \space (p&lt;.001)\)`
+]
+
+---
+## Adjustment
+Stratifying by age `\((A)\)` or including `\(A\)` as a covariate in the regression `\((C = {\beta_1}+{\beta_2}A + {\beta_3}E)\)` is called **adjusting**, **conditioning**, or **controlling for A**
+
+In R code, regression using the observational dataset (`dobs`):
+.pull-left[
+Unadjusted for `\(A\)`
+
+```r
+lm(C ~ E, dobs)
+```
+
+```
+## 
+## Call:
+## lm(formula = C ~ E, data = dobs)
+## 
+## Coefficients:
+## (Intercept)            E  
+##    102.5534       0.4987
+```
+]
+.pull-right[
+Adjusted for `\(A\)`
+
+```r
+lm(C ~ E + A, dobs)
+```
+
+```
+## 
+## Call:
+## lm(formula = C ~ E + A, data = dobs)
+## 
+## Coefficients:
+## (Intercept)            E            A  
+##    100.1057      -0.9514       0.4841
+```
+]
+---
+### What about the Causal Effect of Age on Cholesterol?
+Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.11+-0.95e + 0.48a\)`
+.pull-left[
+
+```r
+n &lt;- 10000
+a &lt;- rnorm(n, mean = 50, sd = 10)
+e &lt;- 0.3*a + rnorm(n)
+c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+]
+.pull-right[
+From the model, the **direct causal effect** of `\(A\)` on `\(C\)` is `\(0.5a\)`
+
+  - The coefficent on `\(A\)` above closely estimates this effect.
+
+  - However `\(A\)` also affects `\(C\)` through `\(E\)`
+
+The **total causal effect** of `\(A\)` on `\(C\)` includes the effect of `\(A\)` through both paths,  which from the model is:
+
+$$
+`\begin{align}
+  c &amp;= .5a + -1\mathbf{e} \\
+    &amp;= 0.5a + -1\mathbf{(0.3a)} \\
+      &amp;= 0.5a\mathbf{- 0.3a} \\
+      &amp;= 0.2a \\
+\end{align}`
+$$
+
+]
+
+---
+### The total effect of `\(A\)` on `\(C\)` can be obtained from the observational data only by leaving `\(E\)` out of the analysis
+.pull-left[
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
+
+`\(c = 100.1+0.2a \space (p&lt;.001)\)`
+]
+.pull-right[
+To estimate total effect of `\(A\)` on `\(C\)`
+  - must regress C on A without adjusting for E
+  
+To estimate direct effect of A on C
+  - must regress `\(C\)` on `\(A\)` and `\(E\)` (adjusting for `\(E\)`)
+  
+To estimate Total (and direct) effect of `\(E\)` on `\(C\)`
+  - must regress `\(C\)` on `\(A\)` and `\(E\)` (adjusting for `\(A\)`)
+  
+Simply throwing all covariates into a single regression is insufficient
+]
+
+
+---
+# Lessons so far...
+Git rid of this slide...
+
+We can (sometimes) estimate causal effects from observational data
+
+However, even with this simple 3 variable dataset,
+  - We need two different regression analyses to estimate causal effects of `\(A\)` and `\(E\)` on `\(C\)`
+  
+    `\(c = 100.11+-0.95e + 0.48a \space (p&lt;.001)\)`: Total effect of `\(E\)`, Direct effect of `\(A\)`
+    
+    `\(c = 100.1+0.2a \space (p&lt;.001)\)`: Total effect of `\(A\)`
+    
+
+---
+class: center, middle
+
+.Large[How do we know when and what to adjust for?]
+
+---
+## Paths in Causal DAGs
+.pull-left[
+Observational Causal DAG
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-16-1.png" width="70%" /&gt;
+]
+.pull-right[
+A **path** is a sequence of non-intersecting adjacent edges
+  - Non-intersecting means a path cannot cross a node more than once
+  - Direction of the arrows doesn't matter
+
+Examples:
+  - `\(A \rightarrow E\)`
+  - `\(A \rightarrow E \rightarrow C\)`
+  - `\(E \leftarrow A \rightarrow C\)`
+  
+All associations are transmitted along paths,
+but not all paths transmit association!
+]
+
+???
+Source: https://www.ssc.wisc.edu/~felwert/causality/wp-content/uploads/2013/06/2-elwert_dags.pdf
+See here for how to cite sources using refmanager package: https://github.com/yihui/xaringan/wiki/Bibliography-and-citations
+
+---
+class: center, middle
+.Large[Two Kinds of Paths: **Causal** and **Non-Causal**]
+
+---
+## Causal Paths
+.pull-left[
+Observational Causal DAG
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-17-1.png" width="70%" /&gt;
+]
+.pull-right[
+**Causal Path:** A path in which all arrows point away from the treatment to the outcome
+ - Causal path for Treatment `\(E\)` and Outcome `\(C\)`
+    * `\(E \rightarrow C\)`
+  
+ - Causal paths for Treatment `\(A\)` and Outcome `\(C\)`
+    * `\(A \rightarrow E \rightarrow C\)`
+    * `\(A \rightarrow C\)`
+    
+The **total causal effect** of a treatment on an outcome consists of association transmitted along all causal paths connecting them
+]
+
+---
+## Non-Causal Paths
+.pull-left[
+Observational Causal DAG
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-18-1.png" width="70%" /&gt;
+]
+.pull-right[
+**Non-Causal Path:** A path from the treatment to the outcome in which at least one arrow points back to the treatment
+ - Non-Causal path for Treatment E and Outcome C
+    * `\(E \leftarrow A \rightarrow C\)`
+  
+ - Non-Causal paths for Treatment `\(A\)` and Outcome C
+    * None
+    
+Non-causal paths are potential spurious sources of association between treatment and outcome
+]
+
+---
+## Paths for Treatment E and Outcome C
+.pull-left[
+Observational Causal DAG
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-19-1.png" width="70%" /&gt;
+]
+.pull-right[
+Causal path:
+  - `\(E \rightarrow C\)`
+  
+Non-Causal path:
+  - `\(E \leftarrow A \rightarrow C\)`
+
+    
+The non-causal path is a source of confounding because it transmits spurious association between `\(E\)` and `\(C\)`
+
+Adjusting for `\(A\)` in the observational data blocks this path, allowing us to use the observational data to estimate the causal effect of `\(E\)` on `\(C\)`
+]
+
+---
+## Identifiability
+The causal effect of `\(T\)` on `\(Y\)` is **identifiable** if
+we can adjust for a set of variables that
+
+ - blocks all non-causal paths between `\(T\)` and `\(Y\)`
+ - without blocking any causal paths between `\(T\)` and `\(Y\)`
+
+---
+### All Sources of Association Between Two Variables
+All Causal DAGs can be constructed from these three patterns
+
+.pull-left[
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-20-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-21-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-22-1.png" width="70%" /&gt;
+]
+.pull-right[
+**Linear Path (or Chain)**
+
+  - Adjusting for `\(E\)` (a mediator) blocks the path between `\(A\)` and `\(C\)`
+
+**Common Cause**
+
+  - Adjusting for `\(A\)` blocks the path between `\(E\)` and `\(C\)`
+
+`$$\space$$`
+
+**Common Effect**
+
+  - `\(C\)` is called a collider
+  - Unadjusted colliders block the path, adjusted colliders open the path
+  - Adjusting for `\(C\)` (or a descendent of `\(C\)`)  **opens** the path
+]
+
+---
+## Identifying the Effect of `\(A\)` on `\(C\)`
+.pull-left[
+Observational Causal DAG
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-23-1.png" width="70%" /&gt;
+]
+.pull-right[
+**Total Effect of `\(A\)` on `\(C\)`**
+
+No adjustments needed
+
+  - All paths from `\(A\)` to `\(C\)` are causal
+
+  * `\(A \rightarrow C\)`
+  * `\(A \rightarrow E \rightarrow C\)`
+
+**Direct Effect of `\(A\)` on `\(C\)`**
+
+Adjusting for `\(E\)` blocks the path `\(A \rightarrow E \rightarrow C\)` leaving only the direct path `\(A \rightarrow C\)`
+]
+
+---
+## Identifying the Effect of `\(A\)` on `\(E\)`
+.pull-left[
+Observational Causal DAG
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-24-1.png" width="70%" /&gt;
+]
+.pull-right[
+**Total (and Direct) Effect of `\(A\)` on `\(E\)`**
+
+No adjustments needed
+
+  * Causal path
+
+    - `\(A \rightarrow E\)`
+
+  * Non-causal path, blocked by collider `\(C\)`
+  
+    - `\(A \rightarrow C \leftarrow  E\)`
+    
+    - Adjusting for `\(C\)` would distort the effect estimate
+]
+
+---
+## Backdoor Criterion (Pearl 1995)
+A set of variables `\(\{Z\}\)` (possibly empty) satisfies the **backdoor criterion** relative to an ordered pair of variables `\(\{X, Y\}\)` in a DAG if:
+
+  1. no node in `\(\{Z\}\)` is a descendent of `\(X\)`, and
+  
+  2. `\(\{Z\}\)` blocks every path between `\(X\)` and `\(Y\)` that contain an arrow into `\(X\)` (the "backdoor paths")
+  
+If `\(\{Z\}\)` meets the backdoor criterion, the total causal effect of `\(X\)` on `\(Y\)` is non-parametrically identifiable given `\(\{Z\}\)`, such that:
+
+$$ P(Y|do(X)) = \sum_{Z} P(Y|X,Z)P(Z)$$
+
+The backdoor criterion recognizes that all paths that descend from `\(X\)` are either causal or blocked
+---
+
+## Multiple Adjustment Sets
+.pull-left[
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-25-1.png" width="70%" /&gt;
+]
+.pull-right[
+Adjustment sets for `\(X \rightarrow Y\)`:
+
+
+```
+##  { W1, W2, Z2 }
+##  { V, W1, W2 }
+##  { W1, W2, Z1 }
+```
+
+Adjusting for any one of these sets of variables eliminates confouding for causal effect of `\(X\)` on `\(Y\)`
+
+For a linear model this means regressing `\(Y\)` on `\(X\)`, including as covariates only one set of these variables 
+
+In R, any of these statements will estimate the total effect of `\(X\)` on `\(Y\)` from observational data `obsdata`:
+
+
+```r
+lm(obsdata, Y ~ X + W1 + W2 + Z2)
+lm(obsdata, Y ~ X + V + W1 + W2)
+lm(obsdata, Y ~ X + W1 + W2 + Z1)
+```
+]
+
+---
+# Adjustment Sets for `\(X \rightarrow Y\)`
+
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+???
+Bold edges are unadjusted, light edges are adjusted
+
+---
+# Frontdoor Adjustment Criterion
+.pull-left[
+U unmeasured: Cannot block backdoor path from `\(X \rightarrow Y\)`
+
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-29-1.png" width="70%" /&gt;
+]
+.pull-right[
+`\(X \rightarrow Y\)` is still identifiable using a two step process:
+
+Step 1. Identify `\(X \rightarrow Z\)`:
+
+  * Backdoor path blocked by collider `\(Y\)`
+  
+`$$X \leftarrow U \rightarrow Y \leftarrow Z$$`
+
+Step 2. Identify `\(Z \rightarrow Y\)`:
+
+  * Backdoor path blocked by adjusting for `\(X\)`
+
+`$$Z \leftarrow X \leftarrow U \rightarrow Y$$`
+]
+
+---
+## Frontdoor Adjustment Criterion (Pearl 1995)
+A set of variables `\(\{Z\}\)` satisfies the **frontdoor criterion** relative to an ordered pair of variables `\(\{X, Y\}\)` in a DAG if:
+
+  1. `\(\{Z\}\)` intercepts all directed paths from `\(X\)` to `\(Y\)`,
+  
+  2. there is no backdoor path between `\(X\)` and `\(Z\)`,
+  
+  3. every backdoor path between `\(Z\)` and `\(Y\)` is blocked by `\(X\)`
+  
+If `\(\{Z\}\)` meets the frontdoor criterion, the causal effect of `\(X\)` on `\(Y\)` is identifiable given `\(\{Z\}\)`, such that:
+
+`$$P(y|do(x)) = \sum_{z} P(z|x)\sum_{x'}P(y|x', z)P(x')$$`
+
+`\(x\)` is the value of `\(X\)` in `\(do(x)\)`, `\(x'\)` refers to all values of `\(X\)`
+
+---
+## Instrumental Variables
+
+---
+## Causal Inference Requires a Causal Model of the Data Generating Process
+
+* Confounding is a causal concept
+* The data alone are insufficient to identify confounders or control for confouding
+* Without a model, observational data is limited to associational models that do not tell us how to intervene
+  + This includes all current machine learning and statistical approaches
+  + Example: If an associational predictive model finds a few highly predictive "risk factors" we cannot assume that intervening on those risk factors will decrease risk.
+  
+---
+## Model Testability
+Causal DAG's imply independence relations
+
+.pull-left[
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-30-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-31-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-32-1.png" width="70%" /&gt;
+]
+.pull-right[
+**Linear Path (or Chain)**
+
+  - `\(A \perp\!\!\!\perp C | E\)`
+
+
+
+**Common Cause**
+
+  - `\(E  \perp\!\!\!\perp  C | A\)`
+
+`$$\space$$`
+`$$\space$$`
+
+**Common Effect**
+
+  - `\(A  \perp\!\!\!\perp  E\)`
+  - `\(A  \not\!\perp\!\!\!\perp  E | C\)`
+]
+
+---
+## Example: Independence Relations
+Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project. *International Journal of Obesity.* 2004 Aug;28(8):1082.
+
+.pull-left[
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-33-1.png" width="70%" /&gt;
+]
+
+.pull-right[
+This Causal DAG implies the following conditional independencies
+
+.scroll-box-8[
+
+```
+bmi _||_ eage | height, weight
+bmi _||_ eageg | eage
+bmi _||_ eageg | height, weight
+bmi _||_ hychol | chol
+bmi _||_ sex | height, weight
+bmigrp _||_ chol | bmi
+bmigrp _||_ eage | height, weight
+bmigrp _||_ eage | bmi
+bmigrp _||_ eageg | eage
+bmigrp _||_ eageg | height, weight
+bmigrp _||_ eageg | bmi
+bmigrp _||_ height | bmi
+bmigrp _||_ hychol | chol
+bmigrp _||_ hychol | bmi
+bmigrp _||_ sex | height, weight
+bmigrp _||_ sex | bmi
+bmigrp _||_ weight | bmi
+chol _||_ eageg | eage
+chol _||_ height | bmi, eage, sex
+chol _||_ weight | bmi, eage, sex
+eage _||_ height
+eage _||_ hychol | chol
+eage _||_ sex
+eageg _||_ height
+eageg _||_ hychol | chol
+eageg _||_ hychol | eage
+eageg _||_ sex
+eageg _||_ weight | eage
+height _||_ hychol | chol
+height _||_ hychol | bmi, eage, sex
+hychol _||_ sex | chol
+hychol _||_ weight | bmi, eage, sex
+hychol _||_ weight | chol
+```
+]
+
+Given data on these variables, we can test for these statistical relationships.
+]
+
+---
+## Evaluate Model by Testing Independencies in Observed Data
+
+.pull-left[
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-35-1.png" width="70%" /&gt;
+]
+
+.pull-right[
+Independence Tests for all implied independencies:
+
+
+<div id="htmlwidget-0ade4634c0e7a0787a9e" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0ade4634c0e7a0787a9e">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ eage | height, weight","bmi _||_ eageg | eage","bmi _||_ eageg | height, weight","bmi _||_ hychol | chol","bmi _||_ sex | height, weight","bmigrp _||_ chol | bmi","bmigrp _||_ eage | height, weight","bmigrp _||_ eage | bmi","bmigrp _||_ eageg | eage","bmigrp _||_ eageg | height, weight","bmigrp _||_ eageg | bmi","bmigrp _||_ height | bmi","bmigrp _||_ hychol | chol","bmigrp _||_ hychol | bmi","bmigrp _||_ sex | height, weight","bmigrp _||_ sex | bmi","bmigrp _||_ weight | bmi","chol _||_ eageg | eage","chol _||_ height | bmi, eage, sex","chol _||_ weight | bmi, eage, sex","eage _||_ height","eage _||_ hychol | chol","eage _||_ sex","eageg _||_ height","eageg _||_ hychol | chol","eageg _||_ hychol | eage","eageg _||_ sex","eageg _||_ weight | eage","height _||_ hychol | chol","height _||_ hychol | bmi, eage, sex","hychol _||_ sex | chol","hychol _||_ weight | bmi, eage, sex","hychol _||_ weight | chol"],[0.000213656279304622,0.227811169869505,0.00250325750046802,-0.110810999741647,0.0165115591115892,0.00968168837637345,0.00138273733354115,0.00136813775967718,0.0251497959824355,0.0130031546385232,0.0128674636022005,0.0659307771577662,-0.025759380142815,0.016307551980393,-0.017136283212477,-0.0199298770763709,0.00189099354516797,0.0650592306828425,0.231307710447215,0.00385371557680124,-23.0417186571407,0.412357707508351,0.0294631210807292,-2.19489596560299,0.0528908584702388,0.0129763338658533,-2.672352570735e-05,0.000210483359697623,-0.00693107328688649,-0.000828033132059304,0.00327125421111085,-3.19569131408994e-05,-0.000406950889332703],[0.575914937408196,0.0553307626593947,0.518694762974047,0.335007379895341,0.118788279232704,5.97872274398424e-06,4.74980035994461e-08,5.76606935567145e-08,0.199588899449586,4.27608406620253e-07,5.17936182084976e-07,0.0213395518265287,0.173181868904882,0.00586326426989464,0.014646566466151,0.000148062198816927,3.74316565220321e-09,0.0500111654398835,0.0894636751677529,0.0106802204921485,5.83375227844498e-152,0.129754683737974,0.857063778225514,6.97080470618784e-143,0.0483040716133123,0.00616283940502045,0.998672916422782,0.164071842231126,0.00432361557073738,0.47165793150096,0.452307681768679,0.953883030465464,0.0108587961844582]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+
+Given data on these variables, we can test for these statistical relationships.
+]
+
+---
+# Coefficients where `\(p &lt; .05\)`
+
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
+---
+## Add `\(eage \rightarrow height\)` and Retest
+
+.pull-left[
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-38-1.png" width="70%" /&gt;
+]
+
+.pull-right[
+Coefficients where `\(p &lt; .05\)`
+
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-39-1.png)&lt;!-- --&gt;
+]
+---
+## Age, Exercise, Cholesterol Model Implies No Independence Relations
+.pull-left[
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-40-1.png" width="70%" /&gt;
+]
+.pull-right[
+
+```r
+print( impliedConditionalIndependencies( gobs ) )
+```
+* C is a collider between `\(A\)` and `\(E\)`, but `\(A \rightarrow E\)` **shields** the collider, rendering `\(A\)` and `\(E\)` dependent even when `\(C\)` is not conditioned on
+
+There is no way to test this model from observational data
+]
+
+---
+## Independence (d-separation) Equivalence
+.pull-left[
+Two Causal DAGs over the same set of variables are independence equivalent iff they have:
+
+* the same adjacencies (edges between variables ignoring direction)
+* the same unshielded colliders (any two nodes pointing into the collider are not adjacent)
+
+These graphs are all independence equivalent.  (Verma and Pearl, 1988)
+]
+.pull-right[
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+]
+???
+From https://www.youtube.com/watch?v=TISSNwWDfw4&amp;list=PLO5mmwQolPRX858CyOOIHqYnmdzlHjIgS&amp;index=8
+
+Around 28 minutes into the presentation (CCD Summer short course 2016:Day 2 Part 1)
+
+---
+### CPDAG (Completed Partially Directed Acyclic Graph)
+.pull-left[
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+]
+.pull-right[
+A CPDAG represents an equivalance class of independence equivalent graphs
+
+* A directed edge is shared by all graphs in the class
+* An undirected edge is reversible as long as no cycles or additional unshielded colliders are introduced
+]
+
+---
+### Age, Sex, Gender, BMI, and Cholesterol
+.pull-left[
+Graph implied by [Nature paper]
+
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-44-1.png" width="70%" /&gt;
+]
+.pull-right[
+CPDAG
+
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
+]
+
+---
+class: middle, center
+# Part III: Causal Discovery
+
+---
+# Causal Discovery: Inferring Causal Structure from Data
+
+Causal DAGs imply certain conditional independencies
+
+Independencies in data imply possible DAGs
+
+---
+### Results of the PC Algorithm (Spirtes et al. 1991) on Who Monica Dataset 
+
+.pull-left[
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+Graph implied by [Nature paper]
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-47-1.png)&lt;!-- --&gt;
+]
+
+---
+# tetrad PC algo
+
+```r
+res &lt;- tetradrunner(algoId = "pc-all", df = monica, alpha = .05, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE)
+library(DOT)
+graph_dot &lt;- tetradrunner.tetradGraphToDot(res$graph)
+dot(graph_dot)
+```
+
+```
+## &lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+## &lt;!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+##  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"&gt;
+## &lt;!-- Generated by graphviz version 2.38.0 (20140413.2041)
+##  --&gt;
+## &lt;!-- Title: g Pages: 1 --&gt;
+## &lt;svg width="271pt" height="476pt"
+##  viewBox="0.00 0.00 271.18 476.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"&gt;
+## &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 472)"&gt;
+## &lt;title&gt;g&lt;/title&gt;
+## &lt;polygon fill="white" stroke="none" points="-4,4 -4,-472 267.176,-472 267.176,4 -4,4"/&gt;
+## &lt;!-- chol --&gt;
+## &lt;g id="node1" class="node"&gt;&lt;title&gt;chol&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="169.176" cy="-306" rx="27.8286" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="169.176" y="-301.8" font-family="Times,serif" font-size="14.00"&gt;chol&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- eage --&gt;
+## &lt;g id="node2" class="node"&gt;&lt;title&gt;eage&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="116.176" cy="-234" rx="28.952" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="116.176" y="-229.8" font-family="Times,serif" font-size="14.00"&gt;eage&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- chol&amp;#45;&amp;gt;eage --&gt;
+## &lt;g id="edge1" class="edge"&gt;&lt;title&gt;chol&amp;#45;&amp;gt;eage&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M157.414,-289.465C148.631,-277.865 136.681,-262.082 127.906,-250.492"/&gt;
+## &lt;/g&gt;
+## &lt;!-- hychol --&gt;
+## &lt;g id="node8" class="node"&gt;&lt;title&gt;hychol&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="160.176" cy="-90" rx="37.1424" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="160.176" y="-85.8" font-family="Times,serif" font-size="14.00"&gt;hychol&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- chol&amp;#45;&amp;gt;hychol --&gt;
+## &lt;g id="edge7" class="edge"&gt;&lt;title&gt;chol&amp;#45;&amp;gt;hychol&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M169.138,-287.591C168.985,-258.042 168.283,-196.193 165.176,-144 164.68,-135.661 163.91,-126.603 163.123,-118.373"/&gt;
+## &lt;polygon fill="black" stroke="black" points="166.579,-117.763 162.099,-108.163 159.614,-118.462 166.579,-117.763"/&gt;
+## &lt;/g&gt;
+## &lt;!-- height --&gt;
+## &lt;g id="node6" class="node"&gt;&lt;title&gt;height&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="35.176" cy="-162" rx="35.3528" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="35.176" y="-157.8" font-family="Times,serif" font-size="14.00"&gt;height&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- eage&amp;#45;&amp;gt;height --&gt;
+## &lt;g id="edge4" class="edge"&gt;&lt;title&gt;eage&amp;#45;&amp;gt;height&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M99.7844,-218.834C88.3764,-208.976 72.9558,-195.649 60.041,-184.488"/&gt;
+## &lt;polygon fill="black" stroke="black" points="62.2365,-181.76 52.3819,-177.869 57.6595,-187.056 62.2365,-181.76"/&gt;
+## &lt;/g&gt;
+## &lt;!-- eageg --&gt;
+## &lt;g id="node7" class="node"&gt;&lt;title&gt;eageg&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="122.176" cy="-162" rx="33.6073" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="122.176" y="-157.8" font-family="Times,serif" font-size="14.00"&gt;eageg&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- eage&amp;#45;&amp;gt;eageg --&gt;
+## &lt;g id="edge6" class="edge"&gt;&lt;title&gt;eage&amp;#45;&amp;gt;eageg&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M117.659,-215.697C118.32,-207.983 119.115,-198.712 119.852,-190.112"/&gt;
+## &lt;polygon fill="black" stroke="black" points="123.343,-190.367 120.71,-180.104 116.369,-189.769 123.343,-190.367"/&gt;
+## &lt;/g&gt;
+## &lt;!-- bmigrp --&gt;
+## &lt;g id="node3" class="node"&gt;&lt;title&gt;bmigrp&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="169.176" cy="-378" rx="38.8652" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="169.176" y="-373.8" font-family="Times,serif" font-size="14.00"&gt;bmigrp&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- bmigrp&amp;#45;&amp;gt;chol --&gt;
+## &lt;g id="edge10" class="edge"&gt;&lt;title&gt;bmigrp&amp;#45;&amp;gt;chol&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M169.176,-349.665C169.176,-341.054 169.176,-331.791 169.176,-324.104"/&gt;
+## &lt;polygon fill="black" stroke="black" points="165.676,-349.697 169.176,-359.697 172.676,-349.697 165.676,-349.697"/&gt;
+## &lt;/g&gt;
+## &lt;!-- bmigrp&amp;#45;&amp;gt;eage --&gt;
+## &lt;g id="edge13" class="edge"&gt;&lt;title&gt;bmigrp&amp;#45;&amp;gt;eage&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M149.015,-352.828C142.74,-344.2 136.373,-334.104 132.176,-324 122.3,-300.223 118.511,-270.385 117.064,-252.009"/&gt;
+## &lt;polygon fill="black" stroke="black" points="146.331,-355.08 155.176,-360.912 151.899,-350.837 146.331,-355.08"/&gt;
+## &lt;/g&gt;
+## &lt;!-- weight --&gt;
+## &lt;g id="node4" class="node"&gt;&lt;title&gt;weight&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="151.176" cy="-18" rx="37.1386" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="151.176" y="-13.8" font-family="Times,serif" font-size="14.00"&gt;weight&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- bmigrp&amp;#45;&amp;gt;weight --&gt;
+## &lt;g id="edge2" class="edge"&gt;&lt;title&gt;bmigrp&amp;#45;&amp;gt;weight&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M189.149,-352.748C195.41,-344.114 201.816,-334.035 206.176,-324 222.294,-286.904 225.176,-275.447 225.176,-235 225.176,-235 225.176,-235 225.176,-161 225.176,-120.553 225.819,-107.357 206.176,-72 197.611,-56.5831 183.1,-42.88 171.134,-33.2711"/&gt;
+## &lt;polygon fill="black" stroke="black" points="186.264,-350.76 183.017,-360.845 191.845,-354.986 186.264,-350.76"/&gt;
+## &lt;/g&gt;
+## &lt;!-- bmi --&gt;
+## &lt;g id="node5" class="node"&gt;&lt;title&gt;bmi&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="169.176" cy="-450" rx="27" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="169.176" y="-445.8" font-family="Times,serif" font-size="14.00"&gt;bmi&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- bmi&amp;#45;&amp;gt;bmigrp --&gt;
+## &lt;g id="edge5" class="edge"&gt;&lt;title&gt;bmi&amp;#45;&amp;gt;bmigrp&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M169.176,-431.697C169.176,-423.983 169.176,-414.712 169.176,-406.112"/&gt;
+## &lt;polygon fill="black" stroke="black" points="172.676,-406.104 169.176,-396.104 165.676,-406.104 172.676,-406.104"/&gt;
+## &lt;/g&gt;
+## &lt;!-- bmi&amp;#45;&amp;gt;weight --&gt;
+## &lt;g id="edge3" class="edge"&gt;&lt;title&gt;bmi&amp;#45;&amp;gt;weight&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M185.981,-435.662C213.019,-412.572 263.176,-362.286 263.176,-307 263.176,-307 263.176,-307 263.176,-161 263.176,-118.496 254.615,-105.281 228.176,-72 216.723,-57.5834 200.299,-45.5355 185.558,-36.5883"/&gt;
+## &lt;polygon fill="black" stroke="black" points="187.063,-33.4153 176.657,-31.4247 183.551,-39.4702 187.063,-33.4153"/&gt;
+## &lt;/g&gt;
+## &lt;!-- bmi&amp;#45;&amp;gt;height --&gt;
+## &lt;g id="edge14" class="edge"&gt;&lt;title&gt;bmi&amp;#45;&amp;gt;height&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M153.641,-434.938C143.308,-424.908 130.054,-410.652 121.176,-396 79.493,-327.207 52.8928,-234.951 41.5273,-189.955"/&gt;
+## &lt;polygon fill="black" stroke="black" points="44.8842,-188.949 39.0877,-180.081 38.0886,-190.628 44.8842,-188.949"/&gt;
+## &lt;/g&gt;
+## &lt;!-- height&amp;#45;&amp;gt;weight --&gt;
+## &lt;g id="edge11" class="edge"&gt;&lt;title&gt;height&amp;#45;&amp;gt;weight&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M30.6656,-133.886C29.0024,-114.956 29.9313,-89.9614 42.176,-72 59.4216,-46.7029 92.2743,-33.0408 117.422,-25.9597"/&gt;
+## &lt;polygon fill="black" stroke="black" points="27.2058,-134.435 31.8393,-143.963 34.1588,-133.625 27.2058,-134.435"/&gt;
+## &lt;/g&gt;
+## &lt;!-- sex --&gt;
+## &lt;g id="node9" class="node"&gt;&lt;title&gt;sex&lt;/title&gt;
+## &lt;ellipse fill="none" stroke="black" cx="78.176" cy="-90" rx="27" ry="18"/&gt;
+## &lt;text text-anchor="middle" x="78.176" y="-85.8" font-family="Times,serif" font-size="14.00"&gt;sex&lt;/text&gt;
+## &lt;/g&gt;
+## &lt;!-- height&amp;#45;&amp;gt;sex --&gt;
+## &lt;g id="edge12" class="edge"&gt;&lt;title&gt;height&amp;#45;&amp;gt;sex&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M50.7433,-135.658C56.6233,-126.086 63.1456,-115.468 68.3547,-106.988"/&gt;
+## &lt;polygon fill="black" stroke="black" points="47.6183,-134.058 45.3664,-144.411 53.5829,-137.722 47.6183,-134.058"/&gt;
+## &lt;/g&gt;
+## &lt;!-- eageg&amp;#45;&amp;gt;hychol --&gt;
+## &lt;g id="edge9" class="edge"&gt;&lt;title&gt;eageg&amp;#45;&amp;gt;hychol&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M131.181,-144.411C135.659,-136.163 141.171,-126.009 146.183,-116.777"/&gt;
+## &lt;polygon fill="black" stroke="black" points="149.276,-118.415 150.971,-107.956 143.124,-115.075 149.276,-118.415"/&gt;
+## &lt;/g&gt;
+## &lt;!-- sex&amp;#45;&amp;gt;weight --&gt;
+## &lt;g id="edge8" class="edge"&gt;&lt;title&gt;sex&amp;#45;&amp;gt;weight&lt;/title&gt;
+## &lt;path fill="none" stroke="black" d="M92.9486,-74.8345C102.901,-65.2915 116.241,-52.4996 127.641,-41.5675"/&gt;
+## &lt;polygon fill="black" stroke="black" points="130.363,-43.8066 135.159,-34.3591 125.518,-38.7541 130.363,-43.8066"/&gt;
+## &lt;/g&gt;
+## &lt;/g&gt;
+## &lt;/svg&gt;
+```
+---
+## Adding Knowledge: Required Edges
+
+`TRUE` means the pair of variables must be connected by an edge
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; sex &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; eage &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; eageg &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; chol &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; weight &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; height &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; bmi &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; hychol &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; bmigrp &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;sex&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;eage&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;eageg&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;chol&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;weight&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;height&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;bmi&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;hychol&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;bmigrp&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+## Adding Knowledge: Forbidden Edges
+
+A `\(1\)` means the row variable (e.g., `height`) must not have direct edge to the column variable (e.g., `bmi`)
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; sex &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; eage &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; eageg &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; chol &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; weight &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; height &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; bmi &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; hychol &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; bmigrp &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;sex&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;eage&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;eageg&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;chol&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;weight&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;height&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;bmi&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;hychol&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;bmigrp&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+---
+
+### Results of the PC Algorithm With Background Knowledge 
+
+.pull-left[
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+Graph implied by [Nature paper]
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
+]
+
+---
+# Associative vs. Causal Predictive Models
+  
+If we just want to predict, an associative predictive model is sufficient and may be better than a causal model.
+
+Suppose diet affects weight and chol directly, but we don't know diet. BMI still allows us to predict chol in an associative model, but not intervene.
+
+---
+# Estimating Causal Expressions from Data
+
+Adjustment stratifies data, which can lead to difficulties estimating causal expressions from actual (non-infinite) data
+
+A number of statistical estimation methods are available
+
+Propensity score example
+
+---
+### Modified Y Structure Equivalence Class
+.pull-left[
+Original Graph
+
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-53-1.png" width="70%" /&gt;
+]
+.pull-right[
+CPDAG
+
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+]
+
+---
+### Independence Implications Can be Tested Against a Dataset
+.pull-left[
+Original Graph
+
+
+```
+## U _||_ Z | X
+## X _||_ Y | U, Z
+```
+]
+.pull-right[
+CPDAG
+
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
+]
+
+---
+class: center, middle
+
+## Part III: Counterfactual Reasoning
+
+---
+## Classic Definition of Confounder 
+.pull-left[
+A counfounder of `\(X\)` (the treatment) and `\(Y\)` (the outcome) is a variable `\(Z\)` that is
+
+1. associated with `\(X\)`
+
+2. is a cause of `\(Y\)`; and
+
+3. does not reside on the causal pathway between `\(X\)` and `\(Y\)`
+]
+.pull-right[
+Z is a confounder of `\(X \rightarrow Y\)`
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
+]
+???
+This definition may be correct, though it is limited
+
+reference for classical definition: Rothman KJ, Lash TL, Greenland S. Modern Epidemiology, 3rd ed. Philadelphia, PA: Lippincott Williams &amp; Wilkins; 2008. p. 195.
+
+---
+
+
+---
+### Does Estrogen Replacement Therapy (ERT) Cause Uterine Cancer?
+In the 1970's
+
+- ERT widely prescribed to women after menopause
+- Several studies found an association between ERT and uterine cancer
+- ERT known to cause bleeding in some women
+- Uterine cancer can cause bleeding
+
+Two Hypotheses
+
+- ERT causes uterine cancer
+- ERT does not cause cancer, but causes bleeding, leading to a uterine exam, which increases the chance of finding undiagnosed uterine cancer
+
+Yale researchers proposed limiting data analysis to women who have bled
+
+Harvard researchers argued that such an analysis could find an association between ERT and Cancer even if ERT did not cause cancer
+
+---
+## Causal DAGs for each hypothesis
+.pull-left[
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
+]
+---
+## Adjust done at data collection or analysis (from Elwert)
+
+
+
+
+
+
+
+
+---
+## Causal DAGs and Joint Probability Distributions
+Too complex. Use adjustment instead by showing how the observational dist for cholesterol can give the correct result when stratifying by age, as can regression when including Age as a covariate.
+
+Then demonstrate why that doesn't always work by analyzing causal effect of age, discussing the total and direct effects from program, then that regression C ~ A + E only gives direct effect. So you must regress C ~ A to get total effect. In other words, you can't stratify by E for A.
+
+Stratification is one way to adjust for variables to eliminate non-causal associations
+.pull-left[
+Any distribution generated by a Markovian causal DAG `\(M\)`, can be written as:
+
+`$$P(v_1,v_2,...,v_n) = \prod_{i} P(v_{i}|pa_i)$$`
+
+where `\(V_1, V_2,..., V_n\)` are the variables in `\(M\)`, and `\(pa_i\)` are the values of the parents of `\(V_i\)` in M.
+]
+
+.pull-right[
+![](overview_causal_infererence_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
+
+`$$P(a,e,c)=P(a)*P(e|a)*P(c|a, e)$$`
+]
+
+For example, the probability that a patient has A=50, E = 5, and C = 120 is given by:
+
+`$$P(A=50,E=5,C=120)=P(a=50)*P(e=5|a=50)*P(c=120|a=50, e=5)$$`
+
+
+.whisper[Technical notes: A graph is Markovian if there are no cycles and all error terms jointly indpendent.]
+
+---
+##Formal Definitions
+For treatment X and outcome Y...
+### Causal Effect
+Value of Y given a specific intervention on X
+
+  - Dichotomous (binary) outcomes: `\(P(Y=1|do(X = x)\)`
+
+  - Continuous outcomes:  `\(E(Y|do(X=x))\)`
+  
+---
+# Overadjustment Bias
+
+---
+# In General, No single multivariable regression can identify multiple causal effects
+
+---
+# Causal Inference Requires extra-Data Information
+- There is not enough information in the data to determine causal effects
+- An analyst must use a causal model
+- Conclusions are always relative to the model
+
+---
+#Observational Results: Age and Exercise(!) Increase Cholesterol
+
+.pull-left[
+### Cholesterol vs Age
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-61-1.png" width="70%" /&gt;
+`\(c = 100.1+0.2a \space (p&lt;.001)\)` (obs and int dist identical)
+]
+.pull-right[
+### Wrong: Cholesterol vs Exercise
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-62-1.png" width="70%" /&gt;
+]
+
+---
+## Intervening Changes the Generative Model
+.pull-left[
+Dichotomous Observational Generative Model
+
+```r
+n &lt;- 10000
+g &lt;- rbinom(n, 1, .5)
+*p_x_g &lt;- c(1/3, 2/3)
+*x &lt;- rbinom(n, 1, p_x_g[g]) # Male: 1/3, Female: 2/3 
+# gender  treatment p(heart attack)
+#  male       0           .3
+#  male       1           .4
+# female      0           .05
+# female      1           .07
+p_h_gx = c(.3, .4, .05, .075)
+h &lt;- rbinom(n, 1, p_h_gx[g*2+x+1])
+```
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-64-1.png" width="100%" /&gt;
+]
+.pull-right[
+Dichotomous Interventional Generative Model
+
+```r
+n &lt;- 10000
+g &lt;- rbinom(n, 1, .5) 
+*x &lt;- rbinom(n, 1, .5) # Random chance
+#          m¬t  mt  f¬t  ft
+p_h_gx = c(.3, .4, .05, .075) # p(H|M,T)
+h &lt;- rbinom(n, 1, p_h_gx[g*2+x+1])
+```
+&lt;img src="overview_causal_infererence_files/figure-html/unnamed-chunk-66-1.png" width="100%" /&gt;
+
+```r
+# CPT of h given g and x
+p_h = dint %&gt;% group_by(G, X) %&gt;% summarise(p_h = sum(H == 1)/n())
+xtabs(p_h ~ G+X, p_h)
+```
+
+```
+##    X
+## G            0          1
+##   0 0.29463571 0.39920160
+##   1 0.04427295 0.07218935
+```
+]
+
+---
+P(h|g,x)
+
+```r
+# CPT of h given g and x, with marginals
+p_h = dint %&gt;% group_by(G, X) %&gt;% summarise(p_h = sum(H == 1)/n())
+addmargins(xtabs(p_h ~ G+X, p_h))
+```
+
+```
+##      X
+## G              0          1        Sum
+##   0   0.29463571 0.39920160 0.69383731
+##   1   0.04427295 0.07218935 0.11646230
+##   Sum 0.33890866 0.47139095 0.81029960
+```
+
+---
+## GGPlotly graph
+<div id="htmlwidget-25d5dafc1900bf0c44e7" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-25d5dafc1900bf0c44e7">{"x":{"url":"overview_causal_infererence_files/figure-html//widgets/widget_unnamed-chunk-69.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9",
+"navigation": {
+"scroll": false
+}
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

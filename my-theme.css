@@ -1,0 +1,383 @@
+body {
+  color: #585E60;
+}
+
+h1, h2, h3 {
+  font-weight: normal;
+  color: #126180;
+}
+
+.shout { color: #ee5863; 
+font-family: 'Lato', sans-serif;
+font-weight: bold;
+}
+
+.whisper { color: #84d6d3; 
+font-family: 'Cormorant Garamond', serif;
+font-style: italic;
+font-weight: bold;
+font-size: larger;
+}
+
+.onfire { color: #ff7436; }
+
+/* link color */
+a, a > code {
+  color: #84d6d3;
+}
+
+/* unvisited link */
+a:link {
+    color: #84d6d3;
+}
+
+/* visited link */
+a:visited {
+    color: #84d6d3;
+}
+
+/* mouse over link */
+a:hover {
+    color: #ee5863;
+}
+
+/* selected link */
+a:active {
+    color: #ee5863;
+}
+
+.remark-code {
+  color: #126180;
+}
+
+.remark-inline-code { 
+  color: #126180;
+}
+
+.remark-code-line-highlighted { 
+  background-color: #84d6d3; 
+}
+
+.inverse {
+  background-color: #126180;
+  color: #FFFFFF;
+  /*text-shadow: 0 0 20px #333;*/
+}
+
+.inverse h1, .inverse h2, .inverse h3 {
+  color: #FFFFFF;
+  line-height: 1.0em;
+}
+
+.inverse .remark-code {
+  color: #3498CC;
+}
+
+/* Two-column layout */
+.left-column {
+  color: #777;
+  width: 25%;
+  height: 92%;
+  float: left;
+  font-size: 18px;
+}
+.left-column h2:last-of-type, .left-column h3:last-child {
+  color: #000;
+}
+.right-column {
+  width: 75%;
+  float: right;
+  padding-top: 1em;
+}
+.pull-left {
+  float: left;
+  width: 47%;
+}
+.pull-right {
+  float: right;
+  width: 47%;
+}
+.pull-right ~ * {
+  clear: both;
+}
+
+/* use to position text at the bottom */
+.pull-down {
+  position: absolute;
+  bottom: 50px;
+}
+
+img, video, iframe {
+  max-width: 100%;
+}
+
+blockquote {
+  border-left: solid 5px lightgray;
+  padding-left: 1em;
+}
+
+table {
+  margin: auto;
+  border-top: 1px solid #666;
+  border-bottom: 1px solid #666;
+}
+
+table thead th { border-bottom: 1px solid #ddd; }
+
+th, td { padding: 5px; }
+
+thead, tfoot, tr:nth-child(even) { background: #eee }
+
+@page { margin: 0; }
+
+.title-slide {
+  background-image: url(RStudio-Logo-White.png);
+  background-position: 95% 95%;
+  background-size: 250px;
+  background-color: #126180;
+}
+
+.inverse h2 {
+  line-height: 1.1;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.inverse .remark-inline-code { 
+  color: white;
+}
+
+.title-slide h1 {
+  color: #FFFFFF;
+  padding-top: 250px;
+  font-size: 45px;
+  line-height: 0.05;
+  text-align: left;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  text-shadow: none;
+  word-wrap: break-word;
+}
+
+.title-slide h2 {
+  color: #FFFFFF;
+  font-size: 40px;
+  text-align: left;
+  padding-top: 0px;
+  margin-top: 0px;
+  text-shadow: none;
+}
+
+.title-slide h3 {
+  font-family: 'Catamaran', sans-serif;
+  font-size: 25px;
+  color: #FFFFFF;
+  text-align: left;
+  text-shadow: none;
+  padding: 0px;
+  margin: 0px;
+  line-height: 1.1;
+}
+
+.title-slide .remark-slide-number {
+  display: none;
+}
+
+/******************
+ * Coloured content boxes (From Sydney-Xaringan theme)
+ ****************/
+ .content-box { 
+  box-sizing: border-box;
+  background-color: #e2e2e2;
+}
+.content-box-blue,
+.content-box-gray,
+.content-box-grey,
+.content-box-army,
+.content-box-green,
+.content-box-purple,
+.content-box-red,
+.content-box-yellow {
+box-sizing: border-box;
+border-radius: 15px;
+margin: 0 0 15px;
+overflow: hidden;
+padding: 0px 20px 0px 20px;
+width: 100%;
+}
+.content-box-blue { background-color: #F0F8FF; }
+.content-box-gray { background-color: #e2e2e2; }
+.content-box-grey {	background-color: #F5F5F5; }
+.content-box-army {	background-color: #737a36; }
+.content-box-green { background-color: #d9edc2; }
+.content-box-purple { background-color: #e2e2f9; }
+.content-box-red { background-color: #ffcccc; }
+.content-box-yellow { background-color: #fef5c4; }
+.content-box-blue .remark-inline-code,
+.content-box-blue .remark-inline-code,
+.content-box-gray .remark-inline-code,
+.content-box-grey .remark-inline-code,
+.content-box-army .remark-inline-code,
+.content-box-green .remark-inline-code,
+.content-box-purple .remark-inline-code,
+.content-box-red .remark-inline-code,
+.content-box-yellow .remark-inline-code { 
+background: none;
+}
+
+
+.full-width {
+  display: flex;
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+
+
+/***********
+Changed CSS
+**************/
+
+.opacity{ opacity: 0.5; }
+.blur {
+  -webkit-filter: blur(5px);
+  -moz-filter: blur(10px);
+  -o-filter: blur(5px);
+  -ms-filter: blur(5px);
+  filter: blur(5px);
+}
+.grayscale img {
+  -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+  filter: grayscale(100%);
+}
+
+/**************
+* Fancy stuff
+**************/
+.rotate-left {
+  -webkit-transform: rotate(-2deg);
+  -moz-transform: rotate(-2deg);
+  transform: rotate(-2deg); 
+}
+.rotate-right {
+  -webkit-transform: rotate(2deg);
+  -moz-transform: rotate(2deg);
+  transform: rotate(2deg);     
+}
+/********** 
+* Image stuff
+************/
+.polaroid img {
+  border: 10px solid #fff;
+  border-bottom: 45px solid #fff;
+  -webkit-box-shadow: 3px 3px 3px #111;
+  -moz-box-shadow: 3px 3px 3px #111;
+  box-shadow: 3px 3px 3px #111;
+}
+.shadow {
+  -moz-border-radius: 5px;
+  -moz-box-shadow: 5px 5px 5px #aaa;
+  -webkit-box-shadow: 5px 5px 5px #aaa;
+  box-shadow: 5px 5px 5px #aaa;
+  border-radius: 2px;  
+}
+
+
+/* disable background colour when printing */
+
+@page { margin: 0; }
+@media print {
+.inverse, .segue, .segue-yellow, .segue-red, .sydney-blue,
+.sydney-yellow, .sydney-red {
+  background-color: transparent;
+  color: black;
+  text-shadow: none;
+}
+.inverse h1, .inverse h2, .inverse h3, .inverse h4, .inverse h5, .segue {
+  background-color: transparent;
+  color: black;
+  text-shadow: none;
+}
+.eg {
+  background-color: transparent;
+}
+.remark-slide-scaler {
+  width: 100% !important;
+  height: 100% !important;
+  transform: scale(1) !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+}
+/* 
+Moving to my-fonts.css
+
+.large { font-size: 130% }
+
+.small { font-size: 70% }
+*/
+
+/*
+Vertical R output scrolling classes from: https://github.com/garthtarr/sydney_xaringan/blob/master/assets/sydney.css
+with instructions on how to use at: https://github.com/garthtarr/sydney_xaringan/blob/master/index.Rmd
+
+.scroll-output[
+I tend to think it's best to format the slide such that everything you want to show is visible, however there can be times when the R output is extensive, and it's not important that the whole lot is printable (i.e. won't appear on the pdf version of the slides), but you might want to be able to scroll down interactively during the presentation.  This can be done using the `.scroll-output[]` class.
+
+```{r}
+step(lm(Fertility~.,data = swiss))
+```
+]
+
+If you just want a section of the output to be scrollable (not the whole page).  You need to define how many lines you want the "box" to show.  There are classes for `.scroll-box-8[]` for 8 lines, `.scroll-box-10[]` for 10 lines, ... , `.scroll-box-20[]` for 20 lines.
+
+.pull-left[
+`.scroll-box-8[]` 
+.scroll-box-8[
+```{r}
+swiss[,1:3]
+```
+]]
+.pull-right[
+`.scroll-box-14[]` 
+.scroll-box-14[
+```{r}
+swiss[,1:3]
+```
+]]
+*/
+
+.scroll-box-8 {
+  height:8em;
+  overflow-y: scroll;
+}
+.scroll-box-10 {
+  height:10em;
+  overflow-y: scroll;
+}
+.scroll-box-12 {
+  height:12em;
+  overflow-y: scroll;
+}
+.scroll-box-14 {
+  height:14em;
+  overflow-y: scroll;
+}
+.scroll-box-16 {
+  height:16em;
+  overflow-y: scroll;
+}
+.scroll-box-18 {
+  height:18em;
+  overflow-y: scroll;
+}
+.scroll-box-20 {
+  height:20em;
+  overflow-y: scroll;
+}
+.scroll-output {
+  height: 90%;
+  overflow-y: scroll;
+}
+
