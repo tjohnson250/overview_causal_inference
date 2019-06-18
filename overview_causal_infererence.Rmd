@@ -34,6 +34,7 @@ library(pcalg)
 library(Rgraphviz)
 library(rcausal)
 library(DOT)
+library(DiagrammeR)
 ```
 
 # Pearl's Three Layer Causal Hierarchy
@@ -953,14 +954,15 @@ class: middle, center
 Causal DAGs imply certain conditional independencies
 
 Independencies in data imply possible DAGs
+[Add BMI dag and graph of effects to show that you can go from model to testing implications in data, or from independence in data to model discovery]
 
 ---
-### Results of the PC Algorithm (Spirtes et al. 1991) on Who Monica Dataset 
+### Results of the PC Algorithm (Spirtes et al. 1991) On The WHO Monica Dataset 
 
 .pull-left[
 ```{r, echo=FALSE, fig.height=6}
 suffStat <- list(C = cor(monica), n = nrow(monica))
-pc.monica <- pc(suffStat, indepTest = gaussCItest, labels = names(monica), alpha = 0.05, skel.method="stable")
+pc.monica <- pc(suffStat, indepTest = gaussCItest, labels = names(monica), alpha = 0.01, skel.method="stable", maj.rule = TRUE)
 plot(pc.monica)
 ```
 ]
@@ -974,12 +976,34 @@ pgmonica
 
 ---
 # tetrad PC algo
-```{r}
-res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .05, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE)
-library(DOT)
+```{r, echo=FALSE}
+res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, colliderDiscoveryRule = 2)
 graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
-dot(graph_dot)
+grViz(graph_dot)
 ```
+
+---
+## Tetrad: Adding Knowledge
+
+```{r}
+forbid <- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('weight', 'bmigrp'), c('sex', 'bmigrp')) # List of forbidden directed edges
+#forbid <- list(c('eageg', 'chol'))
+require <- list(c('eage','eageg'), c('bmi', 'bmigrp'), c('chol', 'hychol'), c('height', 'bmi'), c('weight', 'bmi')) # List of required directed edges
+forbiddenWithin <- c('eage','sex')
+class(forbiddenWithin) <- 'forbiddenWithin' # Make this tier forbidden within
+temporal <- list(forbiddenWithin, c('eageg','height', 'weight'),c('bmi', 'chol'), c('bmigrp', 'hychol')) # List of temporal node tiers
+#prior <- priorKnowledge(forbiddirect = forbid, requiredirect = require, addtemporal = temporal)
+prior <- priorKnowledge(requiredirect = require, addtemporal = temporal, forbiddirect = forbid)
+```
+
+---
+# tetrad PC algo with required knowledge
+```{r, echo=FALSE}
+res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, priorKnowledge = prior, verbose = TRUE, colliderDiscoveryRule = 2)
+graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
+grViz(graph_dot)
+```
+
 ---
 ## Adding Knowledge: Required Edges
 
