@@ -74,9 +74,9 @@ class: middle
 
 ### Part I: Causation
 
-### Part II: Inferring Causal Effects from Observational Data
+### Part II: Estimating Causal Effects from Observational Data
 
-### Part III: Causal Discovery
+### Part III: Causal Discovery from Observational Data
 
 ### Part IV: Counterfactual Reasoning
 
@@ -149,8 +149,6 @@ c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 pgobs
 ```
 ]
-
---
 
 .pull-right[
 ### Interventional Model
@@ -712,12 +710,11 @@ $x$ is the value of $X$ in $do(x)$, $x'$ refers to all values of $X$
 ## Instrumental Variables
 
 ---
-## Causal Inference Requires a Causal Model of the Data Generating Process
+## Confounding is a Causal Concept
 
-* Confounding is a causal concept
 * The data alone are insufficient to identify confounders or control for confouding
 * Without a model, observational data is limited to associational models that do not tell us how to intervene
-  + This includes all current machine learning and statistical approaches
+  + This includes all common machine learning and statistical approaches
   + Example: If an associational predictive model finds a few highly predictive "risk factors" we cannot assume that intervening on those risk factors will decrease risk.
   
 ---
@@ -814,8 +811,6 @@ monica <- as_tibble(read.csv("monica-chol.csv"))
 r <- localTests( gmonica, monica, "cis" )
 DT::datatable(r %>% select(estimate, p.value), fillContainer = FALSE, class = "nowrap hover", options = list(pageLength=3, dom = 'tp')) %>% formatRound(c("estimate", "p.value"), 2)
 ```
-
-Given data on these variables, we can test for these statistical relationships.
 ]
 
 ---
@@ -827,6 +822,10 @@ r <- r[r$p.value<0.05,]
 pr <- ggplot(r, aes(x=estimate, y=rownames(r))) + geom_point() + geom_errorbarh(mapping=aes(y=rownames(r), xmin=!!sym("2.5%"), xmax = !!sym("97.5%")), height=0) +theme_bw(base_size = 15)
 pr
 ```
+
+.pull-right[
+The data suggests that eage and height are *not* marginally independent
+]
 ---
 ## Add $eage \rightarrow height$ and Retest
 
@@ -889,6 +888,8 @@ Two Causal DAGs over the same set of variables are independence equivalent iff t
 
 * the same adjacencies (edges between variables ignoring direction)
 * the same unshielded colliders (any two nodes pointing into the collider are not adjacent)
+  * In graphs 1 and 3, $C$ is a *shielded* collider, because $A$ and $E$ have an edge between them
+  * If we deleted the edge between $A$ and $E$, then $C$ would be an unshielded collider
 
 These graphs are all independence equivalent.  (Verma and Pearl, 1988)
 ]
@@ -898,9 +899,11 @@ ggdag_equivalent_dags(gobs) + theme_dag_gray()
 ```
 ]
 ???
+This concept is explained in detail in the following lecture at around 28 minutes:
+
 From https://www.youtube.com/watch?v=TISSNwWDfw4&list=PLO5mmwQolPRX858CyOOIHqYnmdzlHjIgS&index=8
 
-Around 28 minutes into the presentation (CCD Summer short course 2016:Day 2 Part 1)
+(CCD Summer short course 2016:Day 2 Part 1)
 
 ---
 ### CPDAG (Completed Partially Directed Acyclic Graph)
@@ -921,28 +924,9 @@ A CPDAG represents an equivalance class of independence equivalent graphs
 ---
 ### Age, Sex, Gender, BMI, and Cholesterol
 .pull-left[
-Graph implied by [Nature paper]
+Hypothesized Graph
 
 ```{r, echo=FALSE, out.width="70%"}
-gmonica <- dagitty('dag{
-    eage [pos="0,3"]
-    eageg [pos="0,2"]
-    sex [pos="1,3"]
-    height [pos="2,2"]
-    weight [pos="3, 2"]
-    bmi [pos="0,1"]
-    chol [pos="2, 1"]
-    bmigrp [pos="0,0"]
-    hychol [pos="2,0"]
-    eage -> {eageg weight chol}
-    sex -> {chol height weight}
-    height -> {weight bmi}
-    weight -> bmi
-    bmi -> chol
-    bmi -> bmigrp
-    chol -> hychol
-}')
-pgmonica <- ggdag(gmonica) + theme_dag_gray()
 pgmonica
 ```
 ]
@@ -958,7 +942,7 @@ plot(equivalenceClass(gmonica))
 
 ---
 class: middle, center
-# Part III: Causal Discovery
+# Part III: Causal Discovery from Observational Data
 
 ---
 # Causal Discovery: Inferring Causal Structure from Data
