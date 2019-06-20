@@ -2,7 +2,7 @@
 title: "A Brief Overview of Causal Inference"
 subtitle: ""
 author: "Todd R. Johnson, PhD"
-institute: "UTHealth School of Biomedical Informatics" 
+institute: "The University of Texas School of Biomedical Informatics at Houston" 
 date: "`r Sys.Date()`"
 output:
   xaringan::moon_reader:
@@ -36,7 +36,19 @@ library(rcausal)
 library(DOT)
 library(DiagrammeR)
 ```
+# Disclaimer
 
+use the arrow keys to navigate. Press `h` for help. To see speaker notes, press `p` to enter presentation mode. 
+
+This is unfinished work. My primary objective for creating this presentation is to help me understand the basics of causal infererence. I hope to use it to help others as well, especially machine learning researchers who tend to make predictive, rather than causal models.
+
+This presentation is hosted on Github Pages at: https://tjohnson250.github.io/overview_causal_infererence/overview_causal_infererence.html#1
+
+The source code to generate the presentation is at: https://github.com/tjohnson250/overview_causal_infererence
+
+If you find errors or have suggestions for improvement, open an issue on this project's Github repo.
+
+---
 # Pearl's Three Layer Causal Hierarchy
 
 ```{r, echo=FALSE}
@@ -1145,6 +1157,11 @@ plot(equivalenceClass(gyp))
 class: center, middle
 
 ## Part III: Counterfactual Reasoning
+
+TBD soon
+
+---
+## Remaining slides are not part of the presentation
 
 ---
 ## Classic Definition of Confounder 
