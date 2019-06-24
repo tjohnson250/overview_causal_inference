@@ -325,14 +325,14 @@ lm(C ~ E + A, dobs)
 ```
 ]
 ---
-### What about the Causal Effect of Age on Cholesterol?
+### What is the Causal Effect of Age on Cholesterol?
 Using the observational dataset, regressing $C$ on $A$ and $E$ gave us: $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a$
 .pull-left[
 ```{r, tidy=FALSE, eval=FALSE}
 n <- 10000
 a <- rnorm(n, mean = 50, sd = 10)
 e <- 0.3*a + rnorm(n)
-c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+{{c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)}}
 ```
 ```{r, echo=FALSE, fig.height=4}
 pgobs
@@ -341,7 +341,7 @@ pgobs
 .pull-right[
 From the model, the **direct causal effect** of $A$ on $C$ is $0.5a$
 
-  - The coefficent on $A$ above closely estimates this effect.
+  - Regressing $C$ on $A$ and $E$ closely estimates this effect.
 
   - However $A$ also affects $C$ through $E$
 
@@ -794,7 +794,7 @@ Given data on these variables, we can test for these statistical relationships.
 ]
 
 ---
-## Evaluate Model by Testing Independencies in Observed Data
+## Model Evaluation by Testing Independencies in Observed Data
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
@@ -809,22 +809,65 @@ Independence Tests for all implied independencies:
 ```{r, echo=FALSE, out.width="100%", comment=NA}
 monica <- as_tibble(read.csv("monica-chol.csv"))
 r <- localTests( gmonica, monica, "cis" )
+r$p.value <- p.adjust(r$p.value) # Perform Holm-Bonferroni correction
 DT::datatable(r %>% select(estimate, p.value), fillContainer = FALSE, class = "nowrap hover", options = list(pageLength=3, dom = 'tp')) %>% formatRound(c("estimate", "p.value"), 2)
 ```
 ]
 
+???
+Sort the table by increasing `p.value` (click `p.value`)
+
+`p.values` were corrected for multiple comparisons using the Holm-Bonferroni method
+
+Estimate should be close to $0$ for tests with $p$ less than a small threshold (here $.05$)
+
+See Figure 1 in http://johannes-textor.name/papers/2017-ije.pdf for details (Textor J, van der Zander B, Gilthorpe MS, Liśkiewicz M, Ellison GT. Robust causal inference using directed acyclic graphs: the R package ‘dagitty’. *International journal of epidemiology.* 2016 Dec 1;45(6):1887-94.)
+
+Tests for independence are linear in the dagitty package. Distance Correlation can detect non-linear correlation. For example:
+
+```{r, eval=FALSE} 
+library(energy) # provides tests for marginal and partial independence using distance correlation 
+
+# Tests show probability of independence
+# Low p values indicate dependence
+
+# Conditional distance correlation is computationally intensive O(n^2) and memory intensive, so use a random sample of data
+monicasamp <- sample_n(monica, 1000)
+dcor.ttest(monica$eage, monica$sex) # marginally independent
+
+# Independence under partial correlation (whether distance or linear) is not identical to conditional independence. 
+# The CDCSIS package (below) tests for conditional independence using distance correlation, whereas the energy package (above) only tests for partial distance correlation. 
+# If all variables are multivariate gaussian, the partial linear correlation is 0 if and only if  X and Y are conditionally linearly independent given Z, but otherwise this is not true. 
+# See the following paper for more details on the relationship between conditional independence of partial correlation: https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-842X.2004.00360.x
+
+# See section 4.3 of (http://real.mtak.hu/44934/1/pdcov.pdf) Székely GJ, Rizzo ML. Partial distance correlation with methods for dissimilarities. The Annals of Statistics. 2014;42(6):2382-412.
+
+# Test independence under partial correlation independence hypothesis using distance correlation
+pdcor.test(monicasamp$bmigrp, monicasamp$weight, monicasamp$bmi, R=99) # Dependent although model indicates independence
+
+library(cdcsis) # Provides cdcsis and cdcsis.test for conditional distance correlation
+
+# compute conditional distance correlation 
+cdcsis(as.matrix(monicasamp$bmigrp), monicasamp$weight, as.matrix(monicasamp$bmi), threshold = 1) # must give threshold here as 1 for this data
+# Test conditional independence hypothesis using distance correlation
+cdcov.test(as.matrix(monicasamp$bmigrp), monicasamp$weight, as.matrix(monicasamp$bmi)) # Dependent at the .05 level, but not .01
+```
+
 ---
 # Coefficients where $p < .05$
 
+.pull-left[
 ```{r, echo=FALSE, fig.height=6}
-r$p.value <- p.adjust(r$p.value)
 r <- r[r$p.value<0.05,] 
-pr <- ggplot(r, aes(x=estimate, y=rownames(r))) + geom_point() + geom_errorbarh(mapping=aes(y=rownames(r), xmin=!!sym("2.5%"), xmax = !!sym("97.5%")), height=0) +theme_bw(base_size = 15)
+pr <- ggplot(r, aes(x=estimate, y=rownames(r))) + geom_point() + geom_errorbarh(mapping=aes(y=rownames(r), xmin=!!sym("2.5%"), xmax = !!sym("97.5%")), height=0) + theme_bw(base_size = 15)
 pr
 ```
+]
 
 .pull-right[
-The data suggests that eage and height are *not* marginally independent
+The data suggests that $eage$ and $height$ are *not* marginally independent
+
+This contradicts our model
 ]
 ---
 ## Add $eage \rightarrow height$ and Retest
@@ -947,7 +990,9 @@ class: middle, center
 ---
 # Causal Discovery: Inferring Causal Structure from Data
 
-Causal DAGs imply certain conditional independencies
+.center[Casual DAGS $\Rightarrow$ Independence Relations]
+
+.center[Casual DAGS $\Leftarrow$ Independence Relations]
 
 Independencies in data imply possible DAGs
 [Add BMI dag and graph of effects to show that you can go from model to testing implications in data, or from independence in data to model discovery]
@@ -983,17 +1028,15 @@ grViz(graph_dot)
 
 ```{r}
 forbid <- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('weight', 'bmigrp'), c('sex', 'bmigrp')) # List of forbidden directed edges
-#forbid <- list(c('eageg', 'chol'))
 require <- list(c('eage','eageg'), c('bmi', 'bmigrp'), c('chol', 'hychol'), c('height', 'bmi'), c('weight', 'bmi')) # List of required directed edges
 forbiddenWithin <- c('eage','sex')
 class(forbiddenWithin) <- 'forbiddenWithin' # Make this tier forbidden within
 temporal <- list(forbiddenWithin, c('eageg','height', 'weight'),c('bmi', 'chol'), c('bmigrp', 'hychol')) # List of temporal node tiers
-#prior <- priorKnowledge(forbiddirect = forbid, requiredirect = require, addtemporal = temporal)
 prior <- priorKnowledge(requiredirect = require, addtemporal = temporal, forbiddirect = forbid)
 ```
 
 ---
-# tetrad PC algo with required knowledge
+# Tetrad PC Algorithm with Knowledge
 ```{r, echo=FALSE}
 res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, priorKnowledge = prior, verbose = TRUE, colliderDiscoveryRule = 2)
 graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
