@@ -475,7 +475,7 @@ Non-causal paths are potential spurious sources of association between treatment
 ]
 
 ---
-## Paths for Treatment E and Outcome C
+### Causal and Non-Causal Paths for Treatment E and Outcome C
 .pull-left[
 Observational Causal DAG
 ```{r echo=FALSE, out.width="70%"}
@@ -504,7 +504,7 @@ we can adjust for a set of variables that
  - without blocking any causal paths between $T$ and $Y$
 
 ---
-### All Sources of Association Between Two Variables
+### Blocking and Unblocking Paths
 All Causal DAGs can be constructed from these three patterns
 
 .pull-left[
@@ -536,23 +536,23 @@ ggdag(gconverging, text_size=11) + theme_dag_gray()
 .pull-right[
 **Linear Path (or Chain)**
 
-  - Adjusting for $E$ (a mediator) blocks the path between $A$ and $C$
+  - Adjusting for $E$ (a mediator) *blocks* the path between $A$ and $C$
 
 **Common Cause**
 
-  - Adjusting for $A$ blocks the path between $E$ and $C$
+  - Adjusting for $A$ *blocks* the path between $E$ and $C$
 
 $$\space$$
 
 **Common Effect**
 
   - $C$ is called a collider
-  - Unadjusted colliders block the path, adjusted colliders open the path
-  - Adjusting for $C$ (or a descendent of $C$)  **opens** the path
+  - Unadjusted colliders *block* the path
+  - Adjusting for $C$ (or a descendent of $C$)  **unblocks or opens** the path
 ]
 
 ---
-## Identifying the Effect of $A$ on $C$
+## Identifying the Total Effect of $A$ on $C$
 .pull-left[
 Observational Causal DAG
 ```{r echo=FALSE, out.width="70%"}
@@ -575,7 +575,7 @@ Adjusting for $E$ blocks the path $A \rightarrow E \rightarrow C$ leaving only t
 ]
 
 ---
-## Identifying the Effect of $A$ on $E$
+## Identifying the Total Effect of $A$ on $E$
 .pull-left[
 Observational Causal DAG
 ```{r echo=FALSE, out.width="70%"}
@@ -810,7 +810,7 @@ Independence Tests for all implied independencies:
 monica <- as_tibble(read.csv("monica-chol.csv"))
 r <- localTests( gmonica, monica, "cis" )
 r$p.value <- p.adjust(r$p.value) # Perform Holm-Bonferroni correction
-DT::datatable(r %>% select(estimate, p.value), fillContainer = FALSE, class = "nowrap hover", options = list(pageLength=3, dom = 'tp')) %>% formatRound(c("estimate", "p.value"), 2)
+DT::datatable(r %>% select(estimate, p.value), fillContainer = FALSE, class = "nowrap hover", options = list(pageLength=3, dom = 'tp', order = list(list(2, "asc")))) %>% formatRound(c("estimate", "p.value"), 2)
 ```
 ]
 
