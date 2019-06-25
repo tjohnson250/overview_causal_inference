@@ -4,7 +4,7 @@
     <title>A Brief Overview of Causal Inference</title>
     <meta charset="utf-8" />
     <meta name="author" content="Todd R. Johnson, PhD" />
-    <meta name="date" content="2019-06-24" />
+    <meta name="date" content="2019-06-25" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <script src="libs/kePrint/kePrint.js"></script>
     <script src="libs/htmlwidgets/htmlwidgets.js"></script>
@@ -31,7 +31,7 @@ class: center, middle, inverse, title-slide
 # A Brief Overview of Causal Inference
 ### Todd R. Johnson, PhD
 ### The University of Texas School of Biomedical Informatics at Houston
-### 2019-06-24
+### 2019-06-25
 
 ---
 
@@ -183,7 +183,7 @@ c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ### Interventional Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-7-1.png" width="70%" /&gt;
 
-`\(c = 125.03+-1e \space (p&lt;.001)\)`
+`\(c = 125.01+-0.99e \space (p&lt;.001)\)`
 ]
 
 ???
@@ -218,6 +218,14 @@ Contrast of the mean values of `\(Y\)` (outcome) given two specific intervention
 
 First equation is a special case, since for dichotomous outcomes 
   `$$E(Y|do(X=x)) = P(Y=1|do(X = x))$$`
+???
+ACE is also called the Average Treatment Effect (ATE)
+
+Contrast ACE with the individual causal effect: the difference between counterfactual outcomes for a single patient--the outcome if treated vs. the outcome if not treated. Lack of an average causal effect does not imply lack of an individual causal effect. However, in most cases it is impossible to estimate individual causal effects from observational data because we only ever observe the effect of one level of the treatment for an individual. 
+
+A crossover randomized experiment in which we give different treatments over time to the same person can sometimes measure individual causal effects when treatment and outcome are short term and do not affect the next treatment period. This is commonly used in cognitive science  and psychology in within-subject designs. For example, we might measure a subject's ability to monitor different numbers of patients using a telemonitoring system to determine the effect of patient load on time to respond to events, error rate, etc.
+
+See Hernan and Robbins, Causal Inference, Chapter 1 and Fine Point 2.1 for more details in individual vs. population causal effects. https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/
 
 ---
 ## Estimating ACE of Exercise on Cholesterol Using the Interventional Dataset
@@ -225,18 +233,18 @@ Step 1: Estimate functional relationship between C and E using linear regression
 
 
 
-`$$c = 125.03+-1e \space (p&lt;.001)$$`
+`$$c = 125.01+-0.99e \space (p&lt;.001)$$`
 
-`$$E(C|do(E=e))=125.03+-1e \space (p&lt;.001)$$`
+`$$E(C|do(E=e))=125.01+-0.99e \space (p&lt;.001)$$`
 
 Step 2: Use regression equation to calculate ACE
 
 $$
 `\begin{align}
   ACE &amp;= E(Y|do(E=1))-E(Y|do(E=2)) \\
-      &amp;= (125.03+-1*1) - (125.03+-1*2) \\
-      &amp;= 123.03 - 124.03 \\
-      &amp;= -1
+      &amp;= (125.01+-0.99*1) - (125.01+-0.99*2) \\
+      &amp;= 123.03 - 124.02 \\
+      &amp;= -0.99
 \end{align}`
 $$
 Equivalently: The regression coefficent on `\(e\)` directly tells us how much `\(C\)` will change for each unit increase in `\(E\)`.
@@ -264,12 +272,15 @@ class: center, middle
 --
 
 .pull-right[
-#### but using E and A to Predict C gives the correct estimate
+#### but controlling for C gives the correct estimate
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
 
-`\(c = 99.88+-1.05e + 0.52a \space (p&lt;.001)\)`
+`\(c = 99.96+-1e + 0.5a \space (p&lt;.001)\)`
 ]
+???
+The graph on the right shows a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between `\(C\)` and `\(E\)`. Lines near the left and right are incorrect due to sparse data. Stratifying by age is one method for controlling or adjusting for a confounder, such as `\(A\)`.
 
+The regression equation also shows a very close estimate of the correct causal effect of `\(E\)` on `\(C\)`. Regressing `\(C\)` on both `\(E\)` and `\(A\)` controls or adjusts for `\(A\)`, revealing the close estimate of the true causal effect of `\(E\)` on `\(C\)`.
 ---
 ## Adjustment
 Stratifying by age `\((A)\)` or including `\(A\)` as a covariate in the regression `\((C = {\beta_1}+{\beta_2}A + {\beta_3}E)\)` is called **adjusting**, **conditioning**, or **controlling for A**
@@ -289,7 +300,7 @@ lm(C ~ E, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E  
-##    102.4189       0.5045
+##    102.4235       0.4993
 ```
 ]
 .pull-right[
@@ -306,12 +317,12 @@ lm(C ~ E + A, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E            A  
-##     99.8824      -1.0508       0.5177
+##     99.9606      -1.0007       0.4998
 ```
 ]
 ---
 ### What is the Causal Effect of Age on Cholesterol?
-Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 99.88+-1.05e + 0.52a\)`
+Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 99.96+-1e + 0.5a\)`
 .pull-left[
 
 ```r
@@ -343,39 +354,28 @@ $$
 ]
 
 ---
-### The total effect of `\(A\)` on `\(C\)` can be obtained from the observational data only by leaving `\(E\)` out of the analysis
+### A Single Analysis is Usually Insuffient to Measure All Effects
+The total effect of `\(A\)` on `\(C\)` can be obtained from the observational data only by leaving `\(E\)` out of the analysis
 .pull-left[
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
 
-`\(c = 99.87+0.2a \space (p&lt;.001)\)`
+`\(c = 99.91+0.2a \space (p&lt;.001)\)`
 ]
 .pull-right[
-To estimate total effect of `\(A\)` on `\(C\)`
-  - must regress C on A without adjusting for E
+This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of `\(A\)` and `\(E\)` on `\(C\)`
   
-To estimate direct effect of A on C
-  - must regress `\(C\)` on `\(A\)` and `\(E\)` (adjusting for `\(E\)`)
+- Total effect of `\(E\)`, Direct effect of `\(A\)`:
+
+    `\(c = 99.96+-1e + 0.5a \space (p&lt;.001)\)`
+
+-  Total effect of `\(A\)`:
+
+    `\(c = 99.91+0.2a \space (p&lt;.001)\)`
   
-To estimate Total (and direct) effect of `\(E\)` on `\(C\)`
-  - must regress `\(C\)` on `\(A\)` and `\(E\)` (adjusting for `\(A\)`)
-  
-Simply throwing all covariates into a single regression is insufficient
+Simply throwing all covariates into a single regression is insufficient... but this is what most machine learning models do
 ]
-
-
----
-# Lessons so far...
-Git rid of this slide...
-
-We can (sometimes) estimate causal effects from observational data
-
-However, even with this simple 3 variable dataset,
-  - We need two different regression analyses to estimate causal effects of `\(A\)` and `\(E\)` on `\(C\)`
-  
-    `\(c = 99.88+-1.05e + 0.52a \space (p&lt;.001)\)`: Total effect of `\(E\)`, Direct effect of `\(A\)`
-    
-    `\(c = 99.87+0.2a \space (p&lt;.001)\)`: Total effect of `\(A\)`
-    
+???
+To get the direct effect of `\(A\)` and `\(E\)` (thereby estimating all path coefficients) we would have to regress `\(E\)` on `\(A\)`. Later slides show that we don't need to adjust for `\(C\)` because it is a collider. Adjusting for `\(C\)` would give an incorrect estimate of the effect of `\(A\)` on `\(E\)`.
 
 ---
 class: center, middle
@@ -408,7 +408,7 @@ See here for how to cite sources using refmanager package: https://github.com/yi
 
 ---
 class: center, middle
-.Large[Two Kinds of Paths: **Causal** and **Non-Causal**]
+.Large[Two Kinds of Paths: .shout[Causal] and .shout[Non-Causal]]
 
 ---
 ## Causal Paths
@@ -735,12 +735,12 @@ Given data on these variables, we can test for these statistical relationships.
 Independence Tests for all implied independencies:
 
 
-<div id="htmlwidget-95ee5c638359d06c0465" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-95ee5c638359d06c0465">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ eage | height, weight","bmi _||_ eageg | eage","bmi _||_ eageg | height, weight","bmi _||_ hychol | chol","bmi _||_ sex | height, weight","bmigrp _||_ chol | bmi","bmigrp _||_ eage | height, weight","bmigrp _||_ eage | bmi","bmigrp _||_ eageg | eage","bmigrp _||_ eageg | height, weight","bmigrp _||_ eageg | bmi","bmigrp _||_ height | bmi","bmigrp _||_ hychol | chol","bmigrp _||_ hychol | bmi","bmigrp _||_ sex | height, weight","bmigrp _||_ sex | bmi","bmigrp _||_ weight | bmi","chol _||_ eageg | eage","chol _||_ height | bmi, eage, sex","chol _||_ weight | bmi, eage, sex","eage _||_ height","eage _||_ hychol | chol","eage _||_ sex","eageg _||_ height","eageg _||_ hychol | chol","eageg _||_ hychol | eage","eageg _||_ sex","eageg _||_ weight | eage","height _||_ hychol | chol","height _||_ hychol | bmi, eage, sex","hychol _||_ sex | chol","hychol _||_ weight | bmi, eage, sex","hychol _||_ weight | chol"],[0.000213656279304622,0.227811169869505,0.00250325750046802,-0.110810999741647,0.0165115591115892,0.00968168837637345,0.00138273733354115,0.00136813775967718,0.0251497959824355,0.0130031546385232,0.0128674636022005,0.0659307771577662,-0.025759380142815,0.016307551980393,-0.017136283212477,-0.0199298770763709,0.00189099354516797,0.0650592306828425,0.231307710447215,0.00385371557680124,-23.0417186571407,0.412357707508351,0.0294631210807292,-2.19489596560299,0.0528908584702388,0.0129763338658533,-2.672352570735e-05,0.000210483359697623,-0.00693107328688649,-0.000828033132059304,0.00327125421111085,-3.19569131408994e-05,-0.000406950889332703],[1,0.829961439890921,1,1,1,0.00015544679134359,1.42494010798338e-06,1.67216011314472e-06,1,1.19730353853671e-05,1.39842769162944e-05,0.384111932877516,1,0.134855078207577,0.278284762856869,0.00370155497042317,1.16038135218299e-07,0.82116921742631,1,0.224284630335118,1.92513825188684e-150,1,1,2.23065750598011e-141,0.82116921742631,0.13558246691045,1,1,0.103766773697697,1,1,1,0.224284630335118]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-8dbc2fde5c05159996a6" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8dbc2fde5c05159996a6">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ eage | height, weight","bmi _||_ eageg | eage","bmi _||_ eageg | height, weight","bmi _||_ hychol | chol","bmi _||_ sex | height, weight","bmigrp _||_ chol | bmi","bmigrp _||_ eage | height, weight","bmigrp _||_ eage | bmi","bmigrp _||_ eageg | eage","bmigrp _||_ eageg | height, weight","bmigrp _||_ eageg | bmi","bmigrp _||_ height | bmi","bmigrp _||_ hychol | chol","bmigrp _||_ hychol | bmi","bmigrp _||_ sex | height, weight","bmigrp _||_ sex | bmi","bmigrp _||_ weight | bmi","chol _||_ eageg | eage","chol _||_ height | bmi, eage, sex","chol _||_ weight | bmi, eage, sex","eage _||_ height","eage _||_ hychol | chol","eage _||_ sex","eageg _||_ height","eageg _||_ hychol | chol","eageg _||_ hychol | eage","eageg _||_ sex","eageg _||_ weight | eage","height _||_ hychol | chol","height _||_ hychol | bmi, eage, sex","hychol _||_ sex | chol","hychol _||_ weight | bmi, eage, sex","hychol _||_ weight | chol"],[0.000213656279304622,0.227811169869505,0.00250325750046802,-0.110810999741647,0.0165115591115892,0.00968168837637345,0.00138273733354115,0.00136813775967718,0.0251497959824355,0.0130031546385232,0.0128674636022005,0.0659307771577662,-0.025759380142815,0.016307551980393,-0.017136283212477,-0.0199298770763709,0.00189099354516797,0.0650592306828425,0.231307710447215,0.00385371557680124,-23.0417186571407,0.412357707508351,0.0294631210807292,-2.19489596560299,0.0528908584702388,0.0129763338658533,-2.672352570735e-05,0.000210483359697623,-0.00693107328688649,-0.000828033132059304,0.00327125421111085,-3.19569131408994e-05,-0.000406950889332703],[1,0.829961439890921,1,1,1,0.00015544679134359,1.42494010798338e-06,1.67216011314472e-06,1,1.19730353853671e-05,1.39842769162944e-05,0.384111932877516,1,0.134855078207577,0.278284762856869,0.00370155497042317,1.16038135218299e-07,0.82116921742631,1,0.224284630335118,1.92513825188684e-150,1,1,2.23065750598011e-141,0.82116921742631,0.13558246691045,1,1,0.103766773697697,1,1,1,0.224284630335118]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 ]
 
 ???
-Sort the table by increasing `p.value` (click `p.value`)
+The table is sorted in increasing order by `p.values`
 
 `p.values` were corrected for multiple comparisons using the Holm-Bonferroni method
 
@@ -748,16 +748,16 @@ Estimate should be close to `\(0\)` for tests with `\(p\)` less than a small thr
 
 See Figure 1 in http://johannes-textor.name/papers/2017-ije.pdf for details (Textor J, van der Zander B, Gilthorpe MS, Liśkiewicz M, Ellison GT. Robust causal inference using directed acyclic graphs: the R package ‘dagitty’. *International journal of epidemiology.* 2016 Dec 1;45(6):1887-94.)
 
-Tests for independence are linear in the dagitty package. Distance Correlation can detect non-linear correlation. For example:
+Tests for independence are linear in the dagitty package. Distance Correlation can detect non-linear independence For example:
 
 
 ```r
-library(energy) # provides tests for marginal and partial independence using distance correlation 
+library(energy) # provides test for marginal independence using distance correlation 
 
 # Tests show probability of independence
 # Low p values indicate dependence
 
-# Conditional distance correlation is computationally intensive O(n^2) and memory intensive, so use a random sample of data
+#  Distance correlation is computationally intensive $O(n^2)$ and memory intensive, so use a random sample of data
 monicasamp &lt;- sample_n(monica, 1000)
 dcor.ttest(monica$eage, monica$sex) # marginally independent
 
@@ -768,8 +768,8 @@ dcor.ttest(monica$eage, monica$sex) # marginally independent
 
 # See section 4.3 of (http://real.mtak.hu/44934/1/pdcov.pdf) Székely GJ, Rizzo ML. Partial distance correlation with methods for dissimilarities. The Annals of Statistics. 2014;42(6):2382-412.
 
-# Test independence under partial correlation independence hypothesis using distance correlation
-pdcor.test(monicasamp$bmigrp, monicasamp$weight, monicasamp$bmi, R=99) # Dependent although model indicates independence
+# Test independence under partial correlation independence hypothesis using distance correlation. 
+pdcor.test(monicasamp$bmigrp, monicasamp$weight, monicasamp$bmi, R=99) # Dependent although model implies independence
 
 library(cdcsis) # Provides cdcsis and cdcsis.test for conditional distance correlation
 
@@ -893,8 +893,8 @@ Graph implied by [Nature paper]
 
 ---
 # tetrad PC algo
-<div id="htmlwidget-3a30951b2bbc51c3102f" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3a30951b2bbc51c3102f">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=none]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"chol\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"height\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-ba1d77ef0769c94d80b9" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ba1d77ef0769c94d80b9">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=none]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"chol\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"height\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 ---
 ## Tetrad: Adding Knowledge
@@ -939,8 +939,8 @@ prior &lt;- priorKnowledge(requiredirect = require, addtemporal = temporal, forb
 
 ---
 # Tetrad PC Algorithm with Knowledge
-<div id="htmlwidget-3d4a8eafce6a4f85e6de" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3d4a8eafce6a4f85e6de">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=normal]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-f2a952c84f348fb901f1" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f2a952c84f348fb901f1">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=normal]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 ---
 ## Adding Knowledge: Required Edges
@@ -1386,7 +1386,7 @@ Value of Y given a specific intervention on X
 .pull-left[
 ### Cholesterol vs Age
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-64-1.png" width="70%" /&gt;
-`\(c = 99.87+0.2a \space (p&lt;.001)\)` (obs and int dist identical)
+`\(c = 99.91+0.2a \space (p&lt;.001)\)` (obs and int dist identical)
 ]
 .pull-right[
 ### Wrong: Cholesterol vs Exercise
@@ -1435,8 +1435,8 @@ xtabs(p_h ~ G+X, p_h)
 ```
 ##    X
 ## G            0          1
-##   0 0.30845970 0.39282836
-##   1 0.04825629 0.07541241
+##   0 0.31527094 0.39501363
+##   1 0.04121212 0.07256146
 ```
 ]
 
@@ -1452,15 +1452,15 @@ addmargins(xtabs(p_h ~ G+X, p_h))
 ```
 ##      X
 ## G              0          1        Sum
-##   0   0.30845970 0.39282836 0.70128806
-##   1   0.04825629 0.07541241 0.12366870
-##   Sum 0.35671598 0.46824078 0.82495676
+##   0   0.31527094 0.39501363 0.71028457
+##   1   0.04121212 0.07256146 0.11377358
+##   Sum 0.35648306 0.46757509 0.82405815
 ```
 
 ---
 ## GGPlotly graph
-<div id="htmlwidget-503672d820cf10538d87" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-503672d820cf10538d87">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-72.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-67e6cdfad659706a2f07" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-67e6cdfad659706a2f07">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-72.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

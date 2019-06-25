@@ -237,6 +237,14 @@ Contrast of the mean values of $Y$ (outcome) given two specific interventions on
 
 First equation is a special case, since for dichotomous outcomes 
   $$E(Y|do(X=x)) = P(Y=1|do(X = x))$$
+???
+ACE is also called the Average Treatment Effect (ATE)
+
+Contrast ACE with the individual causal effect: the difference between counterfactual outcomes for a single patient--the outcome if treated vs. the outcome if not treated. Lack of an average causal effect does not imply lack of an individual causal effect. However, in most cases it is impossible to estimate individual causal effects from observational data because we only ever observe the effect of one level of the treatment for an individual. 
+
+A crossover randomized experiment in which we give different treatments over time to the same person can sometimes measure individual causal effects when treatment and outcome are short term and do not affect the next treatment period. This is commonly used in cognitive science  and psychology in within-subject designs. For example, we might measure a subject's ability to monitor different numbers of patients using a telemonitoring system to determine the effect of patient load on time to respond to events, error rate, etc.
+
+See Hernan and Robbins, Causal Inference, Chapter 1 and Fine Point 2.1 for more details in individual vs. population causal effects. https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/
 
 ---
 ## Estimating ACE of Exercise on Cholesterol Using the Interventional Dataset
@@ -295,7 +303,7 @@ $c = `r round(Cobs[1], digits=2)`+`r round(Cobs[2], digits=2)`e \space `r ifelse
 --
 
 .pull-right[
-#### but using E and A to Predict C gives the correct estimate
+#### but controlling for C gives the correct estimate
 ```{r, echo=FALSE, out.width="70%") #, fig.width=8, fig.height=5}
 #dobsstrat <- dobs %>% mutate(abin=cut(a, 10))
 #ggplot(d, aes(E, C)) + geom_point(aes(color=abin))
@@ -306,7 +314,10 @@ Cintadjusted <- coef(fitobsstrat)
 
 $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \space `r ifelse(summary(fitobsstrat)$coefficients[2,4] < .001, "(p<.001)", "")`$
 ]
+???
+The graph on the right shows a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between $C$ and $E$. Lines near the left and right are incorrect due to sparse data. Stratifying by age is one method for controlling or adjusting for a confounder, such as $A$.
 
+The regression equation also shows a very close estimate of the correct causal effect of $E$ on $C$. Regressing $C$ on both $E$ and $A$ controls or adjusts for $A$, revealing the close estimate of the true causal effect of $E$ on $C$.
 ---
 ## Adjustment
 Stratifying by age $(A)$ or including $A$ as a covariate in the regression $(C = {\beta_1}+{\beta_2}A + {\beta_3}E)$ is called **adjusting**, **conditioning**, or **controlling for A**
@@ -359,7 +370,8 @@ $$
 ]
 
 ---
-### The total effect of $A$ on $C$ can be obtained from the observational data only by leaving $E$ out of the analysis
+### A Single Analysis is Usually Insuffient to Measure All Effects
+The total effect of $A$ on $C$ can be obtained from the observational data only by leaving $E$ out of the analysis
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
 formula <- y ~ x
@@ -373,32 +385,20 @@ CAobs <- coef(fitCAobs)
 $c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
 ]
 .pull-right[
-To estimate total effect of $A$ on $C$
-  - must regress C on A without adjusting for E
+This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of $A$ and $E$ on $C$
   
-To estimate direct effect of A on C
-  - must regress $C$ on $A$ and $E$ (adjusting for $E$)
+- Total effect of $E$, Direct effect of $A$:
+
+    $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \space `r ifelse(summary(fitobsstrat)$coefficients[2,4] < .001, "(p<.001)", "")`$
+
+-  Total effect of $A$:
+
+    $c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
   
-To estimate Total (and direct) effect of $E$ on $C$
-  - must regress $C$ on $A$ and $E$ (adjusting for $A$)
-  
-Simply throwing all covariates into a single regression is insufficient
+Simply throwing all covariates into a single regression is insufficient... but this is what most machine learning models do
 ]
-
-
----
-# Lessons so far...
-Git rid of this slide...
-
-We can (sometimes) estimate causal effects from observational data
-
-However, even with this simple 3 variable dataset,
-  - We need two different regression analyses to estimate causal effects of $A$ and $E$ on $C$
-  
-    $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \space `r ifelse(summary(fitobsstrat)$coefficients[2,4] < .001, "(p<.001)", "")`$: Total effect of $E$, Direct effect of $A$
-    
-    $c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$: Total effect of $A$
-    
+???
+To get the direct effect of $A$ and $E$ (thereby estimating all path coefficients) we would have to regress $E$ on $A$. Later slides show that we don't need to adjust for $C$ because it is a collider. Adjusting for $C$ would give an incorrect estimate of the effect of $A$ on $E$.
 
 ---
 class: center, middle
@@ -433,7 +433,7 @@ See here for how to cite sources using refmanager package: https://github.com/yi
 
 ---
 class: center, middle
-.Large[Two Kinds of Paths: **Causal** and **Non-Causal**]
+.Large[Two Kinds of Paths: .shout[Causal] and .shout[Non-Causal]]
 
 ---
 ## Causal Paths
@@ -815,7 +815,7 @@ DT::datatable(r %>% select(estimate, p.value), fillContainer = FALSE, class = "n
 ]
 
 ???
-Sort the table by increasing `p.value` (click `p.value`)
+The table is sorted in increasing order by `p.values`
 
 `p.values` were corrected for multiple comparisons using the Holm-Bonferroni method
 
@@ -823,15 +823,15 @@ Estimate should be close to $0$ for tests with $p$ less than a small threshold (
 
 See Figure 1 in http://johannes-textor.name/papers/2017-ije.pdf for details (Textor J, van der Zander B, Gilthorpe MS, Liśkiewicz M, Ellison GT. Robust causal inference using directed acyclic graphs: the R package ‘dagitty’. *International journal of epidemiology.* 2016 Dec 1;45(6):1887-94.)
 
-Tests for independence are linear in the dagitty package. Distance Correlation can detect non-linear correlation. For example:
+Tests for independence are linear in the dagitty package. Distance Correlation can detect non-linear independence For example:
 
 ```{r, eval=FALSE} 
-library(energy) # provides tests for marginal and partial independence using distance correlation 
+library(energy) # provides test for marginal independence using distance correlation 
 
 # Tests show probability of independence
 # Low p values indicate dependence
 
-# Conditional distance correlation is computationally intensive O(n^2) and memory intensive, so use a random sample of data
+#  Distance correlation is computationally intensive $O(n^2)$ and memory intensive, so use a random sample of data
 monicasamp <- sample_n(monica, 1000)
 dcor.ttest(monica$eage, monica$sex) # marginally independent
 
@@ -842,8 +842,8 @@ dcor.ttest(monica$eage, monica$sex) # marginally independent
 
 # See section 4.3 of (http://real.mtak.hu/44934/1/pdcov.pdf) Székely GJ, Rizzo ML. Partial distance correlation with methods for dissimilarities. The Annals of Statistics. 2014;42(6):2382-412.
 
-# Test independence under partial correlation independence hypothesis using distance correlation
-pdcor.test(monicasamp$bmigrp, monicasamp$weight, monicasamp$bmi, R=99) # Dependent although model indicates independence
+# Test independence under partial correlation independence hypothesis using distance correlation. 
+pdcor.test(monicasamp$bmigrp, monicasamp$weight, monicasamp$bmi, R=99) # Dependent although model implies independence
 
 library(cdcsis) # Provides cdcsis and cdcsis.test for conditional distance correlation
 
