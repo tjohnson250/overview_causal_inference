@@ -174,7 +174,7 @@ c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ### Observational Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-6-1.png" width="70%" /&gt;
 
-`\(c = 102.42+0.5e \space (p&lt;.001)\)`
+`\(c = 102.74+0.49e \space (p&lt;.001)\)`
 ]
 
 --
@@ -183,7 +183,7 @@ c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ### Interventional Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-7-1.png" width="70%" /&gt;
 
-`\(c = 125.01+-0.99e \space (p&lt;.001)\)`
+`\(c = 125.04+-1.01e \space (p&lt;.001)\)`
 ]
 
 ???
@@ -233,18 +233,18 @@ Step 1: Estimate functional relationship between C and E using linear regression
 
 
 
-`$$c = 125.01+-0.99e \space (p&lt;.001)$$`
+`$$c = 125.04+-1.01e \space (p&lt;.001)$$`
 
-`$$E(C|do(E=e))=125.01+-0.99e \space (p&lt;.001)$$`
+`$$E(C|do(E=e))=125.04+-1.01e \space (p&lt;.001)$$`
 
 Step 2: Use regression equation to calculate ACE
 
 $$
 `\begin{align}
   ACE &amp;= E(Y|do(E=1))-E(Y|do(E=2)) \\
-      &amp;= (125.01+-0.99*1) - (125.01+-0.99*2) \\
-      &amp;= 123.03 - 124.02 \\
-      &amp;= -0.99
+      &amp;= (125.04+-1.01*1) - (125.04+-1.01*2) \\
+      &amp;= 123.01 - 124.02 \\
+      &amp;= -1.01
 \end{align}`
 $$
 Equivalently: The regression coefficent on `\(e\)` directly tells us how much `\(C\)` will change for each unit increase in `\(E\)`.
@@ -266,7 +266,7 @@ class: center, middle
 #### using E to predict C gives an incorrect estimate,
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-9-1.png" width="70%" /&gt;
 
-`\(c = 102.42+0.5e \space (p&lt;.001)\)`
+`\(c = 102.74+0.49e \space (p&lt;.001)\)`
 ]
 
 --
@@ -275,7 +275,7 @@ class: center, middle
 #### but controlling for C gives the correct estimate
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
 
-`\(c = 99.96+-1e + 0.5a \space (p&lt;.001)\)`
+`\(c = 100.31+-0.97e + 0.48a \space (p&lt;.001)\)`
 ]
 ???
 The graph on the right shows a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between `\(C\)` and `\(E\)`. Lines near the left and right are incorrect due to sparse data. Stratifying by age is one method for controlling or adjusting for a confounder, such as `\(A\)`.
@@ -300,7 +300,7 @@ lm(C ~ E, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E  
-##    102.4235       0.4993
+##    102.7426       0.4872
 ```
 ]
 .pull-right[
@@ -317,12 +317,12 @@ lm(C ~ E + A, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E            A  
-##     99.9606      -1.0007       0.4998
+##    100.3097      -0.9671       0.4847
 ```
 ]
 ---
 ### What is the Causal Effect of Age on Cholesterol?
-Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 99.96+-1e + 0.5a\)`
+Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.31+-0.97e + 0.48a\)`
 .pull-left[
 
 ```r
@@ -359,18 +359,18 @@ The total effect of `\(A\)` on `\(C\)` can be obtained from the observational da
 .pull-left[
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
 
-`\(c = 99.91+0.2a \space (p&lt;.001)\)`
+`\(c = 100.31+0.19a \space (p&lt;.001)\)`
 ]
 .pull-right[
 This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of `\(A\)` and `\(E\)` on `\(C\)`
   
 - Total effect of `\(E\)`, Direct effect of `\(A\)`:
 
-    `\(c = 99.96+-1e + 0.5a \space (p&lt;.001)\)`
+    `\(c = 100.31+-0.97e + 0.48a \space (p&lt;.001)\)`
 
 -  Total effect of `\(A\)`:
 
-    `\(c = 99.91+0.2a \space (p&lt;.001)\)`
+    `\(c = 100.31+0.19a \space (p&lt;.001)\)`
   
 Simply throwing all covariates into a single regression is insufficient... but this is what most machine learning models do
 ]
@@ -735,8 +735,8 @@ Given data on these variables, we can test for these statistical relationships.
 Independence Tests for all implied independencies:
 
 
-<div id="htmlwidget-8dbc2fde5c05159996a6" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-8dbc2fde5c05159996a6">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ eage | height, weight","bmi _||_ eageg | eage","bmi _||_ eageg | height, weight","bmi _||_ hychol | chol","bmi _||_ sex | height, weight","bmigrp _||_ chol | bmi","bmigrp _||_ eage | height, weight","bmigrp _||_ eage | bmi","bmigrp _||_ eageg | eage","bmigrp _||_ eageg | height, weight","bmigrp _||_ eageg | bmi","bmigrp _||_ height | bmi","bmigrp _||_ hychol | chol","bmigrp _||_ hychol | bmi","bmigrp _||_ sex | height, weight","bmigrp _||_ sex | bmi","bmigrp _||_ weight | bmi","chol _||_ eageg | eage","chol _||_ height | bmi, eage, sex","chol _||_ weight | bmi, eage, sex","eage _||_ height","eage _||_ hychol | chol","eage _||_ sex","eageg _||_ height","eageg _||_ hychol | chol","eageg _||_ hychol | eage","eageg _||_ sex","eageg _||_ weight | eage","height _||_ hychol | chol","height _||_ hychol | bmi, eage, sex","hychol _||_ sex | chol","hychol _||_ weight | bmi, eage, sex","hychol _||_ weight | chol"],[0.000213656279304622,0.227811169869505,0.00250325750046802,-0.110810999741647,0.0165115591115892,0.00968168837637345,0.00138273733354115,0.00136813775967718,0.0251497959824355,0.0130031546385232,0.0128674636022005,0.0659307771577662,-0.025759380142815,0.016307551980393,-0.017136283212477,-0.0199298770763709,0.00189099354516797,0.0650592306828425,0.231307710447215,0.00385371557680124,-23.0417186571407,0.412357707508351,0.0294631210807292,-2.19489596560299,0.0528908584702388,0.0129763338658533,-2.672352570735e-05,0.000210483359697623,-0.00693107328688649,-0.000828033132059304,0.00327125421111085,-3.19569131408994e-05,-0.000406950889332703],[1,0.829961439890921,1,1,1,0.00015544679134359,1.42494010798338e-06,1.67216011314472e-06,1,1.19730353853671e-05,1.39842769162944e-05,0.384111932877516,1,0.134855078207577,0.278284762856869,0.00370155497042317,1.16038135218299e-07,0.82116921742631,1,0.224284630335118,1.92513825188684e-150,1,1,2.23065750598011e-141,0.82116921742631,0.13558246691045,1,1,0.103766773697697,1,1,1,0.224284630335118]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-87733acf46477072859d" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-87733acf46477072859d">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ eage | height, weight","bmi _||_ eageg | eage","bmi _||_ eageg | height, weight","bmi _||_ hychol | chol","bmi _||_ sex | height, weight","bmigrp _||_ chol | bmi","bmigrp _||_ eage | height, weight","bmigrp _||_ eage | bmi","bmigrp _||_ eageg | eage","bmigrp _||_ eageg | height, weight","bmigrp _||_ eageg | bmi","bmigrp _||_ height | bmi","bmigrp _||_ hychol | chol","bmigrp _||_ hychol | bmi","bmigrp _||_ sex | height, weight","bmigrp _||_ sex | bmi","bmigrp _||_ weight | bmi","chol _||_ eageg | eage","chol _||_ height | bmi, eage, sex","chol _||_ weight | bmi, eage, sex","eage _||_ height","eage _||_ hychol | chol","eage _||_ sex","eageg _||_ height","eageg _||_ hychol | chol","eageg _||_ hychol | eage","eageg _||_ sex","eageg _||_ weight | eage","height _||_ hychol | chol","height _||_ hychol | bmi, eage, sex","hychol _||_ sex | chol","hychol _||_ weight | bmi, eage, sex","hychol _||_ weight | chol"],[0.000213656279304622,0.227811169869505,0.00250325750046802,-0.110810999741647,0.0165115591115892,0.00968168837637345,0.00138273733354115,0.00136813775967718,0.0251497959824355,0.0130031546385232,0.0128674636022005,0.0659307771577662,-0.025759380142815,0.016307551980393,-0.017136283212477,-0.0199298770763709,0.00189099354516797,0.0650592306828425,0.231307710447215,0.00385371557680124,-23.0417186571407,0.412357707508351,0.0294631210807292,-2.19489596560299,0.0528908584702388,0.0129763338658533,-2.672352570735e-05,0.000210483359697623,-0.00693107328688649,-0.000828033132059304,0.00327125421111085,-3.19569131408994e-05,-0.000406950889332703],[1,0.829961439890921,1,1,1,0.00015544679134359,1.42494010798338e-06,1.67216011314472e-06,1,1.19730353853671e-05,1.39842769162944e-05,0.384111932877516,1,0.134855078207577,0.278284762856869,0.00370155497042317,1.16038135218299e-07,0.82116921742631,1,0.224284630335118,1.92513825188684e-150,1,1,2.23065750598011e-141,0.82116921742631,0.13558246691045,1,1,0.103766773697697,1,1,1,0.224284630335118]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 ]
 
 ???
@@ -893,8 +893,8 @@ Graph implied by [Nature paper]
 
 ---
 # tetrad PC algo
-<div id="htmlwidget-ba1d77ef0769c94d80b9" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-ba1d77ef0769c94d80b9">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=none]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"chol\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"height\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-670dfc94450b8dc85da6" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-670dfc94450b8dc85da6">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=none]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"chol\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"height\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 ---
 ## Tetrad: Adding Knowledge
@@ -939,8 +939,8 @@ prior &lt;- priorKnowledge(requiredirect = require, addtemporal = temporal, forb
 
 ---
 # Tetrad PC Algorithm with Knowledge
-<div id="htmlwidget-f2a952c84f348fb901f1" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-f2a952c84f348fb901f1">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=normal]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-0570fb92c2a451e6614f" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0570fb92c2a451e6614f">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=normal]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 ---
 ## Adding Knowledge: Required Edges
@@ -1386,7 +1386,7 @@ Value of Y given a specific intervention on X
 .pull-left[
 ### Cholesterol vs Age
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-64-1.png" width="70%" /&gt;
-`\(c = 99.91+0.2a \space (p&lt;.001)\)` (obs and int dist identical)
+`\(c = 100.31+0.19a \space (p&lt;.001)\)` (obs and int dist identical)
 ]
 .pull-right[
 ### Wrong: Cholesterol vs Exercise
@@ -1435,8 +1435,8 @@ xtabs(p_h ~ G+X, p_h)
 ```
 ##    X
 ## G            0          1
-##   0 0.31527094 0.39501363
-##   1 0.04121212 0.07256146
+##   0 0.29046474 0.40056361
+##   1 0.05263158 0.07922393
 ```
 ]
 
@@ -1452,15 +1452,15 @@ addmargins(xtabs(p_h ~ G+X, p_h))
 ```
 ##      X
 ## G              0          1        Sum
-##   0   0.31527094 0.39501363 0.71028457
-##   1   0.04121212 0.07256146 0.11377358
-##   Sum 0.35648306 0.46757509 0.82405815
+##   0   0.29046474 0.40056361 0.69102835
+##   1   0.05263158 0.07922393 0.13185551
+##   Sum 0.34309632 0.47978754 0.82288386
 ```
 
 ---
 ## GGPlotly graph
-<div id="htmlwidget-67e6cdfad659706a2f07" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-67e6cdfad659706a2f07">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-72.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-d6e0dfa73fb653af83e3" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d6e0dfa73fb653af83e3">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-72.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
