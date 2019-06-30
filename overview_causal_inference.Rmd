@@ -340,9 +340,10 @@ Cintadjusted <- coef(fitobsstrat)
 $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \space `r ifelse(summary(fitobsstrat)$coefficients[2,4] < .001, "(p<.001)", "")`$
 ]
 ???
-The graph on the right shows a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between $C$ and $E$. Lines near the left and right are incorrect due to sparse data. Stratifying by age is one method for controlling or adjusting for a confounder, such as $A$.
+The graph on the right shows the observational data with a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between $C$ and $E$. Lines near the left and right are incorrect due to sparse data. Stratifying by age (here age group) is one method for controlling or adjusting for a confounder, such as $A$.
 
-The regression equation also shows a very close estimate of the correct causal effect of $E$ on $C$. Regressing $C$ on both $E$ and $A$ controls or adjusts for $A$, revealing the close estimate of the true causal effect of $E$ on $C$.
+The regression equation also shows a very close estimate of the correct causal effect of $E$ on $C$. Regressing $C$ on both $E$ and $A$ controls or adjusts for $A$, returning the close estimate of the true causal effect of $E$ on $C$.
+
 ---
 ## Adjustment
 Stratifying by age $(A)$ or including $A$ as a covariate in the regression $(C = {\beta_1}+{\beta_2}A + {\beta_3}E)$ is called **adjusting**, **conditioning**, or **controlling for A**
@@ -396,7 +397,6 @@ $$
 
 ---
 ### A Single Analysis is Usually Insuffient to Measure All Effects
-The total effect of $A$ on $C$ can be obtained from the observational data only by leaving $E$ out of the analysis
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
 formula <- y ~ x
@@ -410,7 +410,7 @@ CAobs <- coef(fitCAobs)
 $c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
 ]
 .pull-right[
-This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of $A$ and $E$ on $C$
+This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of $A$ on $C$ and $E$ on $C$
   
 - Total effect of $E$, Direct effect of $A$:
 
