@@ -101,6 +101,16 @@ a:active {
   clear: both;
 }
 
+/* Two columns with left 70% and right 25% of slide width */
+.pull-left-65 {
+  float: left;
+  width: 65%;
+}
+.pull-right-35 {
+  float: right;
+  width: 35%;
+}
+
 /* use to position text at the bottom */
 .pull-down {
   position: absolute;

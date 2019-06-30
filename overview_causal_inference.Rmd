@@ -143,21 +143,6 @@ Causal DAG (Directed Acyclic Graph)
 ]
 
 ---
-exclude: true
-# Lavaan exploration
-```{r}
-library(lavaan)
-model <- '
-  # regressions
-  A ~ 1
-  E ~ A
-  C ~ A + E
-  '
-fit <- sem(model, data=dobs)
-summary(fit, standardized=TRUE)
-```
-
----
 ## Intervening Changes the Generative Model
 Intervene by randomly setting $E$ from $0 - 20$
 .pull-left[
@@ -883,7 +868,7 @@ Global fit tests
 ???
 From: Kline RB. Principles and practice of structural equation modeling. Guilford publications; 2015 Nov 3.
 ---
-## Model Evaluation
+## Model Evaluation: Local Fit Tests
 Causal DAG's imply independence relations
 
 .pull-left[
@@ -918,7 +903,7 @@ $$\space$$
 ]
 
 ---
-## Example: Independence Relations
+## Example: Age, Gender, BMI and Cholesterol
 .small[Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. **Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project.** *International Journal of Obesity.* 2004 Aug;28(8):1082.]
 
 .pull-left[
@@ -954,7 +939,7 @@ Given data on these variables, we can test for these statistical relationships.
 ]
 
 ---
-### Model Evaluation by Testing Implied Independencies with Observed Data
+### Testing Implied Independencies with Observed Data
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
@@ -965,7 +950,7 @@ pgmonica
 ]
 
 .pull-right[
-Independence Tests for all implied independencies based on `r nrow(monica)` patients.
+Independence tests for all implied independencies based on `r nrow(monica)` participants:
 
 
 ```{r, echo=FALSE, out.width="100%", comment=NA}
@@ -980,7 +965,7 @@ The table is sorted in increasing order by `p.values`
 
 `p.values` were corrected for multiple comparisons using the Holm-Bonferroni method
 
-Estimate should be close to $0$ for tests with $p$ less than a small threshold (here $.05$)
+The null hypothesis is that the estimate is 0, which would indicate independence, so if $p < .05$ we can reject the null, meaning that the indpendence implication is unlikely to be true.
 
 See Figure 1 in http://johannes-textor.name/papers/2017-ije.pdf for details (Textor J, van der Zander B, Gilthorpe MS, Liśkiewicz M, Ellison GT. Robust causal inference using directed acyclic graphs: the R package ‘dagitty’. *International journal of epidemiology.* 2016 Dec 1;45(6):1887-94.)
 
@@ -1064,36 +1049,95 @@ pr <- ggplot(r, aes(x=estimate, y=rownames(r))) + geom_point() + geom_errorbarh(
 pr
 ```
 ]
-
 ---
-## Compare Model's Implied Covariance Matrix to Data
+## Summarizing Independence Tests: Fisher's C
+- Statistical test of the set of independence test results
 
-$p = 0$ indicates that the covariance matrices are not similar.
+$$C = -2\sum \ln p_i$$
+ - $p_i$ are the $p$-values of all tests of conditional independence for the **basis set**
+- **Basis Set**: the smallest set of independence relations implied by a DAG
+```{R, eval=FALSE}
+# Use package dagitty to return the basis set
+library(dagitty)
+impliedConditionalIndependencies(dag)
+```
+
+- $C$ has a $\chi^2$ distribution with $2k$ degrees of freedom, where $k$ is the number of elements in the basis set
+
+ - $p \geq .05$ is good
+ - If $p < .05$ reject model, consider alternatives: more links, different structure, etc.
+
+- For the WHO MONICA DAG: $C$ = `r round(-2*sum(log(r$p.value)), 2)`, $p$ = `r round(1 - pchisq(-2*sum(log(r$p.value)), 2 * length(r$p.value)), 2)`
+???
+To calculate $C$ and the $\chi^2$ $p$-value in R, given that the $p$-values for the WHO MONICA DAG are in `r$p.value`:
+```{r}
+C = -2*sum(log(r$p.value))
+k = length(r$p.value) # Number of tests in basis set
+p = 1 - pchisq(C, 2 * k)
+cat("p = ", p)
+```
+           
+---
+# Limitations
+- Most packages only detect (lack of) linear dependence
+ - Independent variables are guaranteed to have $0$ correlation
+ - But $0$ correlation does not imply independence when the relatinship is nonlinear
+ - A Partial correlation of $0$ (for conditional independence) implies conditional independence only when the joint distribution of the tested variables is multinormal
+ 
+- Distance correlation (Szekely, et al. 2007) and conditional distance correlation (Wang, et al., 2015) can detect nonlinear dependence
+ - But complexity is at worst $\mathcal{O}(n^2)$ and at best $\mathcal{O}(n\log n)$ (Chaudhuri and Hu, 2019)
+ 
+???
+ Székely GJ, Rizzo ML, Bakirov NK. Measuring and testing dependence by correlation of distances. The annals of statistics. 2007;35(6):2769-94.
+ 
+  Wang X, Pan W, Hu W, Tian Y, Zhang H. Conditional distance correlation. Journal of the American Statistical Association. 2015 Oct 2;110(512):1726-34.
+ 
+ Chaudhuri A, Hu W. A fast algorithm for computing distance correlation. Computational Statistics & Data Analysis. 2019 Jul 1;135:15-24.
+ 
+---
+## Global Fit Tests
 
 ```{r, echo=FALSE, message=FALSE, warning = FALSE}
 model <- '
   # regressions
-  #eageg ~ 1
-  #sex ~ 1
   height ~ eageg + sex
   weight ~ height + eageg + sex
   bmigrp ~ weight + height
   hychol ~ bmigrp + weight + sex + eageg
+  bmigrp ~*~ bmigrp
   '
 fit <- sem(model, data=monica, ordered = c("bmigrp", "hychol"), std.ov=TRUE)
 ```
-.scroll-box-8[
-```{r, echo=FALSE, out.width="70%", comment=NA}
+
+.pull-left-65[
+.scroll-box-20[
+All variables standardized before analysis
+
+```{r, echo=FALSE, comment=NA}
 summary(fit, fit.measures=TRUE)
 ```
 ]
-???
-For this test to show statistical equality between the implied covariance matrix of the model and the covariance matrix of the data, the Model Fit Test Statistic should be less than the degrees of freedom with a high $p$
+]
 
+.pull-right-35[
+Recommended levels for global fit tests
+
+- Model $\chi^2$ with df and $p$-value
+ - prefer $p \geq .05$
+- Comparative Fit Index
+ - prefer CFI $> 0.90$
+- Root mean square error of Approximation
+ - prefer lower 90%CI to be $< .05$
+- Standardized Root Mean Square Residual
+ - prefer SRMR $< 0.10$
+]
+???
+Pearl argues against global fit tests because they rarely tell you where your model might be wrong. In addition, many different models can often fit the same data. He also points out that for estimating specific effects, not all of the model needs to be correct. As long as the local independence tests are valid for the effect of interest, you can still use the effect estimates.
+ 
 ---
-## Visualize Mismatch between Model and Data Covariance Matrix
+### Visualize Mismatch between Model and Data Covariance Matrices
 This shows observed - model-implied correlations
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width="70%", fig.height=4}
 # Function from: https://psu-psychology.github.io/r-bootcamp-2018/talks/lavaan_tutorial.html
 plot_matrix <- function(matrix_toplot){
 corrplot::corrplot(matrix_toplot, is.corr = FALSE,
@@ -1110,6 +1154,12 @@ MI Indicates possible improvement in model test score
 ```{r, echo=FALSE}
 modificationindices(fit, minimum.value = 20)
 ```
+
+Biggest improvement would come from adding edge $weight \rightarrow hychol$, 
+
+but $weight$ is not thought to be caused by high cholesterol. 
+
+Adding this link would violate our background knowledge.
 ---
 ## Age, Exercise, Cholesterol Model Implies No Independence Relations
 .pull-left[
@@ -1123,7 +1173,7 @@ print( impliedConditionalIndependencies( gobs ) )
 ```
 * C is a collider between $A$ and $E$, but $A \rightarrow E$ **shields** the collider, rendering $A$ and $E$ dependent even when $C$ is not conditioned on
 
-There is no way to test this model from observational data
+There are no implied independence relationships to test.
 ]
 
 ---
@@ -1151,7 +1201,7 @@ From https://www.youtube.com/watch?v=TISSNwWDfw4&list=PLO5mmwQolPRX858CyOOIHqYnm
 (CCD Summer short course 2016:Day 2 Part 1)
 
 ---
-### CPDAG (Completed Partially Directed Acyclic Graph)
+### Completed Partially Directed Acyclic Graph (CPDAG)
 .pull-left[
 ```{r, echo=FALSE, fig.height = 7}
 # ggdag_equivalent_class(gobs) # Bug as of 5/24/19. See https://github.com/malcolmbarrett/ggdag/issues/8
@@ -1167,6 +1217,23 @@ A CPDAG represents an equivalance class of independence equivalent graphs
 ]
 
 ---
+### Global Tests of AEC Model are Uninformative
+There are 5 free parameters and 0 degrees of freedom.
+
+.scroll-box-18[
+```{r, echo=FALSE}
+model <- '
+  # regressions
+  E ~ A
+  C ~ A + E
+  '
+fit <- sem(model, data=dobs)
+summary(fit, standardized=TRUE)
+```
+]
+
+---
+exclude: true
 ### Age, Sex, Gender, BMI, and Cholesterol
 .pull-left[
 Hypothesized Graph
@@ -1187,12 +1254,12 @@ plot(equivalenceClass(gmonica))
 
 ---
 class: middle, center
-# Part III: Causal Discovery from Observational Data
+# Part IV: Causal Discovery from Observational Data
 
 ---
 # Inferring Causal Structure from Data
 
-.center[Casual DAG `\\(\Rightarrow\\)` Independence Relations]
+.center[Causal DAG `\\(\Rightarrow\\)` Independence Relations]
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
@@ -1201,13 +1268,12 @@ pgmonica
 ]
 
 .pull-right[
-.scroll-box-8[
 ```{r, echo=FALSE, out.width="70%", comment=NA}
 impliedConditionalIndependencies( gmonica, max.results = Inf )
 ```
-]]
+]
 
-.center[Casual DAGS `\\(\Leftarrow\\)` Independence Relations]
+.center[Causal DAGS `\\(\Leftarrow\\)` Independence Relations]
 
 
 ---
@@ -1240,7 +1306,7 @@ grViz(graph_dot)
 ]
 
 .pull-right[
-Graph implied by paper
+Hypothesized DAG
 ```{r, echo=FALSE, fig.height=6}
 pgmonica
 ```
@@ -1252,21 +1318,21 @@ One limitation of PC (and most other algoirithms) is that the independence tests
 
 See: Spirtes P, Glymour C. An algorithm for fast recovery of sparse causal graphs. Social science computer review. 1991 Apr;9(1):62-72.
 ---
-## Adding Background Knowledge Improve Discovery
+## Adding Background Knowledge Improves Discovery
 
 ```{r, results="hide"}
 # List of forbidden directed edges
-forbid <- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('weight', 'bmigrp'), c('sex', 'bmigrp'))
+forbid <- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('sex', 'bmigrp'))
 
 # List of required directed edges
-require <- list(c('eage','eageg'), c('bmi', 'bmigrp'), c('chol', 'hychol'), c('height', 'bmi'), c('weight', 'bmi'))
+require <- list(c('height', 'bmigrp'), c('weight', 'bmigrp'))
 
 # Forbid edges between eage and sex
-forbiddenWithin <- c('eage','sex')
+forbiddenWithin <- c('sex')
 class(forbiddenWithin) <- 'forbiddenWithin'
 
 # Add Temporal constraints
-temporal <- list(forbiddenWithin, c('eageg','height', 'weight'), c('bmi', 'chol'), c('bmigrp', 'hychol')) 
+temporal <- list(forbiddenWithin, c('eageg','height', 'weight'), c('bmigrp', 'hychol')) 
 
 prior <- priorKnowledge(requiredirect = require, addtemporal = temporal, forbiddirect = forbid)
 ```
@@ -1275,7 +1341,7 @@ Since bmigrp is defined only by bmi, we forbid other variables from causing it. 
 
 The temporal constraints indicate that lower tiers cannot have any directed edges to higher tiers. For instance, `bmi` and `chol` can have directed edges to `bmigrp` and `hychol`, as well as between themselves, but cannot have directed edges to the other variables that appear before them in the temporal list.
 ---
-# Tetrad PC Algorithm with Knowledge
+# PC Algorithm with Knowledge
 ```{r, echo=FALSE}
 res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, priorKnowledge = prior, verbose = TRUE, colliderDiscoveryRule = 2)
 graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
@@ -1283,6 +1349,7 @@ grViz(graph_dot)
 ```
 
 ---
+exclude: true
 ## Adding Knowledge: Required Edges
 
 `TRUE` means the pair of variables must be connected by an edge
@@ -1309,6 +1376,7 @@ kable_styling(full_width = F)
 ```
 
 ---
+exclude: true
 ## Adding Knowledge: Forbidden Edges
 
 A $1$ means the row variable (e.g., `height`) must not have direct edge to the column variable (e.g., `bmi`)
@@ -1332,7 +1400,7 @@ as_tibble(kf, rownames="id") %>% mutate_all(~cell_spec(.x, color = ifelse(.x == 
 kable_styling(full_width = F)
 ```
 ---
-
+exclude: true
 ### Results of the PC Algorithm With Background Knowledge 
 
 .pull-left[
@@ -1350,82 +1418,135 @@ pgmonica
 ```
 ]
 
----
-# Associative vs. Causal Predictive Models
-  
-If we just want to predict, an associative predictive model is sufficient and may be better than a causal model.
-
-Suppose diet affects weight and chol directly, but we don't know diet. BMI still allows us to predict chol in an associative model, but not intervene.
-
----
-# Estimating Causal Expressions from Data
-
-Adjustment stratifies data, which can lead to difficulties estimating causal expressions from actual (non-infinite) data
-
-A number of statistical estimation methods are available
-
-Propensity score example
-
----
-### Modified Y Structure Equivalence Class
-.pull-left[
-Original Graph
-
-```{r, echo=FALSE, out.width="70%"}
-gyp <- dagitty('dag{
-    X0 [pos="0,1"]
-    X1 [pos="0,2"]
-    X2 [pos="0,0"]
-    X3 [pos="1,1"]
-    X4 [pos="2,1"]
-    X1 -> X3 -> X4
-    X2 -> X3
-    X0 -> X3
-    X0 -> X2
-}')
-pgyp <- ggdag(gyp)
-pgyp
-```
-]
-.pull-right[
-CPDAG
-
-```{r, echo=FALSE, fig.height=4}
-# ggdag_equivalent_class(gobs) # Bug as of 5/24/19. See https://github.com/malcolmbarrett/ggdag/issues/8
-# Use dagitty function instead
-plot(equivalenceClass(gyp))
-#ggdag_equivalent_class(gyp)
-```
-]
-
----
-### Independence Implications Can be Tested Against a Dataset
-.pull-left[
-Original Graph
-
-```{r, echo=FALSE, out.width="70%"}
-impliedConditionalIndependencies(gfront)
-#localTests(gfront, dobs, "cis")
-```
-]
-.pull-right[
-CPDAG
-
-```{r, echo=FALSE, fig.height=4}
-# ggdag_equivalent_class(gobs) # Bug as of 5/24/19. See https://github.com/malcolmbarrett/ggdag/issues/8
-# Use dagitty function instead
-plot(equivalenceClass(gyp))
-#ggdag_equivalent_class(gyp)
-```
-]
 
 ---
 class: center, middle
 
-## Part III: Counterfactual Reasoning
+## Part V: Counterfactual Reasoning
 
-TBD soon
+---
+## Counterfactual Example 
+- Joe is $60$ years old, exercised $10$ units, and has total cholesterol of $140$.
+ - What would Joe's cholesterol be if he had exercised $20$ units instead of $10$?
 
+- Difference between causal inference and counterfactual reasoning
+
+ - Average Causal Effect applies to populations
+ - Counterfactual reasoning can answer questions about an individual
+
+---
+## Counterfactual Reasoning: Naive Approach
+- Joe is $60$ years old, exercised $10$ units, and has total cholesterol of $140$.
+ - What would Joe's cholesterol be if he had exercised $20$ units instead of $10$?
+ 
+- Use regression equation from observational data, with $A=60$ and $E=20$:
+
+$$
+\begin{align}
+c &= `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \\
+ &= `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`\cdot 20 + `r round(Cintadjusted[3], 2)`\cdot 60 \\
+ &= `r round(Cintadjusted[1], 2) + round(Cintadjusted[2], 2) * 20 + round(Cintadjusted[3], 2)*60`
+\end{align}
+$$
+- This is incorrect, because it ignores what we have learned about Joe by measuring what has already happened to him
+
+ - This approach estimates $E(C|do(E=20), A=60)$
+ - We need to estimate the expected value of Joe's cholesterol if he had exercised at $20$ units, given the previously observed evidence regarding Joe:
+$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140)$$
+
+---
+## Causal DAGs as Structural Equations
+A causal DAG is a set of structural equations with endogenous and exogenous variables.
+
+.pull-left[
+```{r tidy=FALSE, eval=FALSE}
+n <- 10000
+a <- rnorm(n, mean = 50, sd = 10)
+e <- 0.3*a + rnorm(n)
+c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+```{r, echo=FALSE, fig.height=4}
+dobs <- tibble(E = e, A = a, C=c)
+gobs <- dagitty('dag{
+  A [pos="1,1"]
+  E [pos="0,0"]
+  C [pos="2,0"]
+  A -> C A->E  E->C }')
+pgobs <- ggdag(gobs, text_size=11) + theme_dag_gray()
+pgobs
+```
+]
+
+.pull-right[
+$$
+\begin{align}
+A &= U_a \\
+E &= 0.3 A + U_e \\
+C &= 0.5 A + -1E + U_c
+\end{align}
+$$
+
+$U = \{U_a, U_e, U_c\}$ is the set of exogenous variables
+- Exogenous variables represent background conditions with no explantory mechanism encoded in the model
+
+$V = \{A, E, C\}$ is the set of endogenous variables
+
+- The values of endogenous variables are defined through functions encoded in the model
+
+Given a set of values for $U$, the model functions uniquely define the values of $V$, to determine the counterfactual:
+$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=120)$$
+]
+
+---
+## What would Joe's Cholesterol Have been with E=20?
+.pull-left[
+**Step 1:** Use prior observations from Joe to determine Joe's background factors
+
+Observed: $A = 60$, $E = 10$, $C = 140$
+
+Substitute and solve:
+$$
+\begin{align}
+A = 60 &= U_a \\
+E = 10 &= 0.3 \cdot 60 + U_e \\
+C = 140 &= 0.5 \cdot 60 + -1\cdot 10 + U_c \\
+\\
+U_a &= 60 \\
+U_e &= `r 10 - 0.3*60` \\
+U_c &= `r 140-(0.5*60)+10`
+\end{align}
+$$
+]
+
+.pull-right[
+**Step2:** Using the original model functions:
+
+$$
+\begin{align}
+A &= U_a \\
+E &= 0.3 A + U_e \\
+C &= 0.5 A + -1E + U_c
+\end{align}
+$$
+
+Replace the function for $E$ with $20$, substitute Joe's values for $U$ and the remaining $V$ values to determine the counterfactual
+
+$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140)$$
+$$
+\begin{align}
+A &= 60 \\
+E &= 20 \\
+C_{E=20} &= 0.5 \cdot 60 + -1\cdot 20 + 120 = `r 0.5*60-20+120`
+\end{align}
+$$
+Naive version had $C = `r round(Cintadjusted[1], 2) + round(Cintadjusted[2], 2) * 20 + round(Cintadjusted[3], 2)*60`$
+]
+
+---
+### Why the Difference?
+Naive estimate,
+
+$E(C|do(E=20), A=60)$ = 
 ---
 ## Remaining slides are not part of the presentation
 
@@ -1493,20 +1614,8 @@ ggdag(gERTspurious, text_size=4) #, use_labels="label")
 ---
 ## Adjust done at data collection or analysis (from Elwert)
 
-
-
-
-
-
-
-
 ---
 ## Causal DAGs and Joint Probability Distributions
-Too complex. Use adjustment instead by showing how the observational dist for cholesterol can give the correct result when stratifying by age, as can regression when including Age as a covariate.
-
-Then demonstrate why that doesn't always work by analyzing causal effect of age, discussing the total and direct effects from program, then that regression C ~ A + E only gives direct effect. So you must regress C ~ A to get total effect. In other words, you can't stratify by E for A.
-
-Stratification is one way to adjust for variables to eliminate non-causal associations
 .pull-left[
 Any distribution generated by a Markovian causal DAG $M$, can be written as:
 
