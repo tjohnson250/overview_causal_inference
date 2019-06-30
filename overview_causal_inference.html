@@ -3,8 +3,8 @@
   <head>
     <title>A Brief Overview of Causal Inference</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Todd R. Johnson, PhD" />
-    <meta name="date" content="2019-06-25" />
+    <meta name="author" content="Todd R. Johnson, PhD   Professor      tjohnson250     @johnsontoddr4    todd.r.johnson@uth.tmc.edu" />
+    <meta name="date" content="2019-06-29" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <script src="libs/kePrint/kePrint.js"></script>
     <script src="libs/htmlwidgets/htmlwidgets.js"></script>
@@ -21,6 +21,7 @@
     <script src="libs/grViz-binding/grViz.js"></script>
     <script src="libs/pymjs/pym.v1.js"></script>
     <script src="libs/widgetframe-binding/widgetframe.js"></script>
+    <script src="https://kit.fontawesome.com/08ea13597f.js"></script>
     <link rel="stylesheet" href="my-fonts.css" type="text/css" />
     <link rel="stylesheet" href="my-theme.css" type="text/css" />
   </head>
@@ -29,17 +30,18 @@
 class: center, middle, inverse, title-slide
 
 # A Brief Overview of Causal Inference
-### Todd R. Johnson, PhD
+### Todd R. Johnson, PhD <br> Professor <br><br> <a href="https://github.com/tjohnson250"><i class="fab fa-github fa-fw"></i>  tjohnson250</a><br> <a href="https://twitter.com/johnsontoddr4"> <i class="fab fa-twitter fa-fw"></i>  <span class="citation">@johnsontoddr4</span></a><br> <a href="mailto:todd.r.johnson@uth.tmc.edu"><i class="fa fa-paper-plane fa-fw"></i>  todd.r.johnson@uth.tmc.edu</a><br><br>
 ### The University of Texas School of Biomedical Informatics at Houston
-### 2019-06-25
+### 2019-06-29
 
 ---
 
 
 
+
 # Disclaimer
 
-use the arrow keys to navigate. Press `h` for help. To see speaker notes, press `p` to enter presentation mode. 
+Use the arrow keys to navigate. Press .key[h] `h` for help. To see speaker notes, press `p` to enter presentation mode. 
 
 This is unfinished work. My primary objective for creating this presentation is to help me understand the basics of causal infererence. I hope to use it to help others as well, especially machine learning researchers who tend to make predictive, rather than causal models.
 
@@ -88,11 +90,13 @@ class: middle
 
 ### Part I: Causation
 
-### Part II: Estimating Causal Effects from Observational Data
+### Part II: Identifying and Estimating Causal Effects from Observational Data
 
-### Part III: Causal Discovery from Observational Data
+### Part III: Causal Model Evaluation
 
-### Part IV: Counterfactual Reasoning
+### Part IV: Causal Discovery from Observational Data
+
+### Part V: Counterfactual Reasoning
 
 ---
 class: center, middle
@@ -141,6 +145,61 @@ Causal DAG (Directed Acyclic Graph)
 ]
 
 ---
+exclude: true
+# Lavaan exploration
+
+```r
+library(lavaan)
+model &lt;- '
+  # regressions
+  A ~ 1
+  E ~ A
+  C ~ A + E
+  '
+fit &lt;- sem(model, data=dobs)
+summary(fit, standardized=TRUE)
+```
+
+```
+## lavaan 0.6-4.1415 ended normally after 37 iterations
+## 
+##   Optimization method                           NLMINB
+##   Number of free parameters                          9
+## 
+##   Number of observations                         10000
+## 
+##   Estimator                                         ML
+##   Model Fit Test Statistic                       0.000
+##   Degrees of freedom                                 0
+## 
+## Parameter Estimates:
+## 
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+##   Standard Errors                             Standard
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   E ~                                                                   
+##     A                 0.302    0.001  302.378    0.000    0.302    0.949
+##   C ~                                                                   
+##     A                 0.487    0.016   30.827    0.000    0.487    0.899
+##     E                -0.962    0.050  -19.396    0.000   -0.962   -0.565
+## 
+## Intercepts:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##     A                49.901    0.100  498.189    0.000   49.901    4.982
+##    .E                -0.128    0.051   -2.517    0.012   -0.128   -0.040
+##    .C               100.151    0.252  396.821    0.000  100.151   18.460
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .E                 1.002    0.014   70.711    0.000    1.002    0.099
+##    .C                24.655    0.349   70.711    0.000   24.655    0.838
+##     A               100.330    1.419   70.711    0.000  100.330    1.000
+```
+
+---
 ## Intervening Changes the Generative Model
 Intervene by randomly setting `\(E\)` from `\(0 - 20\)`
 .pull-left[
@@ -152,7 +211,7 @@ a &lt;- rnorm(n, mean = 50, sd = 10)
 *e &lt;- 0.3*a + rnorm(n)
 c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ```
-![](overview_causal_inference_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -164,7 +223,7 @@ a &lt;- rnorm(n, mean = 50, sd = 10)
 *e &lt;- sample(0:20, n, replace = TRUE)
 c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ```
-![](overview_causal_inference_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -172,18 +231,18 @@ c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 
 .pull-left[
 ### Observational Distribution
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-6-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-7-1.png" width="70%" /&gt;
 
-`\(c = 102.74+0.49e \space (p&lt;.001)\)`
+`\(c = 102.73+0.49e \space (p&lt;.001)\)`
 ]
 
 --
 
 .pull-right[
 ### Interventional Distribution
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-7-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-8-1.png" width="70%" /&gt;
 
-`\(c = 125.04+-1.01e \space (p&lt;.001)\)`
+`\(c = 124.83+-1e \space (p&lt;.001)\)`
 ]
 
 ???
@@ -193,7 +252,9 @@ The coefficient for `\(e\)` on the observational distribution is way off, but th
 # Difference Between Seeing and Doing
 .pull-left[
 ### Observational Association
-`\(E(C|e)\)`: The expected value of Cholesterol given that we observe a specific level of exercise
+`\(E(C|e)\)`: The expected value of Cholesterol given that we observe a specific level of exercise.
+
+`\(E(C|e)\)` is confounded, because age `\(A\)` affects both the amount of exercise `\(E\)` a person gets and cholesterol levels `\(C\)`.
 ]
 .pull-right[
 ### Interventional Association (Causal Effect)
@@ -233,18 +294,18 @@ Step 1: Estimate functional relationship between C and E using linear regression
 
 
 
-`$$c = 125.04+-1.01e \space (p&lt;.001)$$`
+`$$c = 124.83+-1e \space (p&lt;.001)$$`
 
-`$$E(C|do(E=e))=125.04+-1.01e \space (p&lt;.001)$$`
+`$$E(C|do(E=e))=124.83+-1e \space (p&lt;.001)$$`
 
 Step 2: Use regression equation to calculate ACE
 
 $$
 `\begin{align}
   ACE &amp;= E(Y|do(E=1))-E(Y|do(E=2)) \\
-      &amp;= (125.04+-1.01*1) - (125.04+-1.01*2) \\
-      &amp;= 123.01 - 124.02 \\
-      &amp;= -1.01
+      &amp;= (124.83+-1*1) - (124.83+-1*2) \\
+      &amp;= 122.83 - 123.83 \\
+      &amp;= -1
 \end{align}`
 $$
 Equivalently: The regression coefficent on `\(e\)` directly tells us how much `\(C\)` will change for each unit increase in `\(E\)`.
@@ -257,25 +318,25 @@ We say that `\(\mathbf{X}\)` **causes** `\(\mathbf{Y}\)` in a population when th
 ---
 class: center, middle
 
-## Part II: Estimating Causal Effects from
+## Part II: Identifying and Estimating Causal Effects from
 ## Observational Data
 
 ---
 ## With Observational Data...
 .pull-left[
 #### using E to predict C gives an incorrect estimate,
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-9-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
 
-`\(c = 102.74+0.49e \space (p&lt;.001)\)`
+`\(c = 102.73+0.49e \space (p&lt;.001)\)`
 ]
 
 --
 
 .pull-right[
 #### but controlling for C gives the correct estimate
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-11-1.png" width="70%" /&gt;
 
-`\(c = 100.31+-0.97e + 0.48a \space (p&lt;.001)\)`
+`\(c = 100.15+-0.96e + 0.49a \space (p&lt;.001)\)`
 ]
 ???
 The graph on the right shows a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between `\(C\)` and `\(E\)`. Lines near the left and right are incorrect due to sparse data. Stratifying by age is one method for controlling or adjusting for a confounder, such as `\(A\)`.
@@ -300,7 +361,7 @@ lm(C ~ E, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E  
-##    102.7426       0.4872
+##    102.7312       0.4897
 ```
 ]
 .pull-right[
@@ -317,12 +378,12 @@ lm(C ~ E + A, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E            A  
-##    100.3097      -0.9671       0.4847
+##    100.1510      -0.9622       0.4867
 ```
 ]
 ---
 ### What is the Causal Effect of Age on Cholesterol?
-Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.31+-0.97e + 0.48a\)`
+Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.15+-0.96e + 0.49a\)`
 .pull-left[
 
 ```r
@@ -331,7 +392,7 @@ a &lt;- rnorm(n, mean = 50, sd = 10)
 e &lt;- 0.3*a + rnorm(n)
 *c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ```
-![](overview_causal_inference_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
 ]
 .pull-right[
 From the model, the **direct causal effect** of `\(A\)` on `\(C\)` is `\(0.5a\)`
@@ -357,20 +418,20 @@ $$
 ### A Single Analysis is Usually Insuffient to Measure All Effects
 The total effect of `\(A\)` on `\(C\)` can be obtained from the observational data only by leaving `\(E\)` out of the analysis
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-16-1.png" width="70%" /&gt;
 
-`\(c = 100.31+0.19a \space (p&lt;.001)\)`
+`\(c = 100.27+0.2a \space (p&lt;.001)\)`
 ]
 .pull-right[
 This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of `\(A\)` and `\(E\)` on `\(C\)`
   
 - Total effect of `\(E\)`, Direct effect of `\(A\)`:
 
-    `\(c = 100.31+-0.97e + 0.48a \space (p&lt;.001)\)`
+    `\(c = 100.15+-0.96e + 0.49a \space (p&lt;.001)\)`
 
 -  Total effect of `\(A\)`:
 
-    `\(c = 100.31+0.19a \space (p&lt;.001)\)`
+    `\(c = 100.27+0.2a \space (p&lt;.001)\)`
   
 Simply throwing all covariates into a single regression is insufficient... but this is what most machine learning models do
 ]
@@ -386,7 +447,7 @@ class: center, middle
 ## Paths in Causal DAGs
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-16-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-17-1.png" width="70%" /&gt;
 ]
 .pull-right[
 A **path** is a sequence of non-intersecting adjacent edges
@@ -408,13 +469,13 @@ See here for how to cite sources using refmanager package: https://github.com/yi
 
 ---
 class: center, middle
-.Large[Two Kinds of Paths: .shout[Causal] and .shout[Non-Causal]]
+.Large[Two Kinds of Paths: **Causal** and **Non-Causal**]
 
 ---
 ## Causal Paths
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-17-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-18-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Causal Path:** A path in which all arrows point away from the treatment to the outcome
@@ -432,7 +493,7 @@ The **total causal effect** of a treatment on an outcome consists of association
 ## Non-Causal Paths
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-18-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-19-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Non-Causal Path:** A path from the treatment to the outcome in which at least one arrow points back to the treatment
@@ -449,7 +510,7 @@ Non-causal paths are potential spurious sources of association between treatment
 ### Causal and Non-Causal Paths for Treatment E and Outcome C
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-19-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-20-1.png" width="70%" /&gt;
 ]
 .pull-right[
 Causal path:
@@ -466,6 +527,10 @@ Adjusting for `\(A\)` in the observational data blocks this path, allowing us to
 
 ---
 ## Identifiability
+A causal effect is **identifiable** if the controlled (post-intervention) distribution can be estimated from data drawn from the observational (pre-intervention) distribution.
+
+The **Backdoor Criterion** is one identification method:
+
 The causal effect of `\(T\)` on `\(Y\)` is **identifiable** if
 we can adjust for a set of variables that
 
@@ -474,12 +539,12 @@ we can adjust for a set of variables that
 
 ---
 ### Blocking and Unblocking Paths
-All Causal DAGs can be constructed from these three patterns
+All Causal DAGs are a combination of these three patterns:
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-20-1.png" width="70%" /&gt;
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-21-1.png" width="70%" /&gt;
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-22-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-23-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Linear Path (or Chain)**
@@ -503,7 +568,7 @@ All Causal DAGs can be constructed from these three patterns
 ## Identifying the Total Effect of `\(A\)` on `\(C\)`
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-23-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-24-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Total Effect of `\(A\)` on `\(C\)`**
@@ -524,7 +589,7 @@ Adjusting for `\(E\)` blocks the path `\(A \rightarrow E \rightarrow C\)` leavin
 ## Identifying the Total Effect of `\(A\)` on `\(E\)`
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-24-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-25-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Total (and Direct) Effect of `\(A\)` on `\(E\)`**
@@ -559,7 +624,7 @@ The backdoor criterion recognizes that all paths that descend from `\(X\)` are e
 
 ## Multiple Adjustment Sets
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-25-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-26-1.png" width="70%" /&gt;
 ]
 .pull-right[
 Adjustment sets for `\(X \rightarrow Y\)`:
@@ -571,7 +636,7 @@ Adjustment sets for `\(X \rightarrow Y\)`:
 ##  { W1, W2, Z1 }
 ```
 
-Adjusting for any one of these sets of variables eliminates confouding for causal effect of `\(X\)` on `\(Y\)`
+Adjusting for any one of these sets of variables eliminates confouding for the causal effect of `\(X\)` on `\(Y\)`
 
 For a linear model this means regressing `\(Y\)` on `\(X\)`, including as covariates only one set of these variables 
 
@@ -588,16 +653,22 @@ lm(obsdata, Y ~ X + W1 + W2 + Z1)
 ---
 # Adjustment Sets for `\(X \rightarrow Y\)`
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
 ???
 Bold edges are unadjusted, light edges are adjusted
+
+The backdoor criterion implicitly prevents adjusting for children of mediators. For instance, suppose we want to determine the causal effect of `\(X\)` on `\(Y\)` in the model:
+
+`$$X \rightarrow Z \rightarrow Y$$`
+`$$Z \rightarrow Z_2$$`
+where `\(Z\)`, a mediator, causes `\(Z_2\)`. It is clear that adjusting for `\(Z\)` would block the path between `\(X\)` and `\(Y\)`, but adjusting for `\(Z_2\)` would partially block the path.
 
 ---
 # Frontdoor Adjustment Criterion
 .pull-left[
 U unmeasured: Cannot block backdoor path from `\(X \rightarrow Y\)`
 
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-29-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-30-1.png" width="70%" /&gt;
 ]
 .pull-right[
 `\(X \rightarrow Y\)` is still identifiable using a two step process:
@@ -607,14 +678,17 @@ Step 1. Identify `\(X \rightarrow Z\)`:
   * Backdoor path blocked by collider `\(Y\)`
   
 `$$X \leftarrow U \rightarrow Y \leftarrow Z$$`
-
+  * In R: `lm(obsdata, Z ~ X)`
+  
 Step 2. Identify `\(Z \rightarrow Y\)`:
 
   * Backdoor path blocked by adjusting for `\(X\)`
 
 `$$Z \leftarrow X \leftarrow U \rightarrow Y$$`
+  * In R: `lm(obsdata, Y ~ Z + X)`
 ]
-
+???
+Since `\(U\)` is unmeasured, we cannot adjust for it. However, in this case, the frontdoor adjustment criterion allows us to identify the causal effect of `\(X\)` on `\(Y\)` in two steps.
 ---
 ## Frontdoor Adjustment Criterion (Pearl 1995)
 A set of variables `\(\{Z\}\)` satisfies the **frontdoor criterion** relative to an ordered pair of variables `\(\{X, Y\}\)` in a DAG if:
@@ -633,23 +707,143 @@ If `\(\{Z\}\)` meets the frontdoor criterion, the causal effect of `\(X\)` on `\
 
 ---
 ## Instrumental Variables
+Instrumental variables are those that only affect the treatment, with no relationship to anything else
+
+---
+# Identifying Covariate Specific Effects
+Suppose a drug `\(D\)` affects `\(C\)`, gender `\(G\)` affects who takes the drug.
+
+.pull-left[
+What is the effect of `\(E\)` on `\(C\)` when we *observe* `\(D = d\)`?
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-31-1.png" width="70%" /&gt;
+]
+.pull-right[
+Estimate `\(P(C=c|do(E=e), D=d)\)`
+
+
+Must use an adjustment set `\({S} \cup D\)` that blocks all backdoor paths from `\(E\)` to `\(C\)`.
+
+No need to block backdoor path from `\(D\)` to `\(C\)`.
+
+Valid adjustment set: `\({A, D}\)`
+
+Regression: `lm(obsdata, C ~ A + D)`
+
+Mathematically:
+
+`$$\begin{aligned} P(Y=y&amp;|do(X=x), Z=z) = \\  &amp;\sum_S P(Y=y|X=x, S=s, Z=z)P(S=s|Z=z) \end{aligned}$$`
+
+]
+???
+Note that the summation in the adjustment formula is over `\(S\)`, not `\(S \cup Z\)`. `\(S\)` is the set of all the other variables needed to block the backdoor paths from `\(X\)` to `\(Y\)`.
+
+We don't want to block the backdoor path from `\(D\)` to `\(C\)` here, because the query is asking for the effect of `\(E\)` on `\(C\)` when we intervene on `\(E\)` and then in the resulting interventional distribution observe `\(D=d\)`.
+
+In contrast, if we just want to identify `\(P(Y=y|do(X=x))\)` we have:
+
+`$$P(Y=y|do(X=x)) = P(Y=y|X=x, S=s)P(S=s)$$`
+
+where `\(S\)` is a valid adjustment set that blocks the backdoor paths from `\(X\)` to `\(Y\)`.
+
+The basic idea is that when we look at the interventional distribution (resulting from adjusting for `\(S\)`), we must stratify by `\(Z\)` to compute the covariate-specific effect, which means we are also adjusting for `\(Z\)`. Thus we have to make sure that adjusting for `\(Z\)` does not open any backdoor paths for the effect from `\(X\)` to `\(Y\)`.]
+
+---
+### Identifying the Effects of Multiple Interventions
+What is the effect of simultaneously intervening on `\(X\)` and `\(Z2\)`?
+.pull-left[
+What is the effect of `\(E\)` on `\(C\)` when we *observe* `\(D = d\)`?
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-32-1.png" width="70%" /&gt;
+]
+.pull-right[
+Estimate `\(P(C=c|do(E=e, D=d))\)`
+
+Must use an adjustment set that blocks all backdoor paths from `\(E\)` to `\(C\)` and `\(D\)` to `\(C\)`
+
+
+```
+##  { A, G }
+```
+Regression: `lm(C ~ E + A + D + G)`
+
+Mathematically:
+
+`$$\begin{aligned} P(Y=y&amp;|do(X=x, Z=z)) = \\  &amp;\sum_S P(Y=y|X=x, Z=z, S=s)P(S=s) \end{aligned}$$`
+]
+???
+To estimate the effect of simultaneously intervening on `\(X\)` and `\(Z2\)`, we need an adjustment set that blocks all backdoor paths for both variables.
+
+In this case the regression must include `\(X\)` and `\(Z2\)`:
+
+```r
+lm(Y ~ X + W1 + W2 + Z2)
+```
+
+Here, we can use the same regression equation as the previous covariate-specific example. But consider `\(P(y|do(x,w1))\)` vs. `\(P(y|do(x), w1)\)`.
+
+The adjustment set for `\(P(y|do(w1,z1))\)` is:
+
+```
+##  { W1 }
+```
+The regression is:
+
+```r
+lm(Y ~ W1 + Z1 + V)
+```
+The adjustment sets for `\(P(y|do(w1), z1)\)` are:
+
+```
+##  {}
+```
 
 ---
 ## Confounding is a Causal Concept
 
 * The data alone are insufficient to identify confounders or control for confouding
-* Without a model, observational data is limited to associational models that do not tell us how to intervene
+* Without a causal model, observational data is limited to associational models that do not tell us how to intervene
   + This includes all common machine learning and statistical approaches
   + Example: If an associational predictive model finds a few highly predictive "risk factors" we cannot assume that intervening on those risk factors will decrease risk.
-  
+  + Variables that increase the predictive power of an associational model may include effects of the outcome, such as symptoms of a disease you are trying to predict
+* Associational predictive models are still useful if we already have interventions that are known to work
+  + If we know that a treatment works if given earlier in the course of a disease, better predictive models can tell us who to treat
+
 ---
-## Model Testability
+class: center, middle, Large
+
+Causal Inference Requires a Causal Model,
+
+But...
+
+How Do we Know if Our Model is Correct?
+---
+class: center, middle
+# Part III: Model Evaluation
+
+---
+# Two Approaches to Model Evaluation
+Local fit tests
+
+- Tests of model-implied conditional independence assumptions
+
+Global fit tests
+
+- Model chi-square: comparison of model vs. observed covariance matrices)
+
+- RMSEA: Root Mean Square Error of Approximation
+
+- CFI: Comparative fit index
+
+- SRMSR: Standaridzed Root Mean Square Residual
+???
+From: Kline RB. Principles and practice of structural equation modeling. Guilford publications; 2015 Nov 3.
+---
+## Model Evaluation
 Causal DAG's imply independence relations
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-30-1.png" width="70%" /&gt;
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-31-1.png" width="70%" /&gt;
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-32-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-38-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-39-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-40-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Linear Path (or Chain)**
@@ -673,10 +867,10 @@ Causal DAG's imply independence relations
 
 ---
 ## Example: Independence Relations
-Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project. *International Journal of Obesity.* 2004 Aug;28(8):1082.
+.small[Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. **Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project.** *International Journal of Obesity.* 2004 Aug;28(8):1082.]
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-33-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-41-1.png" width="70%" /&gt;
 ]
 
 .pull-right[
@@ -685,39 +879,12 @@ This Causal DAG implies the following conditional independencies
 .scroll-box-8[
 
 ```
-bmi _||_ eage | height, weight
-bmi _||_ eageg | eage
-bmi _||_ eageg | height, weight
-bmi _||_ hychol | chol
-bmi _||_ sex | height, weight
-bmigrp _||_ chol | bmi
-bmigrp _||_ eage | height, weight
-bmigrp _||_ eage | bmi
-bmigrp _||_ eageg | eage
 bmigrp _||_ eageg | height, weight
-bmigrp _||_ eageg | bmi
-bmigrp _||_ height | bmi
-bmigrp _||_ hychol | chol
-bmigrp _||_ hychol | bmi
 bmigrp _||_ sex | height, weight
-bmigrp _||_ sex | bmi
-bmigrp _||_ weight | bmi
-chol _||_ eageg | eage
-chol _||_ height | bmi, eage, sex
-chol _||_ weight | bmi, eage, sex
-eage _||_ height
-eage _||_ hychol | chol
-eage _||_ sex
 eageg _||_ height
-eageg _||_ hychol | chol
-eageg _||_ hychol | eage
 eageg _||_ sex
-eageg _||_ weight | eage
-height _||_ hychol | chol
-height _||_ hychol | bmi, eage, sex
-hychol _||_ sex | chol
-hychol _||_ weight | bmi, eage, sex
-hychol _||_ weight | chol
+height _||_ hychol | bmigrp, eageg, sex
+hychol _||_ weight | bmigrp, eageg, sex
 ```
 ]
 
@@ -725,18 +892,18 @@ Given data on these variables, we can test for these statistical relationships.
 ]
 
 ---
-## Model Evaluation by Testing Independencies in Observed Data
+### Model Evaluation by Testing Implied Independencies with Observed Data
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-35-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-43-1.png" width="70%" /&gt;
 ]
 
 .pull-right[
-Independence Tests for all implied independencies:
+Independence Tests for all implied independencies based on 17440 patients.
 
 
-<div id="htmlwidget-87733acf46477072859d" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-87733acf46477072859d">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ eage | height, weight","bmi _||_ eageg | eage","bmi _||_ eageg | height, weight","bmi _||_ hychol | chol","bmi _||_ sex | height, weight","bmigrp _||_ chol | bmi","bmigrp _||_ eage | height, weight","bmigrp _||_ eage | bmi","bmigrp _||_ eageg | eage","bmigrp _||_ eageg | height, weight","bmigrp _||_ eageg | bmi","bmigrp _||_ height | bmi","bmigrp _||_ hychol | chol","bmigrp _||_ hychol | bmi","bmigrp _||_ sex | height, weight","bmigrp _||_ sex | bmi","bmigrp _||_ weight | bmi","chol _||_ eageg | eage","chol _||_ height | bmi, eage, sex","chol _||_ weight | bmi, eage, sex","eage _||_ height","eage _||_ hychol | chol","eage _||_ sex","eageg _||_ height","eageg _||_ hychol | chol","eageg _||_ hychol | eage","eageg _||_ sex","eageg _||_ weight | eage","height _||_ hychol | chol","height _||_ hychol | bmi, eage, sex","hychol _||_ sex | chol","hychol _||_ weight | bmi, eage, sex","hychol _||_ weight | chol"],[0.000213656279304622,0.227811169869505,0.00250325750046802,-0.110810999741647,0.0165115591115892,0.00968168837637345,0.00138273733354115,0.00136813775967718,0.0251497959824355,0.0130031546385232,0.0128674636022005,0.0659307771577662,-0.025759380142815,0.016307551980393,-0.017136283212477,-0.0199298770763709,0.00189099354516797,0.0650592306828425,0.231307710447215,0.00385371557680124,-23.0417186571407,0.412357707508351,0.0294631210807292,-2.19489596560299,0.0528908584702388,0.0129763338658533,-2.672352570735e-05,0.000210483359697623,-0.00693107328688649,-0.000828033132059304,0.00327125421111085,-3.19569131408994e-05,-0.000406950889332703],[1,0.829961439890921,1,1,1,0.00015544679134359,1.42494010798338e-06,1.67216011314472e-06,1,1.19730353853671e-05,1.39842769162944e-05,0.384111932877516,1,0.134855078207577,0.278284762856869,0.00370155497042317,1.16038135218299e-07,0.82116921742631,1,0.224284630335118,1.92513825188684e-150,1,1,2.23065750598011e-141,0.82116921742631,0.13558246691045,1,1,0.103766773697697,1,1,1,0.224284630335118]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-8ac012f894b92213730c" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8ac012f894b92213730c">{"x":{"filter":"none","fillContainer":false,"data":[["bmigrp _||_ eageg | height, weight","bmigrp _||_ sex | height, weight","eageg _||_ height","eageg _||_ sex","height _||_ hychol | bmigrp, eageg, sex","hychol _||_ weight | bmigrp, eageg, sex"],[0.0130031546385232,-0.017136283212477,-2.19489596560299,-2.672352570735e-05,-0.00138660727127573,0.00100917415354059],[2.13804203310127e-06,0.0585862658646039,4.1824828237127e-142,0.998672916422782,0.458122403906288,0.0585862658646039]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 ]
 
 ???
@@ -783,7 +950,7 @@ cdcov.test(as.matrix(monicasamp$bmigrp), monicasamp$weight, as.matrix(monicasamp
 # Coefficients where `\(p &lt; .05\)`
 
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -795,18 +962,144 @@ This contradicts our model
 ## Add `\(eage \rightarrow height\)` and Retest
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-39-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-47-1.png" width="70%" /&gt;
 ]
 
 .pull-right[
 Coefficients where `\(p &lt; .05\)`
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-40-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-48-1.png)&lt;!-- --&gt;
 ]
+
+---
+## Compare Model's Implied Covariance Matrix to Data
+
+`\(p = 0\)` indicates that the covariance matrices are not similar.
+
+
+.scroll-box-8[
+
+```
+lavaan 0.6-4.1415 ended normally after 24 iterations
+
+  Optimization method                           NLMINB
+  Number of free parameters                         18
+
+  Number of observations                         17440
+
+  Estimator                                       DWLS      Robust
+  Model Fit Test Statistic                      19.265     151.984
+  Degrees of freedom                                 3           3
+  P-value (Chi-square)                           0.000       0.000
+  Scaling correction factor                                  0.127
+  Shift parameter                                            0.033
+    for simple second-order correction (Mplus variant)
+
+Model test baseline model:
+
+  Minimum Function Test Statistic            34299.840   27768.575
+  Degrees of freedom                                 6           6
+  P-value                                        0.000       0.000
+
+User model versus baseline model:
+
+  Comparative Fit Index (CFI)                    1.000       0.995
+  Tucker-Lewis Index (TLI)                       0.999       0.989
+
+  Robust Comparative Fit Index (CFI)                            NA
+  Robust Tucker-Lewis Index (TLI)                               NA
+
+Root Mean Square Error of Approximation:
+
+  RMSEA                                          0.018       0.053
+  90 Percent Confidence Interval          0.011  0.026       0.046  0.061
+  P-value RMSEA &lt;= 0.05                          1.000       0.210
+
+  Robust RMSEA                                                  NA
+  90 Percent Confidence Interval                                NA     NA
+
+Standardized Root Mean Square Residual:
+
+  SRMR                                           0.018       0.018
+
+Parameter Estimates:
+
+  Information                                 Expected
+  Information saturated (h1) model        Unstructured
+  Standard Errors                           Robust.sem
+
+Regressions:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)
+  height ~                                            
+    eageg            -0.194    0.006  -35.175    0.000
+    sex              -0.665    0.005 -121.151    0.000
+  weight ~                                            
+    height            0.472    0.007   63.437    0.000
+    eageg             0.217    0.007   31.150    0.000
+    sex              -0.094    0.009  -11.005    0.000
+  bmigrp ~                                            
+    weight            1.173    0.005  227.193    0.000
+    height           -0.682    0.005 -126.544    0.000
+  hychol ~                                            
+    bmigrp            0.059    0.023    2.592    0.010
+    weight            0.037    0.025    1.516    0.130
+    sex               0.005    0.014    0.356    0.722
+    eageg             0.300    0.011   26.323    0.000
+
+Intercepts:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)
+   .height           -0.000    0.005   -0.000    1.000
+   .weight           -0.000    0.007   -0.000    1.000
+   .bmigrp            0.000                           
+   .hychol            0.000                           
+
+Thresholds:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)
+    bmigrp|t1        -0.136    0.006  -22.315    0.000
+    bmigrp|t2         1.015    0.010  106.699    0.000
+    hychol|t1         0.618    0.010   59.275    0.000
+
+Variances:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)
+   .height            0.519    0.005  114.581    0.000
+   .weight            0.706    0.006  115.552    0.000
+   .bmigrp            0.020                           
+   .hychol            0.992                           
+
+Scales y*:
+                   Estimate  Std.Err  z-value  P(&gt;|z|)
+    bmigrp            1.000                           
+    hychol            1.000                           
+```
+]
+???
+For this test to show statistical equality between the implied covariance matrix of the model and the covariance matrix of the data, the Model Fit Test Statistic should be less than the degrees of freedom with a high `\(p\)`
+
+---
+## Visualize Mismatch between Model and Data Covariance Matrix
+This shows observed - model-implied correlations
+![](overview_causal_inference_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
+---
+## Examine Modification Indices
+MI Indicates possible improvement in model test score
+
+```
+##       lhs  op    rhs         mi      epc  sepc.lv sepc.all sepc.nox
+## 17 bmigrp  ~~ bmigrp     32.184    1.628    0.020    0.019    0.019
+## 22 bmigrp ~*~ bmigrp  54043.674 1662.387 1662.387    1.000    1.000
+## 32 height  ~~ hychol   9591.984  -29.169  -29.169  -40.668  -40.668
+## 34 weight  ~~ hychol 267436.747  444.013  444.013  530.581  530.581
+## 35 bmigrp  ~~ hychol     32.184    0.096    0.096    0.679    0.679
+## 38 height   ~ hychol   9601.754  -29.422  -29.422  -30.922  -30.922
+## 39 weight   ~ bmigrp  30541.154  340.592  340.592  353.071  353.071
+## 40 weight   ~ hychol 274777.281  453.735  453.735  475.681  475.681
+## 41 bmigrp   ~ hychol     38.677    0.100    0.100    0.101    0.101
+## 44 hychol   ~ height   9591.999  -56.246  -56.246  -53.517  -53.517
+```
 ---
 ## Age, Exercise, Cholesterol Model Implies No Independence Relations
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-41-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-53-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -831,7 +1124,7 @@ Two Causal DAGs over the same set of variables are independence equivalent iff t
 These graphs are all independence equivalent.  (Verma and Pearl, 1988)
 ]
 .pull-right[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 ]
 ???
 This concept is explained in detail in the following lecture at around 28 minutes:
@@ -843,7 +1136,7 @@ From https://www.youtube.com/watch?v=TISSNwWDfw4&amp;list=PLO5mmwQolPRX858CyOOIH
 ---
 ### CPDAG (Completed Partially Directed Acyclic Graph)
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
 ]
 .pull-right[
 A CPDAG represents an equivalance class of independence equivalent graphs
@@ -857,12 +1150,12 @@ A CPDAG represents an equivalance class of independence equivalent graphs
 .pull-left[
 Hypothesized Graph
 
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-45-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-57-1.png" width="70%" /&gt;
 ]
 .pull-right[
 CPDAG
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -870,352 +1163,112 @@ class: middle, center
 # Part III: Causal Discovery from Observational Data
 
 ---
-# Causal Discovery: Inferring Causal Structure from Data
+# Inferring Causal Structure from Data
 
-.center[Casual DAGS `\(\Rightarrow\)` Independence Relations]
-
-.center[Casual DAGS `\(\Leftarrow\)` Independence Relations]
-
-Independencies in data imply possible DAGs
-[Add BMI dag and graph of effects to show that you can go from model to testing implications in data, or from independence in data to model discovery]
-
----
-### Results of the PC Algorithm (Spirtes et al. 1991) On The WHO Monica Dataset 
+.center[Casual DAG `\\(\Rightarrow\\)` Independence Relations]
 
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-47-1.png)&lt;!-- --&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-59-1.png" width="70%" /&gt;
+]
+
+.pull-right[
+.scroll-box-8[
+
+```
+bmigrp _||_ eageg | height, weight
+bmigrp _||_ sex | height, weight
+eageg _||_ sex
+height _||_ hychol | bmigrp, eageg, sex
+hychol _||_ weight | bmigrp, eageg, sex
+```
+]]
+
+.center[Casual DAGS `\\(\Leftarrow\\)` Independence Relations]
+
+
+---
+exclude: true
+### Results of the PC Algorithm (Spirtes and Glymour, 1991) On The WHO Monica Dataset 
+
+.pull-left[
+![](overview_causal_inference_files/figure-html/unnamed-chunk-61-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
 Graph implied by [Nature paper]
-![](overview_causal_inference_files/figure-html/unnamed-chunk-48-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
 ]
 
 ---
-# tetrad PC algo
-<div id="htmlwidget-670dfc94450b8dc85da6" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-670dfc94450b8dc85da6">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=none]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"chol\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"height\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+## Results of PC Algorithm on the WHO Dataset
+.pull-left[
+<div id="htmlwidget-dcf17d36bf0916461121" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-dcf17d36bf0916461121">{"x":{"diagram":"digraph g {\n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+]
 
+.pull-right[
+Graph implied by paper
+![](overview_causal_inference_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+]
+???
+The PC algorithm is one of the first causal discovery algorithms. As you can see from the inferred graph, many of the arrows are incorrect and some edges are not directional, meaning the algorithm could not orient the edge.
+
+One limitation of PC (and most other algoirithms) is that the independence tests assume linear relationships. As a result, the algorithm will mistake nonlinearly dependent variables as independent.
+
+See: Spirtes P, Glymour C. An algorithm for fast recovery of sparse causal graphs. Social science computer review. 1991 Apr;9(1):62-72.
 ---
-## Tetrad: Adding Knowledge
+## Adding Background Knowledge Improve Discovery
 
 
 ```r
-forbid &lt;- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('weight', 'bmigrp'), c('sex', 'bmigrp')) # List of forbidden directed edges
-require &lt;- list(c('eage','eageg'), c('bmi', 'bmigrp'), c('chol', 'hychol'), c('height', 'bmi'), c('weight', 'bmi')) # List of required directed edges
+# List of forbidden directed edges
+forbid &lt;- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('weight', 'bmigrp'), c('sex', 'bmigrp'))
+
+# List of required directed edges
+require &lt;- list(c('eage','eageg'), c('bmi', 'bmigrp'), c('chol', 'hychol'), c('height', 'bmi'), c('weight', 'bmi'))
+
+# Forbid edges between eage and sex
 forbiddenWithin &lt;- c('eage','sex')
-class(forbiddenWithin) &lt;- 'forbiddenWithin' # Make this tier forbidden within
-temporal &lt;- list(forbiddenWithin, c('eageg','height', 'weight'),c('bmi', 'chol'), c('bmigrp', 'hychol')) # List of temporal node tiers
+class(forbiddenWithin) &lt;- 'forbiddenWithin'
+
+# Add Temporal constraints
+temporal &lt;- list(forbiddenWithin, c('eageg','height', 'weight'), c('bmi', 'chol'), c('bmigrp', 'hychol')) 
+
 prior &lt;- priorKnowledge(requiredirect = require, addtemporal = temporal, forbiddirect = forbid)
 ```
+???
+Since bmigrp is defined only by bmi, we forbid other variables from causing it. We could likewise forbid the two other defined variables in the dataset, eageg and hychol, but the algorithm works fine as is.
 
-```
-## Forbidden Directed Edges:  4 
-## Between  chol  And  bmigrp 
-## Between  eage  And  bmigrp 
-## Between  weight  And  bmigrp 
-## Between  sex  And  bmigrp 
-## Required Directed Edges:  5 
-## From  eage  To  eageg 
-## From  bmi  To  bmigrp 
-## From  chol  To  hychol 
-## From  height  To  bmi 
-## From  weight  To  bmi 
-## Temporal Tiers:  4 
-## Tier:  0forbiddenWithin
-## temporal node:  eage 
-## temporal node:  sex 
-## Tier:  1
-## temporal node:  eageg 
-## temporal node:  height 
-## temporal node:  weight 
-## Tier:  2
-## temporal node:  bmi 
-## temporal node:  chol 
-## Tier:  3
-## temporal node:  bmigrp 
-## temporal node:  hychol
-```
-
+The temporal constraints indicate that lower tiers cannot have any directed edges to higher tiers. For instance, `bmi` and `chol` can have directed edges to `bmigrp` and `hychol`, as well as between themselves, but cannot have directed edges to the other variables that appear before them in the temporal list.
 ---
 # Tetrad PC Algorithm with Knowledge
-<div id="htmlwidget-0570fb92c2a451e6614f" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-0570fb92c2a451e6614f">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=normal]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"eageg\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-67bf5925a6f52ac735c1" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-67bf5925a6f52ac735c1">{"x":{"diagram":"digraph g {\n \"bmigrp\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 ---
 ## Adding Knowledge: Required Edges
 
 `TRUE` means the pair of variables must be connected by an edge
 
-&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
- &lt;thead&gt;
-  &lt;tr&gt;
-   &lt;th style="text-align:left;"&gt; id &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; sex &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; eage &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; eageg &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; chol &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; weight &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; height &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; bmi &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; hychol &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; bmigrp &lt;/th&gt;
-  &lt;/tr&gt;
- &lt;/thead&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;sex&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;eage&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;eageg&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;chol&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;weight&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;height&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;bmi&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;hychol&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;bmigrp&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
+
 
 ---
 ## Adding Knowledge: Forbidden Edges
 
 A `\(1\)` means the row variable (e.g., `height`) must not have direct edge to the column variable (e.g., `bmi`)
 
-&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
- &lt;thead&gt;
-  &lt;tr&gt;
-   &lt;th style="text-align:left;"&gt; id &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; sex &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; eage &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; eageg &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; chol &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; weight &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; height &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; bmi &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; hychol &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; bmigrp &lt;/th&gt;
-  &lt;/tr&gt;
- &lt;/thead&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;sex&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;eage&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;eageg&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;chol&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;weight&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;height&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;bmi&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;hychol&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;bmigrp&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: gray !important;"&gt;FALSE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; &lt;span style="     color: red !important;"&gt;TRUE&lt;/span&gt; &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
+
 ---
 
 ### Results of the PC Algorithm With Background Knowledge 
 
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+
 ]
 
 .pull-right[
 Graph implied by [Nature paper]
-![](overview_causal_inference_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-70-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1239,12 +1292,12 @@ Propensity score example
 .pull-left[
 Original Graph
 
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-56-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-71-1.png" width="70%" /&gt;
 ]
 .pull-right[
 CPDAG
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-72-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1261,7 +1314,7 @@ Original Graph
 .pull-right[
 CPDAG
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1287,7 +1340,7 @@ A counfounder of `\(X\)` (the treatment) and `\(Y\)` (the outcome) is a variable
 ]
 .pull-right[
 Z is a confounder of `\(X \rightarrow Y\)`
-![](overview_causal_inference_files/figure-html/unnamed-chunk-60-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
 ]
 ???
 This definition may be correct, though it is limited
@@ -1318,7 +1371,7 @@ Harvard researchers argued that such an analysis could find an association betwe
 ---
 ## Causal DAGs for each hypothesis
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-61-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
 ]
 ---
 ## Adjust done at data collection or analysis (from Elwert)
@@ -1346,7 +1399,7 @@ where `\(V_1, V_2,..., V_n\)` are the variables in `\(M\)`, and `\(pa_i\)` are t
 ]
 
 .pull-right[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-77-1.png)&lt;!-- --&gt;
 
 `$$P(a,e,c)=P(a)*P(e|a)*P(c|a, e)$$`
 ]
@@ -1385,12 +1438,12 @@ Value of Y given a specific intervention on X
 
 .pull-left[
 ### Cholesterol vs Age
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-64-1.png" width="70%" /&gt;
-`\(c = 100.31+0.19a \space (p&lt;.001)\)` (obs and int dist identical)
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-79-1.png" width="70%" /&gt;
+`\(c = 100.27+0.2a \space (p&lt;.001)\)` (obs and int dist identical)
 ]
 .pull-right[
 ### Wrong: Cholesterol vs Exercise
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-65-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-80-1.png" width="70%" /&gt;
 ]
 
 ---
@@ -1411,7 +1464,7 @@ g &lt;- rbinom(n, 1, .5)
 p_h_gx = c(.3, .4, .05, .075)
 h &lt;- rbinom(n, 1, p_h_gx[g*2+x+1])
 ```
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-67-1.png" width="100%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-82-1.png" width="100%" /&gt;
 ]
 .pull-right[
 Dichotomous Interventional Generative Model
@@ -1424,7 +1477,7 @@ g &lt;- rbinom(n, 1, .5)
 p_h_gx = c(.3, .4, .05, .075) # p(H|M,T)
 h &lt;- rbinom(n, 1, p_h_gx[g*2+x+1])
 ```
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-69-1.png" width="100%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-84-1.png" width="100%" /&gt;
 
 ```r
 # CPT of h given g and x
@@ -1435,8 +1488,8 @@ xtabs(p_h ~ G+X, p_h)
 ```
 ##    X
 ## G            0          1
-##   0 0.29046474 0.40056361
-##   1 0.05263158 0.07922393
+##   0 0.30004011 0.39713701
+##   1 0.05015674 0.07011952
 ```
 ]
 
@@ -1452,18 +1505,19 @@ addmargins(xtabs(p_h ~ G+X, p_h))
 ```
 ##      X
 ## G              0          1        Sum
-##   0   0.29046474 0.40056361 0.69102835
-##   1   0.05263158 0.07922393 0.13185551
-##   Sum 0.34309632 0.47978754 0.82288386
+##   0   0.30004011 0.39713701 0.69717713
+##   1   0.05015674 0.07011952 0.12027626
+##   Sum 0.35019685 0.46725654 0.81745339
 ```
 
 ---
 ## GGPlotly graph
-<div id="htmlwidget-d6e0dfa73fb653af83e3" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-d6e0dfa73fb653af83e3">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-72.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-83c13358779a0ea0808b" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-83c13358779a0ea0808b">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-87.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
 <script>var slideshow = remark.create({
 "highlightStyle": "github",
 "highlightLines": true,

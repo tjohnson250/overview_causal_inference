@@ -1,7 +1,7 @@
 ---
 title: "A Brief Overview of Causal Inference"
 subtitle: ""
-author: "Todd R. Johnson, PhD"
+author: 'Todd R. Johnson, PhD <br> Professor <br><br> <a href="https://github.com/tjohnson250"><i class="fab fa-github fa-fw"></i>&nbsp; tjohnson250</a><br> <a href="https://twitter.com/johnsontoddr4"> <i class="fab fa-twitter fa-fw"></i>&nbsp; @johnsontoddr4</a><br> <a href="mailto:todd.r.johnson@uth.tmc.edu"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; todd.r.johnson@uth.tmc.edu</a><br><br>'
 institute: "The University of Texas School of Biomedical Informatics at Houston" 
 date: "`r Sys.Date()`"
 output:
@@ -14,8 +14,11 @@ output:
       highlightLines: true
       countIncrementalSlides: false
       ratio: '16:9'
+      beforeInit: "https://platform.twitter.com/widgets.js"
       navigation:
         scroll: false # disable slide transitions by scrolling
+    includes:
+      in_header: header.html  
         
 ---
 
@@ -35,10 +38,13 @@ library(Rgraphviz)
 library(rcausal)
 library(DOT)
 library(DiagrammeR)
+library(corrplot)
+library(lavaan)
 ```
+
 # Disclaimer
 
-use the arrow keys to navigate. Press `h` for help. To see speaker notes, press `p` to enter presentation mode. 
+Use the arrow keys to navigate. Press .key[h] `h` for help. To see speaker notes, press `p` to enter presentation mode. 
 
 This is unfinished work. My primary objective for creating this presentation is to help me understand the basics of causal infererence. I hope to use it to help others as well, especially machine learning researchers who tend to make predictive, rather than causal models.
 
@@ -74,11 +80,13 @@ class: middle
 
 ### Part I: Causation
 
-### Part II: Estimating Causal Effects from Observational Data
+### Part II: Identifying and Estimating Causal Effects from Observational Data
 
-### Part III: Causal Discovery from Observational Data
+### Part III: Causal Model Evaluation
 
-### Part IV: Counterfactual Reasoning
+### Part IV: Causal Discovery from Observational Data
+
+### Part V: Counterfactual Reasoning
 
 ---
 class: center, middle
@@ -133,6 +141,21 @@ Causal DAG (Directed Acyclic Graph)
   - Missing links indicate the strong assumption of no direct causal effect
   - Must include all common causes of any pair of variables already in the DAG
 ]
+
+---
+exclude: true
+# Lavaan exploration
+```{r}
+library(lavaan)
+model <- '
+  # regressions
+  A ~ 1
+  E ~ A
+  C ~ A + E
+  '
+fit <- sem(model, data=dobs)
+summary(fit, standardized=TRUE)
+```
 
 ---
 ## Intervening Changes the Generative Model
@@ -212,7 +235,9 @@ The coefficient for $e$ on the observational distribution is way off, but the co
 # Difference Between Seeing and Doing
 .pull-left[
 ### Observational Association
-$E(C|e)$: The expected value of Cholesterol given that we observe a specific level of exercise
+$E(C|e)$: The expected value of Cholesterol given that we observe a specific level of exercise.
+
+$E(C|e)$ is confounded, because age $A$ affects both the amount of exercise $E$ a person gets and cholesterol levels $C$.
 ]
 .pull-right[
 ### Interventional Association (Causal Effect)
@@ -280,7 +305,7 @@ We say that $\mathbf{X}$ **causes** $\mathbf{Y}$ in a population when the **aver
 ---
 class: center, middle
 
-## Part II: Estimating Causal Effects from
+## Part II: Identifying and Estimating Causal Effects from
 ## Observational Data
 
 ---
@@ -433,7 +458,7 @@ See here for how to cite sources using refmanager package: https://github.com/yi
 
 ---
 class: center, middle
-.Large[Two Kinds of Paths: .shout[Causal] and .shout[Non-Causal]]
+.Large[Two Kinds of Paths: **Causal** and **Non-Causal**]
 
 ---
 ## Causal Paths
@@ -497,6 +522,10 @@ Adjusting for $A$ in the observational data blocks this path, allowing us to use
 
 ---
 ## Identifiability
+A causal effect is **identifiable** if the controlled (post-intervention) distribution can be estimated from data drawn from the observational (pre-intervention) distribution.
+
+The **Backdoor Criterion** is one identification method:
+
 The causal effect of $T$ on $Y$ is **identifiable** if
 we can adjust for a set of variables that
 
@@ -505,7 +534,7 @@ we can adjust for a set of variables that
 
 ---
 ### Blocking and Unblocking Paths
-All Causal DAGs can be constructed from these three patterns
+All Causal DAGs are a combination of these three patterns:
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%", fig.height=2}
@@ -633,7 +662,7 @@ Adjustment sets for $X \rightarrow Y$:
 print( adjustmentSets(g1, 'X', 'Y'))
 ```
 
-Adjusting for any one of these sets of variables eliminates confouding for causal effect of $X$ on $Y$
+Adjusting for any one of these sets of variables eliminates confouding for the causal effect of $X$ on $Y$
 
 For a linear model this means regressing $Y$ on $X$, including as covariates only one set of these variables 
 
@@ -654,6 +683,12 @@ ggdag_adjustment_set(g1, exposure='X', outcome='Y') + theme_dag_gray()
 ```
 ???
 Bold edges are unadjusted, light edges are adjusted
+
+The backdoor criterion implicitly prevents adjusting for children of mediators. For instance, suppose we want to determine the causal effect of $X$ on $Y$ in the model:
+
+$$X \rightarrow Z \rightarrow Y$$
+$$Z \rightarrow Z_2$$
+where $Z$, a mediator, causes $Z_2$. It is clear that adjusting for $Z$ would block the path between $X$ and $Y$, but adjusting for $Z_2$ would partially block the path.
 
 ---
 # Frontdoor Adjustment Criterion
@@ -682,14 +717,17 @@ Step 1. Identify $X \rightarrow Z$:
   * Backdoor path blocked by collider $Y$
   
 $$X \leftarrow U \rightarrow Y \leftarrow Z$$
-
+  * In R: `lm(obsdata, Z ~ X)`
+  
 Step 2. Identify $Z \rightarrow Y$:
 
   * Backdoor path blocked by adjusting for $X$
 
 $$Z \leftarrow X \leftarrow U \rightarrow Y$$
+  * In R: `lm(obsdata, Y ~ Z + X)`
 ]
-
+???
+Since $U$ is unmeasured, we cannot adjust for it. However, in this case, the frontdoor adjustment criterion allows us to identify the causal effect of $X$ on $Y$ in two steps.
 ---
 ## Frontdoor Adjustment Criterion (Pearl 1995)
 A set of variables $\{Z\}$ satisfies the **frontdoor criterion** relative to an ordered pair of variables $\{X, Y\}$ in a DAG if:
@@ -708,17 +746,144 @@ $x$ is the value of $X$ in $do(x)$, $x'$ refers to all values of $X$
 
 ---
 ## Instrumental Variables
+Instrumental variables are those that only affect the treatment, with no relationship to anything else
+
+---
+# Identifying Covariate Specific Effects
+Suppose a drug $D$ affects $C$, gender $G$ affects who takes the drug.
+
+.pull-left[
+What is the effect of $E$ on $C$ when we *observe* $D = d$?
+```{r, echo=FALSE, out.width="70%"}
+gaecdg <- dagitty('dag{
+  A [pos="1,1"]
+  E [pos="0,0"]
+  C [pos="2,0"]
+  D [pos="1, -1"]
+  G [pos="2, -1"]
+  A -> C A->E  E->C D->C G->D G->C}')
+pgaecdg <- ggdag(gaecdg, text_size=11) + theme_dag_gray()
+pgaecdg
+```
+]
+.pull-right[
+Estimate $P(C=c|do(E=e), D=d)$
+
+
+Must use an adjustment set ${S} \cup D$ that blocks all backdoor paths from $E$ to $C$.
+
+No need to block backdoor path from $D$ to $C$.
+
+Valid adjustment set: ${A, D}$
+
+Regression: `lm(obsdata, C ~ A + D)`
+
+Mathematically:
+
+$$\begin{aligned} P(Y=y&|do(X=x), Z=z) = \\  &\sum_S P(Y=y|X=x, S=s, Z=z)P(S=s|Z=z) \end{aligned}$$
+
+]
+???
+Note that the summation in the adjustment formula is over $S$, not $S \cup Z$. $S$ is the set of all the other variables needed to block the backdoor paths from $X$ to $Y$.
+
+We don't want to block the backdoor path from $D$ to $C$ here, because the query is asking for the effect of $E$ on $C$ when we intervene on $E$ and then in the resulting interventional distribution observe $D=d$.
+
+In contrast, if we just want to identify $P(Y=y|do(X=x))$ we have:
+
+$$P(Y=y|do(X=x)) = P(Y=y|X=x, S=s)P(S=s)$$
+
+where $S$ is a valid adjustment set that blocks the backdoor paths from $X$ to $Y$.
+
+The basic idea is that when we look at the interventional distribution (resulting from adjusting for $S$), we must stratify by $Z$ to compute the covariate-specific effect, which means we are also adjusting for $Z$. Thus we have to make sure that adjusting for $Z$ does not open any backdoor paths for the effect from $X$ to $Y$.]
+
+---
+### Identifying the Effects of Multiple Interventions
+What is the effect of simultaneously intervening on $X$ and $Z2$?
+.pull-left[
+What is the effect of $E$ on $C$ when we *observe* $D = d$?
+```{r, echo=FALSE, out.width="70%"}
+pgaecdg
+```
+]
+.pull-right[
+Estimate $P(C=c|do(E=e, D=d))$
+
+Must use an adjustment set that blocks all backdoor paths from $E$ to $C$ and $D$ to $C$
+
+```{r, echo=FALSE}
+print( adjustmentSets(gaecdg, c('E', 'D'), 'C'))
+```
+Regression: `lm(C ~ E + A + D + G)`
+
+Mathematically:
+
+$$\begin{aligned} P(Y=y&|do(X=x, Z=z)) = \\  &\sum_S P(Y=y|X=x, Z=z, S=s)P(S=s) \end{aligned}$$
+]
+???
+To estimate the effect of simultaneously intervening on $X$ and $Z2$, we need an adjustment set that blocks all backdoor paths for both variables.
+
+In this case the regression must include $X$ and $Z2$:
+```{r, eval=FALSE}
+lm(Y ~ X + W1 + W2 + Z2)
+```
+
+Here, we can use the same regression equation as the previous covariate-specific example. But consider $P(y|do(x,w1))$ vs. $P(y|do(x), w1)$.
+
+The adjustment set for $P(y|do(w1,z1))$ is:
+```{r, echo=FALSE}
+print( adjustmentSets(g1, c('V', 'Z1'), 'Y'))
+```
+The regression is:
+```{r, eval=FALSE}
+lm(Y ~ W1 + Z1 + V)
+```
+The adjustment sets for $P(y|do(w1), z1)$ are:
+```{r, echo=FALSE}
+print( adjustmentSets(g1, 'V', 'Y'))
+```
 
 ---
 ## Confounding is a Causal Concept
 
 * The data alone are insufficient to identify confounders or control for confouding
-* Without a model, observational data is limited to associational models that do not tell us how to intervene
+* Without a causal model, observational data is limited to associational models that do not tell us how to intervene
   + This includes all common machine learning and statistical approaches
   + Example: If an associational predictive model finds a few highly predictive "risk factors" we cannot assume that intervening on those risk factors will decrease risk.
-  
+  + Variables that increase the predictive power of an associational model may include effects of the outcome, such as symptoms of a disease you are trying to predict
+* Associational predictive models are still useful if we already have interventions that are known to work
+  + If we know that a treatment works if given earlier in the course of a disease, better predictive models can tell us who to treat
+
 ---
-## Model Testability
+class: center, middle, Large
+
+Causal Inference Requires a Causal Model,
+
+But...
+
+How Do we Know if Our Model is Correct?
+---
+class: center, middle
+# Part III: Model Evaluation
+
+---
+# Two Approaches to Model Evaluation
+Local fit tests
+
+- Tests of model-implied conditional independence assumptions
+
+Global fit tests
+
+- Model chi-square: comparison of model vs. observed covariance matrices)
+
+- RMSEA: Root Mean Square Error of Approximation
+
+- CFI: Comparative fit index
+
+- SRMSR: Standaridzed Root Mean Square Residual
+???
+From: Kline RB. Principles and practice of structural equation modeling. Guilford publications; 2015 Nov 3.
+---
+## Model Evaluation
 Causal DAG's imply independence relations
 
 .pull-left[
@@ -754,27 +919,22 @@ $$\space$$
 
 ---
 ## Example: Independence Relations
-Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project. *International Journal of Obesity.* 2004 Aug;28(8):1082.
+.small[Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. **Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project.** *International Journal of Obesity.* 2004 Aug;28(8):1082.]
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
 gmonica <- dagitty('dag{
-    eage [pos="0,3"]
-    eageg [pos="0,2"]
-    sex [pos="1,3"]
-    height [pos="2,2"]
-    weight [pos="3, 2"]
-    bmi [pos="0,1"]
-    chol [pos="2, 1"]
+    eageg [pos="0,3"]
+    sex [pos="2,3"]
+    height [pos="0,2"]
+    weight [pos="1, 2"]
     bmigrp [pos="0,0"]
-    hychol [pos="2,0"]
-    eage -> {eageg weight chol}
-    sex -> {chol height weight}
-    height -> {weight bmi}
-    weight -> bmi
-    bmi -> chol
-    bmi -> bmigrp
-    chol -> hychol
+    hychol [pos="1,0"]
+    eageg -> {weight hychol}
+    sex -> {hychol height weight}
+    height -> {weight bmigrp}
+    weight -> bmigrp
+    bmigrp -> hychol
 }')
 pgmonica <- ggdag(gmonica) + theme_dag_gray()
 pgmonica
@@ -794,20 +954,21 @@ Given data on these variables, we can test for these statistical relationships.
 ]
 
 ---
-## Model Evaluation by Testing Independencies in Observed Data
+### Model Evaluation by Testing Implied Independencies with Observed Data
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
+monica <- as_tibble(read.csv("monica-chol.csv"))
+monica <- select(monica, -one_of(c('eage', 'bmi', 'chol')))
 pgmonica
 ```
 ]
 
 .pull-right[
-Independence Tests for all implied independencies:
+Independence Tests for all implied independencies based on `r nrow(monica)` patients.
 
 
 ```{r, echo=FALSE, out.width="100%", comment=NA}
-monica <- as_tibble(read.csv("monica-chol.csv"))
 r <- localTests( gmonica, monica, "cis" )
 r$p.value <- p.adjust(r$p.value) # Perform Holm-Bonferroni correction
 DT::datatable(r %>% select(estimate, p.value), fillContainer = FALSE, class = "nowrap hover", options = list(pageLength=3, dom = 'tp', order = list(list(2, "asc")))) %>% formatRound(c("estimate", "p.value"), 2)
@@ -875,22 +1036,17 @@ This contradicts our model
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
 gmonica <- dagitty('dag{
-    eage [pos="0,3"]
-    eageg [pos="0,2"]
-    sex [pos="1,3"]
-    height [pos="2,2"]
-    weight [pos="3, 2"]
-    bmi [pos="0,1"]
-    chol [pos="2, 1"]
+    eageg [pos="0,3"]
+    sex [pos="2,3"]
+    height [pos="0,2"]
+    weight [pos="1, 2"]
     bmigrp [pos="0,0"]
-    hychol [pos="2,0"]
-    eage -> {eageg weight chol height}
-    sex -> {chol height weight}
-    height -> {weight bmi}
-    weight -> bmi
-    bmi -> chol
-    bmi -> bmigrp
-    chol -> hychol
+    hychol [pos="1,0"]
+    eageg -> {weight hychol height}
+    sex -> {hychol height weight}
+    height -> {weight bmigrp}
+    weight -> bmigrp
+    bmigrp -> hychol
 }')
 pgmonica <- ggdag(gmonica) + theme_dag_gray()
 pgmonica
@@ -908,6 +1064,52 @@ pr <- ggplot(r, aes(x=estimate, y=rownames(r))) + geom_point() + geom_errorbarh(
 pr
 ```
 ]
+
+---
+## Compare Model's Implied Covariance Matrix to Data
+
+$p = 0$ indicates that the covariance matrices are not similar.
+
+```{r, echo=FALSE, message=FALSE, warning = FALSE}
+model <- '
+  # regressions
+  #eageg ~ 1
+  #sex ~ 1
+  height ~ eageg + sex
+  weight ~ height + eageg + sex
+  bmigrp ~ weight + height
+  hychol ~ bmigrp + weight + sex + eageg
+  '
+fit <- sem(model, data=monica, ordered = c("bmigrp", "hychol"), std.ov=TRUE)
+```
+.scroll-box-8[
+```{r, echo=FALSE, out.width="70%", comment=NA}
+summary(fit, fit.measures=TRUE)
+```
+]
+???
+For this test to show statistical equality between the implied covariance matrix of the model and the covariance matrix of the data, the Model Fit Test Statistic should be less than the degrees of freedom with a high $p$
+
+---
+## Visualize Mismatch between Model and Data Covariance Matrix
+This shows observed - model-implied correlations
+```{r, echo=FALSE}
+# Function from: https://psu-psychology.github.io/r-bootcamp-2018/talks/lavaan_tutorial.html
+plot_matrix <- function(matrix_toplot){
+corrplot::corrplot(matrix_toplot, is.corr = FALSE,
+               type = 'lower',
+               order = "original",
+               tl.col='black', tl.cex=.75)
+}
+plot_matrix(residuals(fit, type="cor")$res.cov) # 
+# plot_matrix(residuals(fit)$res.cov)
+```
+---
+## Examine Modification Indices
+MI Indicates possible improvement in model test score
+```{r, echo=FALSE}
+modificationindices(fit, minimum.value = 20)
+```
 ---
 ## Age, Exercise, Cholesterol Model Implies No Independence Relations
 .pull-left[
@@ -988,17 +1190,29 @@ class: middle, center
 # Part III: Causal Discovery from Observational Data
 
 ---
-# Causal Discovery: Inferring Causal Structure from Data
+# Inferring Causal Structure from Data
 
-.center[Casual DAGS $\Rightarrow$ Independence Relations]
+.center[Casual DAG `\\(\Rightarrow\\)` Independence Relations]
 
-.center[Casual DAGS $\Leftarrow$ Independence Relations]
+.pull-left[
+```{r, echo=FALSE, out.width="70%"}
+pgmonica
+```
+]
 
-Independencies in data imply possible DAGs
-[Add BMI dag and graph of effects to show that you can go from model to testing implications in data, or from independence in data to model discovery]
+.pull-right[
+.scroll-box-8[
+```{r, echo=FALSE, out.width="70%", comment=NA}
+impliedConditionalIndependencies( gmonica, max.results = Inf )
+```
+]]
+
+.center[Casual DAGS `\\(\Leftarrow\\)` Independence Relations]
+
 
 ---
-### Results of the PC Algorithm (Spirtes et al. 1991) On The WHO Monica Dataset 
+exclude: true
+### Results of the PC Algorithm (Spirtes and Glymour, 1991) On The WHO Monica Dataset 
 
 .pull-left[
 ```{r, echo=FALSE, fig.height=6}
@@ -1016,25 +1230,50 @@ pgmonica
 ]
 
 ---
-# tetrad PC algo
+## Results of PC Algorithm on the WHO Dataset
+.pull-left[
 ```{r, echo=FALSE}
 res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, colliderDiscoveryRule = 2)
 graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
 grViz(graph_dot)
 ```
+]
 
+.pull-right[
+Graph implied by paper
+```{r, echo=FALSE, fig.height=6}
+pgmonica
+```
+]
+???
+The PC algorithm is one of the first causal discovery algorithms. As you can see from the inferred graph, many of the arrows are incorrect and some edges are not directional, meaning the algorithm could not orient the edge.
+
+One limitation of PC (and most other algoirithms) is that the independence tests assume linear relationships. As a result, the algorithm will mistake nonlinearly dependent variables as independent.
+
+See: Spirtes P, Glymour C. An algorithm for fast recovery of sparse causal graphs. Social science computer review. 1991 Apr;9(1):62-72.
 ---
-## Tetrad: Adding Knowledge
+## Adding Background Knowledge Improve Discovery
 
-```{r}
-forbid <- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('weight', 'bmigrp'), c('sex', 'bmigrp')) # List of forbidden directed edges
-require <- list(c('eage','eageg'), c('bmi', 'bmigrp'), c('chol', 'hychol'), c('height', 'bmi'), c('weight', 'bmi')) # List of required directed edges
+```{r, results="hide"}
+# List of forbidden directed edges
+forbid <- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('weight', 'bmigrp'), c('sex', 'bmigrp'))
+
+# List of required directed edges
+require <- list(c('eage','eageg'), c('bmi', 'bmigrp'), c('chol', 'hychol'), c('height', 'bmi'), c('weight', 'bmi'))
+
+# Forbid edges between eage and sex
 forbiddenWithin <- c('eage','sex')
-class(forbiddenWithin) <- 'forbiddenWithin' # Make this tier forbidden within
-temporal <- list(forbiddenWithin, c('eageg','height', 'weight'),c('bmi', 'chol'), c('bmigrp', 'hychol')) # List of temporal node tiers
+class(forbiddenWithin) <- 'forbiddenWithin'
+
+# Add Temporal constraints
+temporal <- list(forbiddenWithin, c('eageg','height', 'weight'), c('bmi', 'chol'), c('bmigrp', 'hychol')) 
+
 prior <- priorKnowledge(requiredirect = require, addtemporal = temporal, forbiddirect = forbid)
 ```
+???
+Since bmigrp is defined only by bmi, we forbid other variables from causing it. We could likewise forbid the two other defined variables in the dataset, eageg and hychol, but the algorithm works fine as is.
 
+The temporal constraints indicate that lower tiers cannot have any directed edges to higher tiers. For instance, `bmi` and `chol` can have directed edges to `bmigrp` and `hychol`, as well as between themselves, but cannot have directed edges to the other variables that appear before them in the temporal list.
 ---
 # Tetrad PC Algorithm with Knowledge
 ```{r, echo=FALSE}
@@ -1048,7 +1287,7 @@ grViz(graph_dot)
 
 `TRUE` means the pair of variables must be connected by an edge
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 # Required Edges
 k <- matrix(FALSE, nrow = length(names(monica)), ncol = length(names(monica)))
 rownames(k)<-names(monica)
@@ -1074,7 +1313,7 @@ kable_styling(full_width = F)
 
 A $1$ means the row variable (e.g., `height`) must not have direct edge to the column variable (e.g., `bmi`)
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 # Forbidden Edges
 kf <- matrix(FALSE, nrow = length(names(monica)), ncol = length(names(monica)))
 rownames(kf)<-names(monica)
@@ -1097,7 +1336,7 @@ kable_styling(full_width = F)
 ### Results of the PC Algorithm With Background Knowledge 
 
 .pull-left[
-```{r, echo=FALSE, fig.height=6}
+```{r, echo=FALSE, fig.height=6, eval=FALSE}
 suffStat <- list(C = cor(monica), n = nrow(monica))
 pc.monica <- pc(suffStat, indepTest = gaussCItest, labels = names(monica), alpha = 0.05, skel.method="stable", fixedEdges = k, fixedGaps = kf)
 plot(pc.monica)

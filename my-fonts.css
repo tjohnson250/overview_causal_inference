@@ -152,6 +152,5 @@ h1, h2, h3 {
 .gray { color: gray; }
 .grey { color: gray; }
 
-.bold { color: #1c5253;
-        font-weight: bold; }
+.bold { font-weight: bold; }
 .bolder { font-weight: bolder; }
