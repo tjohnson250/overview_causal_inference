@@ -4,7 +4,7 @@
     <title>A Brief Overview of Causal Inference</title>
     <meta charset="utf-8" />
     <meta name="author" content="Todd R. Johnson, PhD   Professor      tjohnson250     @johnsontoddr4    todd.r.johnson@uth.tmc.edu" />
-    <meta name="date" content="2019-07-01" />
+    <meta name="date" content="2019-07-02" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <script src="libs/kePrint/kePrint.js"></script>
     <script src="libs/htmlwidgets/htmlwidgets.js"></script>
@@ -32,7 +32,7 @@ class: center, middle, inverse, title-slide
 # A Brief Overview of Causal Inference
 ### Todd R. Johnson, PhD <br> Professor <br><br> <a href="https://github.com/tjohnson250"><i class="fab fa-github fa-fw"></i>  tjohnson250</a><br> <a href="https://twitter.com/johnsontoddr4"> <i class="fab fa-twitter fa-fw"></i>  <span class="citation">@johnsontoddr4</span></a><br> <a href="mailto:todd.r.johnson@uth.tmc.edu"><i class="fa fa-paper-plane fa-fw"></i>  todd.r.johnson@uth.tmc.edu</a><br><br>
 ### The University of Texas School of Biomedical Informatics at Houston
-### 2019-07-01
+### 2019-07-02
 
 ---
 
@@ -184,7 +184,7 @@ Intervening on `\(e\)`, means replacing the expression for `\(e\)` from the obse
 ### Observational Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-6-1.png" width="70%" /&gt;
 
-`\(c = 102.71+0.49e \space (p&lt;.001)\)`
+`\(c = 102.59+0.5e \space (p&lt;.001)\)`
 ]
 
 --
@@ -193,7 +193,7 @@ Intervening on `\(e\)`, means replacing the expression for `\(e\)` from the obse
 ### Interventional Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-7-1.png" width="70%" /&gt;
 
-`\(c = 124.96+-1e \space (p&lt;.001)\)`
+`\(c = 125.01+-1e \space (p&lt;.001)\)`
 ]
 
 ???
@@ -245,17 +245,17 @@ Step 1: Estimate functional relationship between C and E using linear regression
 
 
 
-`$$c = 124.96+-1e \space (p&lt;.001)$$`
+`$$c = 125.01+-1e \space (p&lt;.001)$$`
 
-`$$E(C|do(E=e))=124.96+-1e \space (p&lt;.001)$$`
+`$$E(C|do(E=e))=125.01+-1e \space (p&lt;.001)$$`
 
 Step 2: Use regression equation to calculate ACE
 
 $$
 `\begin{align}
   ACE &amp;= E(Y|do(E=1))-E(Y|do(E=2)) \\
-      &amp;= (124.96+-1*1) - (124.96+-1*2) \\
-      &amp;= 122.97 - 123.97 \\
+      &amp;= (125.01+-1*1) - (125.01+-1*2) \\
+      &amp;= 123 - 124.01 \\
       &amp;= -1
 \end{align}`
 $$
@@ -278,7 +278,7 @@ class: center, middle
 #### using E to predict C gives an incorrect estimate,
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-9-1.png" width="70%" /&gt;
 
-`\(c = 102.71+0.49e \space (p&lt;.001)\)`
+`\(c = 102.59+0.5e \space (p&lt;.001)\)`
 ]
 
 --
@@ -287,7 +287,7 @@ class: center, middle
 #### but controlling for C gives the correct estimate
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
 
-`\(c = 100.11+-1.07e + 0.52a \space (p&lt;.001)\)`
+`\(c = 100.1+-1.01e + 0.5a \space (p&lt;.001)\)`
 ]
 ???
 The graph on the right shows the observational data with a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between `\(C\)` and `\(E\)`. Lines near the left and right are incorrect due to sparse data. Stratifying by age (here age group) is one method for controlling or adjusting for a confounder, such as `\(A\)`.
@@ -313,7 +313,7 @@ lm(C ~ E, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E  
-##    102.7072       0.4853
+##    102.5910       0.4955
 ```
 ]
 .pull-right[
@@ -330,12 +330,12 @@ lm(C ~ E + A, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E            A  
-##    100.1097      -1.0716       0.5195
+##    100.0953      -1.0051       0.4998
 ```
 ]
 ---
 ### What is the Causal Effect of Age on Cholesterol?
-Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.11+-1.07e + 0.52a\)`
+Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.1+-1.01e + 0.5a\)`
 .pull-left[
 
 ```r
@@ -371,18 +371,18 @@ $$
 .pull-left[
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
 
-`\(c = 100.07+0.2a \space (p&lt;.001)\)`
+`\(c = 100.14+0.2a \space (p&lt;.001)\)`
 ]
 .pull-right[
 This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of `\(A\)` on `\(C\)` and `\(E\)` on `\(C\)`
   
 - Total effect of `\(E\)`, Direct effect of `\(A\)`:
 
-    `\(c = 100.11+-1.07e + 0.52a \space (p&lt;.001)\)`
+    `\(c = 100.1+-1.01e + 0.5a \space (p&lt;.001)\)`
 
 -  Total effect of `\(A\)`:
 
-    `\(c = 100.07+0.2a \space (p&lt;.001)\)`
+    `\(c = 100.14+0.2a \space (p&lt;.001)\)`
   
 Simply throwing all covariates into a single regression is insufficient... but this is what most machine learning models do
 ]
@@ -846,16 +846,19 @@ This Causal DAG implies the following conditional independencies
 .scroll-box-8[
 
 ```
-bmigrp _||_ eageg, sex | height, weight
-eageg _||_ height, sex
-height _||_ eageg | sex
-hychol _||_ height, weight | bmigrp, eageg, sex
-sex _||_ eageg
+bmigrp _||_ eageg | height, weight
+bmigrp _||_ sex | height, weight
+eageg _||_ height
+eageg _||_ sex
+height _||_ hychol | bmigrp, eageg, sex
+hychol _||_ weight | bmigrp, eageg, sex
 ```
 ]
 
 Given data on these variables, we can test for these statistical relationships.
 ]
+???
+The tests shown here form a basis set for this graph, even though I did not tell dagitty to return the basis set (using option type="basis.set"). Specifying this option gives a set that when passed to localTests returns a list with p-values that are not easily accessible for later tests. The 'piecewiseSEM' package appears to have better functions for calculating and then testing basis sets. It also has a function 'fisherC' to directly calculate the C statistic.
 
 ---
 ### Testing Implied Independencies with Observed Data
@@ -868,8 +871,8 @@ Given data on these variables, we can test for these statistical relationships.
 Independence tests for all implied independencies based on 17440 participants:
 
 
-<div id="htmlwidget-e4066df51dcd526be12b" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e4066df51dcd526be12b">{"x":{"filter":"none","fillContainer":false,"data":[["bmigrp _||_ eageg | height, weight","bmigrp _||_ sex | height, weight","eageg _||_ height","eageg _||_ sex","height _||_ hychol | bmigrp, eageg, sex","hychol _||_ weight | bmigrp, eageg, sex"],[0.0130031546385232,-0.017136283212477,-2.19489596560299,-2.672352570735e-05,-0.00138660727127573,0.00100917415354059],[2.13804203310127e-06,0.0585862658646039,4.1824828237127e-142,0.998672916422782,0.458122403906288,0.0585862658646039]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-3742631b4c283d4af1a7" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3742631b4c283d4af1a7">{"x":{"filter":"none","fillContainer":false,"data":[["bmigrp _||_ eageg | height, weight","bmigrp _||_ sex | height, weight","eageg _||_ height","eageg _||_ sex","height _||_ hychol | bmigrp, eageg, sex","hychol _||_ weight | bmigrp, eageg, sex"],[0.0130031546385232,-0.017136283212477,-2.19489596560299,-2.672352570735e-05,-0.00138660727127573,0.00100917415354059],[2.13804203310127e-06,0.0585862658646039,4.1824828237127e-142,0.998672916422782,0.458122403906288,0.0585862658646039]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 ]
 
 ???
@@ -974,12 +977,22 @@ cat("p = ", p)
 ## p =  2.138042e-06
 ```
 ???
-The implied independencies shown in earlier slides are not the basis set for this graph. 'dagitty' can produce a basis set as shown here, but its localTests cannot be forced to test the basis set. 
+The implied independencies shown in earlier slides are a  basis set for this graph. 'dagitty' can produce a basis set using the option type="basis.set" as shown here, but its localTests function does notreturn a value that allows easy extraction of the p values, so I used the basis set shown on the previous slide.
+
+There can be more than one basis set for a given DAG, but not 
+all basis sets are mutually independent in finite data samples. Section 3.4 of 
+
+Shipley B. Cause and correlation in biology: a user's guide to path analysis, structural equations and causal inference with R. Cambridge University Press; 2016 Apr 18.
+
+discusses these issues and includes a description of Shipley's method for producing a basis set that is independent in finite samples. This is described in the paper:
+
+Shipley B. A new inferential test for path models based on directed acyclic graphs. Structural Equation Modeling. 2000 Jun 1;7(2):206-18. https://pdfs.semanticscholar.org/23e5/29d073a66c314f19900e5e1e7fc510453812.pdf
+
 ---
 # Limitations
 - Most packages only detect (lack of) linear dependence
  - Independent variables are guaranteed to have `\(0\)` correlation
- - But `\(0\)` correlation does not imply independence when the relatinship is nonlinear
+ - But `\(0\)` correlation does not imply independence when the relationship is nonlinear
  - A Partial correlation of `\(0\)` (for conditional independence) implies conditional independence only when the joint distribution of the tested variables is multinormal
  
 - Distance correlation (Szekely, et al. 2007) and conditional distance correlation (Wang, et al., 2015) can detect nonlinear dependence
@@ -1189,7 +1202,7 @@ There are 5 free parameters and 0 degrees of freedom.
 .scroll-box-18[
 
 ```
-## lavaan 0.6-4.1415 ended normally after 26 iterations
+## lavaan 0.6-4.1415 ended normally after 27 iterations
 ## 
 ##   Optimization method                           NLMINB
 ##   Number of free parameters                          5
@@ -1209,15 +1222,15 @@ There are 5 free parameters and 0 degrees of freedom.
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   E ~                                                                   
-##     A                 0.299    0.001  296.078    0.000    0.299    0.947
+##     A                 0.301    0.001  304.548    0.000    0.301    0.950
 ##   C ~                                                                   
-##     A                 0.519    0.016   33.336    0.000    0.519    0.949
-##     E                -1.072    0.049  -21.738    0.000   -1.072   -0.619
+##     A                 0.500    0.016   31.119    0.000    0.500    0.913
+##     E                -1.005    0.051  -19.803    0.000   -1.005   -0.581
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .E                 1.009    0.014   70.711    0.000    1.009    0.102
-##    .C                24.519    0.347   70.711    0.000   24.519    0.829
+##    .E                 0.982    0.014   70.711    0.000    0.982    0.097
+##    .C                25.294    0.358   70.711    0.000   25.294    0.837
 ```
 ]
 
@@ -1278,8 +1291,8 @@ Graph implied by [Nature paper]
 ---
 ## Results of PC Algorithm on the WHO Dataset
 .pull-left[
-<div id="htmlwidget-95e66194cbd191a05716" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-95e66194cbd191a05716">{"x":{"diagram":"digraph g {\n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-63e604a19423a3c07fb9" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-63e604a19423a3c07fb9">{"x":{"diagram":"digraph g {\n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 ]
 
 .pull-right[
@@ -1318,8 +1331,8 @@ Since bmigrp is defined only by bmi, we forbid other variables from causing it. 
 The temporal constraints indicate that lower tiers cannot have any directed edges to higher tiers. For instance, `bmi` and `chol` can have directed edges to `bmigrp` and `hychol`, as well as between themselves, but cannot have directed edges to the other variables that appear before them in the temporal list.
 ---
 # PC Algorithm with Knowledge
-<div id="htmlwidget-e6af26e61f624885f591" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e6af26e61f624885f591">{"x":{"diagram":"digraph g {\n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-1ebb754a88aff0c031c4" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1ebb754a88aff0c031c4">{"x":{"diagram":"digraph g {\n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 ---
 exclude: true
@@ -1369,9 +1382,9 @@ class: center, middle
 
 $$
 `\begin{align}
-c &amp;= 100.11+-1.07e + 0.52a \\
- &amp;= 100.11+-1.07\cdot 20 + 0.52\cdot 60 \\
- &amp;= 109.91
+c &amp;= 100.1+-1.01e + 0.5a \\
+ &amp;= 100.1+-1.01\cdot 20 + 0.5\cdot 60 \\
+ &amp;= 109.9
 \end{align}`
 $$
 - This is incorrect, because it ignores what we have learned about Joe by measuring what has already happened to him
@@ -1401,7 +1414,7 @@ $$
 `\begin{align}
 A &amp;= U_a \\
 E &amp;= 0.3 A + U_e \\
-C &amp;= 0.52 A + -1.07 E + U_c
+C &amp;= 0.5 A + -1.01 E + U_c
 \end{align}`
 $$
 
@@ -1429,11 +1442,11 @@ $$
 `\begin{align}
 A = 60 &amp;= U_a \\
 E = 10 &amp;= 0.3 \cdot 60 + U_e \\
-C = 140 &amp;= 0.52 \cdot 60 + -1.07\cdot 10 + U_c \\
+C = 140 &amp;= 0.5 \cdot 60 + -1.01\cdot 10 + U_c \\
 \\
 U_a &amp;= 60 \\
 U_e &amp;= -8 \\
-U_c &amp;= 119.5
+U_c &amp;= 120.1
 \end{align}`
 $$
 
@@ -1446,7 +1459,7 @@ $$
 `\begin{align}
 A &amp;= U_a \\
 E &amp;= 0.3 A + U_e \\
-C &amp;= 0.52 A + -1.07 E + U_c
+C &amp;= 0.5 A + -1.01 E + U_c
 \end{align}`
 $$
 
@@ -1457,25 +1470,25 @@ $$
 `\begin{align}
 A &amp;= 60 \\
 E &amp;= 20 \\
-C_{E=20} &amp;= 0.52 \cdot 60 + -1.07\cdot 20 + 119.5 = 129.3
+C_{E=20} &amp;= 0.5 \cdot 60 + -1.01\cdot 20 + 120.1 = 129.9
 \end{align}`
 $$
-naïve version had `\(C = 109.91\)`
+naïve version had `\(C = 109.9\)`
 ]
 
 ---
 ### Why the Difference?
 The naïve estimate,
 
-`$$E(C|do(E=20, A=60)) = 109.91$$`
+`$$E(C|do(E=20, A=60)) = 109.9$$`
 
 does not reflect the fact the Joe's cholesterol, at `\(140\)`, is higher than expected for a person of Age 60 with 10 units of exercise:
 
-`$$E(C|do(E=10, A=60)) = 120.61$$`
+`$$E(C|do(E=10, A=60)) = 120$$`
 
 By using Joe's observed data to estimate `\(U\)`, then substituting `\(E=20\)` for the original function `\(E = 0.3A+U_e\)` the resulting structural equations estimate Joe's counterfactual result:
 
-`$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = 129.3$$`
+`$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = 129.9$$`
 
 ---
 # Utility of Counterfactual Reasoning
@@ -1587,8 +1600,8 @@ xtabs(p_h ~ G+X, p_h)
 ```
 ##    X
 ## G            0          1
-##   0 0.29620853 0.42570281
-##   1 0.05152596 0.06680244
+##   0 0.29280195 0.40516546
+##   1 0.05783509 0.08466454
 ```
 ]
 
@@ -1606,16 +1619,16 @@ addmargins(xtabs(p_h ~ G+X, p_h))
 ```
 ##      X
 ## G              0          1        Sum
-##   0   0.29620853 0.42570281 0.72191134
-##   1   0.05152596 0.06680244 0.11832841
-##   Sum 0.34773449 0.49250526 0.84023975
+##   0   0.29280195 0.40516546 0.69796741
+##   1   0.05783509 0.08466454 0.14249963
+##   Sum 0.35063704 0.48982999 0.84046704
 ```
 
 ---
 exclude: true
 ## GGPlotly graph
-<div id="htmlwidget-b1d3492b31860e4d460a" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-b1d3492b31860e4d460a">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-86.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-f6dc07c84a263f77663d" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f6dc07c84a263f77663d">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-86.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

@@ -674,3 +674,7 @@
 2019-07-01 21:54:22 INFO  org.reflections.Reflections:229 - Reflections took 12 ms to scan 1 urls, producing 7 keys and 38 values 
 2019-07-01 22:39:08 INFO  org.reflections.Reflections:229 - Reflections took 70 ms to scan 1 urls, producing 16 keys and 214 values 
 2019-07-01 22:39:09 INFO  org.reflections.Reflections:229 - Reflections took 15 ms to scan 1 urls, producing 7 keys and 38 values 
+2019-07-02 11:08:31 INFO  org.reflections.Reflections:229 - Reflections took 81 ms to scan 1 urls, producing 16 keys and 214 values 
+2019-07-02 11:08:31 INFO  org.reflections.Reflections:229 - Reflections took 16 ms to scan 1 urls, producing 7 keys and 38 values 
+2019-07-02 11:50:40 INFO  org.reflections.Reflections:229 - Reflections took 75 ms to scan 1 urls, producing 16 keys and 214 values 
+2019-07-02 11:50:40 INFO  org.reflections.Reflections:229 - Reflections took 13 ms to scan 1 urls, producing 7 keys and 38 values 

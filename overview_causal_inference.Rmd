@@ -971,13 +971,15 @@ This Causal DAG implies the following conditional independencies
 
 .scroll-box-8[
 ```{r, echo=FALSE, out.width="70%", comment=NA}
-imp <- impliedConditionalIndependencies( gmonica, type = "basis.set", max.results = Inf )
+imp <- impliedConditionalIndependencies( gmonica, max.results = Inf )
 imp
 ```
 ]
 
 Given data on these variables, we can test for these statistical relationships.
 ]
+???
+The tests shown here form a basis set for this graph, even though I did not tell dagitty to return the basis set (using option type="basis.set"). Specifying this option gives a set that when passed to localTests returns a list with p-values that are not easily accessible for later tests. The 'piecewiseSEM' package appears to have better functions for calculating and then testing basis sets. It also has a function 'fisherC' to directly calculate the C statistic.
 
 ---
 ### Testing Implied Independencies with Observed Data
@@ -1122,12 +1124,22 @@ p = 1 - pchisq(C, 2 * k)
 cat("p = ", p)
 ```
 ???
-The implied independencies shown in earlier slides are not the basis set for this graph. 'dagitty' can produce a basis set as shown here, but its localTests cannot be forced to test the basis set. 
+The implied independencies shown in earlier slides are a  basis set for this graph. 'dagitty' can produce a basis set using the option type="basis.set" as shown here, but its localTests function does notreturn a value that allows easy extraction of the p values, so I used the basis set shown on the previous slide.
+
+There can be more than one basis set for a given DAG, but not 
+all basis sets are mutually independent in finite data samples. Section 3.4 of 
+
+Shipley B. Cause and correlation in biology: a user's guide to path analysis, structural equations and causal inference with R. Cambridge University Press; 2016 Apr 18.
+
+discusses these issues and includes a description of Shipley's method for producing a basis set that is independent in finite samples. This is described in the paper:
+
+Shipley B. A new inferential test for path models based on directed acyclic graphs. Structural Equation Modeling. 2000 Jun 1;7(2):206-18. https://pdfs.semanticscholar.org/23e5/29d073a66c314f19900e5e1e7fc510453812.pdf
+
 ---
 # Limitations
 - Most packages only detect (lack of) linear dependence
  - Independent variables are guaranteed to have $0$ correlation
- - But $0$ correlation does not imply independence when the relatinship is nonlinear
+ - But $0$ correlation does not imply independence when the relationship is nonlinear
  - A Partial correlation of $0$ (for conditional independence) implies conditional independence only when the joint distribution of the tested variables is multinormal
  
 - Distance correlation (Szekely, et al. 2007) and conditional distance correlation (Wang, et al., 2015) can detect nonlinear dependence
