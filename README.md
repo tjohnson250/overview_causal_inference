@@ -10,4 +10,6 @@ colleagues who have not been exposted to causal infererence.
 
 You can view the processed slides here: https://tjohnson250.github.io/overview_causal_inference/overview_causal_inference.html#1
 
+Use the arrow keys to advance the slides and be sure to press 'p' to see additional notes and references.
+
 If you have feedback or spot an error, please submit an issue on this project's repo.

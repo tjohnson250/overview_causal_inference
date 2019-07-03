@@ -68,11 +68,12 @@ Level = c("1. Association<br><&nbsp>\\(\\mathbf{P(y|x)}\\)", "2. Intervention<br
 "Typical Questions" = c("What is?<br>How would seeing X change my belief in Y?", "What if?<br>What if I do X?", "Why?<br>Was it X that caused Y?<br>What if I had acted differently?"),
 Examples = c("What does a symptom tell me about a disease?<br>What does a survey tell us about the election results?", "What if I take aspirin, will my headache be cured?<br>What if we ban cigarettes?", "Was it the aspirin that stopped my headache?<br>Would Kennedy be alive had Oswald not shot him?<br>What if I had not been smoking the past 2 years?")
 )
-text_tbl %>% knitr::kable(format="html", booktabs = FALSE, escape=FALSE, booktabs = TRUE) %>%
+ladder <- text_tbl %>% knitr::kable(format="html", booktabs = FALSE, escape=FALSE, booktabs = TRUE) %>%
 kable_styling(full_width = F) %>%
 column_spec(1, bold = T, color = "#1c5253") %>%
 column_spec(2, width = "8em") %>%
 column_spec(3, width = "8em") 
+ladder
 ```
 ???
 I have modified this with what I think are more illustrative questions. This is based on the paper below, but also appears in other publications by Pearl.
@@ -898,7 +899,7 @@ Local fit tests
 
 Global fit tests
 
-- Model chi-square: comparison of model vs. observed covariance matrices)
+- Model chi-square: comparison of model vs. observed covariance matrices
 
 - RMSEA: Root Mean Square Error of Approximation
 
@@ -1123,15 +1124,17 @@ k = length(r$p.value) # Number of tests in basis set
 p = 1 - pchisq(C, 2 * k)
 cat("p = ", p)
 ```
-???
-The implied independencies shown in earlier slides are a  basis set for this graph. 'dagitty' can produce a basis set using the option type="basis.set" as shown here, but its localTests function does notreturn a value that allows easy extraction of the p values, so I used the basis set shown on the previous slide.
+
+The implied independencies shown in earlier slides happen to be a  basis set for this graph (which is not guaranteed for all graphs when the function is called without type="basis.set"). 'dagitty' can produce a basis set using the option type="basis.set" as shown here, but when supplied with the resulting implications, its localTests function did not return a value that allows easy extraction of the p values, so I used the basis set shown on the previous slide.
 
 There can be more than one basis set for a given DAG, but not 
-all basis sets are mutually independent in finite data samples. Section 3.4 of 
+all basis sets are mutually independent in finite data samples.
+
+Section 3.4 of 
 
 Shipley B. Cause and correlation in biology: a user's guide to path analysis, structural equations and causal inference with R. Cambridge University Press; 2016 Apr 18.
 
-discusses these issues and includes a description of Shipley's method for producing a basis set that is independent in finite samples. This is described in the paper:
+discusses these issues and includes a description of Shipley's method for producing a basis set that is independent in finite samples. This is also described in the paper:
 
 Shipley B. A new inferential test for path models based on directed acyclic graphs. Structural Equation Modeling. 2000 Jun 1;7(2):206-18. https://pdfs.semanticscholar.org/23e5/29d073a66c314f19900e5e1e7fc510453812.pdf
 
@@ -1213,11 +1216,15 @@ MI Indicates possible improvement in model test score
 modificationindices(fit, minimum.value = 20)
 ```
 
-Biggest improvement would come from adding edge $weight \rightarrow hychol$, 
+Biggest improvement would come from adding edge $hychol \rightarrow weight$.
 
-but $weight$ is not thought to be caused by high cholesterol. 
+However, $weight$ is not thought to be caused by high cholesterol.
 
 Adding this link would violate our background knowledge.
+
+Perhaps exercise and/or diet are common causes of weight and high cholesterol. 
+
+The WHO MONICA data includes additional factors that seem relevant here, but were ignored in the paper that this analysis is based on.
 ---
 ## Age, Exercise, Cholesterol Model Implies No Independence Relations
 .pull-left[
@@ -1317,7 +1324,7 @@ class: middle, center
 ---
 # Inferring Causal Structure from Data
 
-.center[Causal DAG `\\(\Rightarrow\\)` Independence Relations]
+.center[**Causal DAG `\\(\Rightarrow\\)` Independence Relations**]
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
@@ -1331,7 +1338,7 @@ impliedConditionalIndependencies( gmonica, max.results = Inf )
 ```
 ]
 
-.center[Causal DAGS `\\(\Leftarrow\\)` Independence Relations]
+.center[**Causal DAGS `\\(\Leftarrow\\)` Independence Relations**]
 
 
 ---
@@ -1354,7 +1361,7 @@ pgmonica
 ]
 
 ---
-## Results of PC Algorithm on the WHO Dataset
+## Results of PC Algorithm.fn[1] on the WHO Dataset
 .pull-left[
 ```{r, echo=FALSE}
 res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, colliderDiscoveryRule = 2)
@@ -1369,6 +1376,8 @@ Hypothesized DAG
 pgmonica
 ```
 ]
+
+.footnote[[1] Spirtes and Glymour, 1991]
 ???
 The PC algorithm is one of the first causal discovery algorithms. As you can see from the inferred graph, many of the arrows are incorrect and some edges are not directional, meaning the algorithm could not orient the edge.
 
@@ -1400,11 +1409,23 @@ Since bmigrp is defined only by bmi, we forbid other variables from causing it. 
 The temporal constraints indicate that lower tiers cannot have any directed edges to higher tiers. For instance, `bmi` and `chol` can have directed edges to `bmigrp` and `hychol`, as well as between themselves, but cannot have directed edges to the other variables that appear before them in the temporal list.
 ---
 # PC Algorithm with Knowledge
+.pull-left[
 ```{r, echo=FALSE}
 res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, priorKnowledge = prior, verbose = TRUE, colliderDiscoveryRule = 2)
 graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
 grViz(graph_dot)
 ```
+]
+
+.pull-right[
+Causal discovery from observational data is difficult
+
+Adding background knowledge helps, but there is no magic here.
+
+The same algorithm, with different settings can produce a different graph.
+
+There are many different algorithms to choose from. 
+]
 
 ---
 exclude: true
@@ -1548,7 +1569,7 @@ ON the left is our known true model. On the right are the  structural equations 
 ---
 ## What would Joe's Cholesterol Have been with E=20?
 .pull-left[
-**Step 1:** Use prior observations from Joe to determine Joe's background factors
+**Step 1:** Use inferred equations and prior observations from Joe to determine Joe's background factors, $U$
 
 Observed: $A = 60$, $E = 10$, $C = 140$
 
@@ -1571,7 +1592,7 @@ Uc <- 140-ca*60-ce*10
 ]
 
 .pull-right[
-**Step 2:** Using the original model functions:
+**Step 2:** Using inferred equations:
 
 $$
 \begin{align}
@@ -1609,6 +1630,16 @@ By using Joe's observed data to estimate $U$, then substituting $E=20$ for the o
 $$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = `r ca*60+ce*20+Uc`$$
 
 ---
+## Counterfactual Reasoning Requires a Causal Model
+To compute the background factors $U$ for an individual we need the structural equations.
+
+An incorrect model and set of equations will give an incorrect counterfactual result
+
+A predictive associational model is not causal, so cannot be used for counterfactual reasoning:
+
+- We should not use it to play what if games, such as what would your risk be if you exercised more?
+
+---
 # Utility of Counterfactual Reasoning
 - Average Causal Effect applies to populations, whereas counterfactual reasoning can answer questions about an individual
 - Effect of Treatment on the Treated (ETT): 
@@ -1616,6 +1647,34 @@ $$ETT = E[Y_1 - Y_0|X = 1]$$
 - Required for Mediation Analysis: what is the direct effect of a treatment, vs the indirect effect as mediated by other factors?
 - Effect of additive interventions
  - What is the expected value of an outcome if we add 5mg to the population's existing dosage?
+
+---
+# Conclusion
+Causal inference must be a part of any learning healthcare system
+
+Despite considerable research, textbooks, software packages and tutorials, the area is difficult and confusing to learn--there is no single best introductory textbook
+
+Schisms in the field, such as between the Causal DAG, [Potential Outcomes](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/), and other groups (see [Andrew Gelman's blog](https://statmodeling.stat.columbia.edu/)) further add to the confusion.
+
+Awareness of causal inference among those who could benefit from it's application is still quite low, but that is slowly changing
+
+---
+# To Learn More
+Non-technical intro
+- Pearl J, Mackenzie D. [The book of why: the new science of cause and effect.](http://bayes.cs.ucla.edu/WHY/) Basic Books; 2018 May 15.
+
+Best technical intro
+
+- Pearl J, Glymour M, Jewell NP. [Causal inference in statistics: A primer.](http://bayes.cs.ucla.edu/PRIMER/) John Wiley & Sons; 2016 Mar 7.
+
+Best Practical Intro (including potential outcomes and Causal DAGs)
+
+- Hernán MA, Robins JM (2019). [Causal Inference.](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/) Boca Raton: Chapman & Hall/CRC, forthcoming. 
+
+
+
+
+
 
 ---
 exclude: true
