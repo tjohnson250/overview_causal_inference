@@ -320,7 +320,7 @@ $c = `r round(Cobs[1], digits=2)`+`r round(Cobs[2], digits=2)`e \space `r ifelse
 --
 
 .pull-right[
-#### but controlling for C gives the correct estimate
+#### but controlling for A gives the correct estimate
 ```{r, echo=FALSE, out.width="70%") #, fig.width=8, fig.height=5}
 #dobsstrat <- dobs %>% mutate(abin=cut(a, 10))
 #ggplot(d, aes(E, C)) + geom_point(aes(color=abin))
