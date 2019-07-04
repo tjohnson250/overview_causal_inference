@@ -23,17 +23,17 @@ font-size: larger;
 
 /* link color */
 a, a > code {
-  color: #84d6d3;
+  color: #1c5253;
 }
 
 /* unvisited link */
 a:link {
-    color: #84d6d3;
+    color: #1c5253;
 }
 
 /* visited link */
 a:visited {
-    color: #84d6d3;
+    color: #1c5253;
 }
 
 /* mouse over link */

@@ -1,9 +1,9 @@
 ---
 title: "A Brief Overview of Causal Inference"
 subtitle: ""
-author: 'Todd R. Johnson, PhD <br> Professor <br><br> <a href="https://github.com/tjohnson250"><i class="fab fa-github fa-fw"></i>&nbsp; tjohnson250</a><br> <a href="https://twitter.com/johnsontoddr4"> <i class="fab fa-twitter fa-fw"></i>&nbsp; @johnsontoddr4</a><br> <a href="mailto:todd.r.johnson@uth.tmc.edu"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; todd.r.johnson@uth.tmc.edu</a><br><br>'
+author: 'Todd R. Johnson, PhD <br> Professor<br><br>'
 institute: "The University of Texas School of Biomedical Informatics at Houston" 
-date: "`r Sys.Date()`"
+date: "`r Sys.Date()`<br><span class=footnote>Use arrow keys to navigate, press h for help</span>"
 output:
   xaringan::moon_reader:
     css: ["default",  "my-fonts.css", "my-theme.css"]
@@ -44,13 +44,13 @@ library(lavaan)
 
 # Disclaimer
 
-Use the arrow keys to navigate. Press .key[h] `h` for help. Press `p` to see speaker notes. These notes often elaborate on slide content and include additional material and references.
+Use the arrow keys to navigate. Press `h` for help. Press `p` to see speaker notes. These notes often elaborate on slide content and include additional material and references.
 
-This is a work in progress. My primary objective for creating this is to help me understand the basics of causal infererence. I hope to use it to help others as well, especially machine learning researchers who tend to make predictive, rather than causal models.
+My primary objective for creating this is to help me understand the basics of causal infererence. I hope to use it to help others as well, especially machine learning researchers who tend to make predictive associative models, rather than causal models.
 
 This presentation is hosted on Github Pages at: https://tjohnson250.github.io/overview_causal_infererence/overview_causal_infererence.html#1
 
-The source code to generate the presentation is at: https://github.com/tjohnson250/overview_causal_infererence
+All of these slides, including model outcomes, are generated in R using R Markdown and the [xaringan](https://github.com/yihui/xaringan) presentation package. The source code to generate the presentation is at: https://github.com/tjohnson250/overview_causal_infererence
 
 If you find errors or have suggestions for improvement, open an issue on this project's Github repo.
 
@@ -1671,7 +1671,27 @@ Best Practical Intro (including potential outcomes and Causal DAGs)
 
 - Hernán MA, Robins JM (2019). [Causal Inference.](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/) Boca Raton: Chapman & Hall/CRC, forthcoming. 
 
+---
+# Thanks
+.pull-right[.pull-down[
 
+<a href="mailto:todd.r.johnson@uth.tmc.edu">
+`r icon::fa("paper-plane")` todd.r.johnson@uth.tmc.edu
+</a>
+
+<a href="https://github.com/tjohnson250/overview_causal_inference">
+`r icon::fa("link")` https://github.com/tjohnson250/overview_causal_inference
+</a>
+
+<a href="http://twitter.com/johnsontoddr4">
+`r icon::fa("twitter")` @johnsontoddr4
+</a>
+
+<a href="https://github.com/tjohnson250">
+`r icon::fa("github")` @tjohnson250
+</a>
+
+]]
 
 
 
