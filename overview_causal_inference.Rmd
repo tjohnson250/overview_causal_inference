@@ -834,11 +834,14 @@ pgaecdg
 .pull-right[
 Estimate $P(C=c|do(E=e, D=d))$
 
-Must use an adjustment set that blocks all backdoor paths from $E$ to $C$ and $D$ to $C$
-
-```{r, echo=FALSE}
-print( adjustmentSets(gaecdg, c('E', 'D'), 'C'))
+Must use an adjustment set $S$ that blocks all backdoor paths from $E$ to $C$ and $D$ to $C$. For this graph:
+```{r echo=FALSE}
+s <- adjustmentSets(gaecdg, c("E", "D"), "C")
+s <- s[[1]]
 ```
+
+$$S = \{`r s`\}$$
+
 Regression: `lm(C ~ E + A + D + G)`
 
 Mathematically:
