@@ -801,27 +801,37 @@ Must use an adjustment set ${S} \cup D$ that blocks all backdoor paths from $E$ 
 
 No need to block backdoor path from $D$ to $C$.
 
-Valid adjustment set: ${A, D}$
+For this graph, $S = \{A\}$ and and $S \cup D = \{A, D\}$
 
-Regression: `lm(obsdata, C ~ A + D)`
+Regression: `lm(obsdata, C ~ E + A + D)`
 
 Mathematically:
 
-$$\begin{aligned} P(Y=y&|do(X=x), Z=z) = \\  &\sum_S P(Y=y|X=x, S=s, Z=z)P(S=s|Z=z) \end{aligned}$$
+$$\begin{aligned} P(C=c&|do(E=e), D=d) = \\  &\sum_S P(C=c|E=e, D=d, S=s)P(S=s|D=d) \end{aligned}$$
 
 ]
 ???
-Note that the summation in the adjustment formula is over $S$, not $S \cup Z$. $S$ is the set of all the other variables needed to block the backdoor paths from $X$ to $Y$.
+Note that the summation in the adjustment formula is over $S$, not $S \cup D$. $S$ is the set of all the other variables needed to block the backdoor paths from $E$ to $C$.
+
+As a notational note, when you see a statement such as $P(S=s)$ and $S$ contains more than one variable, it is just shorthand for $P(S_1=s_1, S_2=s_2...)$. In this example, because $S=\{A,D\}$ $P(S=s) = P(A=a, D=d)$.
 
 We don't want to block the backdoor path from $D$ to $C$ here, because the query is asking for the effect of $E$ on $C$ when we intervene on $E$ and then in the resulting interventional distribution observe $D=d$.
 
-In contrast, if we just want to identify $P(Y=y|do(X=x))$ we have:
+In contrast, if we just want to identify $P(C=c|do(E=e))$ we have:
 
-$$P(Y=y|do(X=x)) = P(Y=y|X=x, S=s)P(S=s)$$
+$$P(C=c|do(E=e)) = P(C=c|E=e, S=s)P(S=s)$$
 
-where $S$ is a valid adjustment set that blocks the backdoor paths from $X$ to $Y$.
+where $S$ is a valid adjustment set that blocks the backdoor paths from $E$ to $C$.
 
-The basic idea is that when we look at the interventional distribution (resulting from adjusting for $S$), we must stratify by $Z$ to compute the covariate-specific effect, which means we are also adjusting for $Z$. Thus we have to make sure that adjusting for $Z$ does not open any backdoor paths for the effect from $X$ to $Y$.]
+The basic idea is that when we look at the interventional distribution (resulting from adjusting for $S$), we must stratify by $D$ to compute the covariate-specific effect, which means we are also adjusting for $D$. Thus we have to make sure that adjusting for $D$ does not open any backdoor paths for the effect from $E$ to $C$.
+
+To see this, consider adding high blood pressure $B$ to the graph with the paths $E \rightarrow B \leftarrow D$, meaning that both $E$ and $D$ affect $B$. If we ask how $D$ affects $C$ among those with high blood pressure, we must adjust for $G$ to block the backdoor path $D \leftarrow G \rightarrow C$ and also $B$, a collider, which opens the backdoor path $D \rightarrow B \leftarrow E \rightarrow C$. As a result, we need to add $E$ to the adjustment set, giving
+
+$$S = \{G, E\}$$
+
+and
+
+$$P(C=c|do(D=d), B=b) = P(C=c|D=d, B=b, G=g, E=e)P(B=b, G=g|B=b)$$
 
 ---
 ## Identifying the Effects of Multiple Interventions
@@ -846,30 +856,8 @@ Regression: `lm(C ~ E + A + D + G)`
 
 Mathematically:
 
-$$\begin{aligned} P(Y=y&|do(X=x, Z=z)) = \\  &\sum_S P(Y=y|X=x, Z=z, S=s)P(S=s) \end{aligned}$$
+$$\begin{aligned} P(C=c&|do(E=e, D=d)) = \\  &\sum_S P(C=c|E=e, D=d, S=s)P(S=s) \end{aligned}$$
 ]
-???
-To estimate the effect of simultaneously intervening on $X$ and $Z2$, we need an adjustment set that blocks all backdoor paths for both variables.
-
-In this case the regression must include $X$ and $Z2$:
-```{r, eval=FALSE}
-lm(Y ~ X + W1 + W2 + Z2)
-```
-
-Here, we can use the same regression equation as the previous covariate-specific example. But consider $P(y|do(x,w1))$ vs. $P(y|do(x), w1)$.
-
-The adjustment set for $P(y|do(w1,z1))$ is:
-```{r, echo=FALSE}
-print( adjustmentSets(g1, c('V', 'Z1'), 'Y'))
-```
-The regression is:
-```{r, eval=FALSE}
-lm(Y ~ W1 + Z1 + V)
-```
-The adjustment sets for $P(y|do(w1), z1)$ are:
-```{r, echo=FALSE}
-print( adjustmentSets(g1, 'V', 'Y'))
-```
 
 ---
 ## Confounding is a Causal Concept
