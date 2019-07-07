@@ -183,7 +183,7 @@ pgint
 ```
 ]
 ???
-Intervening on $e$, means replacing the expression for $e$ from the observational model with a specific value, here one randomly assigned between $0$ and $20$.
+Intervening on $E$, means replacing the expression for $e$ from the observational model with a specific value, here one randomly assigned between $0$ and $20$. This changes the generative model and also changes the causal DAG by removing the link $A \rightarrow E$, since in the intervential model, $e$'s value no longer directly depends on $a$. 
 
 ---
 ## Intervening Changes The Distribution
