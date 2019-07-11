@@ -230,12 +230,18 @@ The coefficient for $e$ on the observational distribution is way off (indicating
 $E(C|e)$: The expected value of Cholesterol given that we observe a specific level of exercise.
 
 $E(C|e)$ is confounded, because age $A$ affects both the amount of exercise $E$ a person gets and cholesterol levels $C$.
+
+In the observational data
+$$E(C|e) \neq E(C|do(e))$$
 ]
 .pull-right[
 ### Interventional Association (Causal Effect)
 $E(C|do(e))$: The expected value of Cholesterol given that we intervene and set exercise to a specific value, independent of any of the variables that normally influence the value of $E$.
 
 $do()$ is called the do-operator.
+
+In the interventional data
+$$E(C|e) = E(C|do(e))$$
 ]
 
 ---
