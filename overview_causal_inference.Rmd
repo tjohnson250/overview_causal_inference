@@ -805,7 +805,7 @@ pgaecdg
 Estimate $P(C=c|do(E=e), D=d)$
 
 
-Must use an adjustment set ${S} \cup D$ that blocks all backdoor paths from $E$ to $C$.
+Must use an adjustment set$S$, such that $S \cup D$ blocks all backdoor paths from $E$ to $C$.
 
 No need to block backdoor path from $D$ to $C$.
 
@@ -1394,7 +1394,7 @@ forbid <- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('sex', 'bmigrp'))
 require <- list(c('height', 'bmigrp'), c('weight', 'bmigrp'))
 
 # Forbid edges between eage and sex
-forbiddenWithin <- c('sex')
+forbiddenWithin <- c('sex', 'eage')
 class(forbiddenWithin) <- 'forbiddenWithin'
 
 # Add Temporal constraints
