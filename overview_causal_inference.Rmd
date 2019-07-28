@@ -531,18 +531,20 @@ Adjusting for $A$ in the observational data blocks this path, allowing us to use
 ]
 
 ---
-## Identifiability
+## Identifiability and Estimation
 A causal effect is **identifiable** if the controlled (post-intervention) distribution can be estimated from data drawn from the observational (pre-intervention) distribution.
 
-The **Backdoor Criterion** is one set of constraints for determining whether an effect is identifiable:
+- The **Backdoor Criterion** is one set of constraints for determining whether an effect is identifiable:
 
-The causal effect of $T$ on $Y$ is **identifiable** if
+    - The causal effect of $T$ on $Y$ is **identifiable** if
 we can adjust for a set of variables that
 
- - blocks all non-causal paths between $T$ and $Y$
- - without blocking any causal paths between $T$ and $Y$
+      - blocks all non-causal paths between $T$ and $Y$
+      - without blocking any causal paths between $T$ and $Y$
  
 **Estimation** is the act of quantifying an identifiable causal effect from finite data
+
+- Uses statistical estimation techniques
 
 ---
 ### Blocking and Unblocking Paths
