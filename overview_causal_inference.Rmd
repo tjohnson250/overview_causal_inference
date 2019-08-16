@@ -944,7 +944,7 @@ $$\space$$
 
 ---
 ## Example: Age, Gender, BMI and Cholesterol
-.small[Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. **Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project.** *International Journal of Obesity.* 2004 Aug;28(8):1082.]
+.small[Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. [**Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project.**](https://www.nature.com/articles/0802714) *International Journal of Obesity.* 2004 Aug;28(8):1082.]
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
