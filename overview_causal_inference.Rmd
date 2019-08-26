@@ -955,11 +955,17 @@ gmonica <- dagitty('dag{
     weight [pos="1, 2"]
     bmigrp [pos="0,0"]
     hychol [pos="1,0"]
+    chrx [pos="2,0"]
+    chdt [pos="2,2"]
+    high [pos="2,1"]
     eageg -> {weight hychol}
     sex -> {hychol height weight}
     height -> {weight bmigrp}
     weight -> bmigrp
     bmigrp -> hychol
+    chrx -> hychol
+    chdt -> hychol
+    high -> {chrx chdt}
 }')
 pgmonica <- ggdag(gmonica) + theme_dag_gray()
 pgmonica
@@ -1071,11 +1077,17 @@ gmonica <- dagitty('dag{
     weight [pos="1, 2"]
     bmigrp [pos="0,0"]
     hychol [pos="1,0"]
+    chrx [pos="2,0"]
+    chdt [pos="2,2"]
+    high [pos="2,1"]
     eageg -> {weight hychol height}
     sex -> {hychol height weight}
     height -> {weight bmigrp}
     weight -> bmigrp
     bmigrp -> hychol
+    chrx -> hychol
+    chdt -> hychol
+    high -> {chrx chdt}
 }')
 pgmonica <- ggdag(gmonica) + theme_dag_gray()
 pgmonica
@@ -1163,7 +1175,9 @@ model <- '
   height ~ eageg + sex
   weight ~ height + eageg + sex
   bmigrp ~ weight + height
-  hychol ~ bmigrp + weight + sex + eageg
+  hychol ~ bmigrp + weight + sex + eageg + chdt + chrx
+  chdt ~ high
+  chrx ~ high
   bmigrp ~*~ bmigrp
   '
 fit <- sem(model, data=monica, ordered = c("bmigrp", "hychol"), std.ov=TRUE)
@@ -1198,6 +1212,8 @@ Pearl argues against global fit tests because they rarely tell you where your mo
 ### Visualize Mismatch between Model and Data Covariance Matrices
 This shows observed - model-implied correlations
 ```{r, echo=FALSE, out.width="70%", fig.height=4}
+# switch this to corrr to remove low res plot: https://drsimonj.svbtle.com/exploring-correlations-in-r-with-corrr
+
 # Function from: https://psu-psychology.github.io/r-bootcamp-2018/talks/lavaan_tutorial.html
 plot_matrix <- function(matrix_toplot){
 corrplot::corrplot(matrix_toplot, is.corr = FALSE,
@@ -1215,15 +1231,14 @@ MI Indicates possible improvement in model test score
 modificationindices(fit, minimum.value = 20)
 ```
 
-Biggest improvement would come from adding edge $hychol \rightarrow weight$.
+Biggest improvement would come from adding edge $bmigrp \rightarrow weight$.
 
-However, $weight$ is not thought to be caused by high cholesterol.
+However, $weight$ is not caused by $bmigrp$.
 
 Adding this link would violate our background knowledge.
 
-Perhaps exercise and/or diet are common causes of weight and high cholesterol. 
+The next highest MI involved adding an undirected edge between $chdt$ and $chrx$, indicating an unmeasured common cause.
 
-The WHO MONICA data includes additional factors that seem relevant here, but were ignored in the paper that this analysis is based on.
 ---
 ## Age, Exercise, Cholesterol Model Implies No Independence Relations
 .pull-left[
@@ -1398,7 +1413,7 @@ forbiddenWithin <- c('sex', 'eage')
 class(forbiddenWithin) <- 'forbiddenWithin'
 
 # Add Temporal constraints
-temporal <- list(forbiddenWithin, c('eageg','height', 'weight'), c('bmigrp', 'hychol')) 
+temporal <- list(forbiddenWithin, c('eageg','height', 'weight', 'chrx', 'chdt', 'high'), c('bmigrp', 'hychol')) 
 
 prior <- priorKnowledge(requiredirect = require, addtemporal = temporal, forbiddirect = forbid)
 ```
@@ -1566,7 +1581,7 @@ Given a set of values for $U$, the model functions uniquely define the values of
 ON the left is our known true model. On the right are the  structural equations that we estimated earlier from observational data, but with the intercepts replaced with exogenous variables.
 
 ---
-## What would Joe's Cholesterol Have been with E=20?
+## What would Joe's Cholesterol Have Been With E=20?
 .pull-left[
 **Step 1:** Use inferred equations and prior observations from Joe to determine Joe's background factors, $U$
 
@@ -1639,23 +1654,31 @@ A predictive associational model is not causal, so cannot be used for counterfac
 - We should not use it to play what if games, such as what would your risk be if you exercised more?
 
 ---
-# Utility of Counterfactual Reasoning
+# Use of Counterfactual Reasoning
 - Average Causal Effect applies to populations, whereas counterfactual reasoning can answer questions about an individual
 - Effect of Treatment on the Treated (ETT): 
 $$ETT = E[Y_1 - Y_0|X = 1]$$
+where $Y_1$ is outcome when treated, $Y_2$ is outcome when not treated, and $X = 1$ means all those treated
+
 - Required for Mediation Analysis: what is the direct effect of a treatment, vs the indirect effect as mediated by other factors?
 - Effect of additive interventions
  - What is the expected value of an outcome if we add 5mg to the population's existing dosage?
 
 ---
 # Conclusion
-Causal inference must be a part of any learning healthcare system
+Causal inference from observational data is difficult, but possible
 
-Despite considerable research, textbooks, software packages and tutorials, the area is difficult and confusing to learn--there is no single best introductory textbook
+Causal knowledge is required to reason about interventions--associative predictive or risk models are not enough
 
-Schisms in the field, such as between the Causal DAG, [Potential Outcomes](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/), and other groups (see [Andrew Gelman's blog](https://statmodeling.stat.columbia.edu/)) further add to the confusion.
+Analysis of observational health data requires causal inference
 
-Awareness of causal inference among those who could benefit from it's application is still quite low, but that is slowly changing
+Causal Inference Remains Underutilized and Difficult to Master
+
+- Despite considerable research, textbooks, software packages and tutorials, the area is difficult and confusing to learn--there is no single best introductory textbook
+
+- Schisms in the field, such as between the Causal DAG, [Potential Outcomes](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/), and other groups (see [Andrew Gelman's blog](https://statmodeling.stat.columbia.edu/)) further add to the confusion.
+
+- Awareness of causal inference among those who could benefit from it's application is still quite low, but that is slowly changing
 
 ---
 # To Learn More
