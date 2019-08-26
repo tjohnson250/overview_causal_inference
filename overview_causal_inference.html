@@ -184,7 +184,7 @@ Intervening on `\(E\)`, means replacing the expression for `\(e\)` from the obse
 ### Observational Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-6-1.png" width="70%" /&gt;
 
-`\(c = 102.14+0.52e \space (p&lt;.001)\)`
+`\(c = 102.59+0.5e \space (p&lt;.001)\)`
 ]
 
 --
@@ -193,7 +193,7 @@ Intervening on `\(E\)`, means replacing the expression for `\(e\)` from the obse
 ### Interventional Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-7-1.png" width="70%" /&gt;
 
-`\(c = 124.97+-0.99e \space (p&lt;.001)\)`
+`\(c = 124.86+-0.99e \space (p&lt;.001)\)`
 ]
 
 ???
@@ -251,17 +251,17 @@ Step 1: Estimate functional relationship between C and E using linear regression
 
 
 
-`$$c = 124.97+-0.99e \space (p&lt;.001)$$`
+`$$c = 124.86+-0.99e \space (p&lt;.001)$$`
 
-`$$E(C|do(E=e))=124.97+-0.99e \space (p&lt;.001)$$`
+`$$E(C|do(E=e))=124.86+-0.99e \space (p&lt;.001)$$`
 
 Step 2: Use regression equation to calculate ACE
 
 $$
 `\begin{align}
   ACE &amp;= E(Y|do(E=1))-E(Y|do(E=2)) \\
-      &amp;= (124.97+-0.99*1) - (124.97+-0.99*2) \\
-      &amp;= 122.99 - 123.98 \\
+      &amp;= (124.86+-0.99*1) - (124.86+-0.99*2) \\
+      &amp;= 122.88 - 123.87 \\
       &amp;= -0.99
 \end{align}`
 $$
@@ -284,7 +284,7 @@ class: center, middle
 #### using E to predict C gives an incorrect estimate,
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-9-1.png" width="70%" /&gt;
 
-`\(c = 102.14+0.52e \space (p&lt;.001)\)`
+`\(c = 102.59+0.5e \space (p&lt;.001)\)`
 ]
 
 --
@@ -293,7 +293,7 @@ class: center, middle
 #### but controlling for A gives the correct estimate
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
 
-`\(c = 99.75+-0.95e + 0.49a \space (p&lt;.001)\)`
+`\(c = 100.24+-0.96e + 0.48a \space (p&lt;.001)\)`
 ]
 ???
 The graph on the right shows the observational data with a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between `\(C\)` and `\(E\)`. Lines near the left and right are incorrect due to sparse data. Stratifying by age (here age group) is one method for controlling or adjusting for a confounder, such as `\(A\)`.
@@ -319,7 +319,7 @@ lm(C ~ E, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E  
-##    102.1418       0.5235
+##    102.5893       0.4963
 ```
 ]
 .pull-right[
@@ -336,12 +336,12 @@ lm(C ~ E + A, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E            A  
-##     99.7501      -0.9537       0.4907
+##    100.2437      -0.9635       0.4849
 ```
 ]
 ---
 ### What is the Causal Effect of Age on Cholesterol?
-Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 99.75+-0.95e + 0.49a\)`
+Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.24+-0.96e + 0.48a\)`
 .pull-left[
 
 ```r
@@ -377,18 +377,18 @@ $$
 .pull-left[
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
 
-`\(c = 99.7+0.21a \space (p&lt;.001)\)`
+`\(c = 100.26+0.2a \space (p&lt;.001)\)`
 ]
 .pull-right[
 This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of `\(A\)` on `\(C\)` and `\(E\)` on `\(C\)`
   
 - Total effect of `\(E\)`, Direct effect of `\(A\)`:
 
-    `\(c = 99.75+-0.95e + 0.49a \space (p&lt;.001)\)`
+    `\(c = 100.24+-0.96e + 0.48a \space (p&lt;.001)\)`
 
 -  Total effect of `\(A\)`:
 
-    `\(c = 99.7+0.21a \space (p&lt;.001)\)`
+    `\(c = 100.26+0.2a \space (p&lt;.001)\)`
   
 Simply throwing all covariates into a single regression is insufficient... but this is what most machine learning models do
 ]
@@ -517,20 +517,17 @@ All Causal DAGs are a combination of these three patterns:
 ]
 .pull-right[
 **Linear Path (or Chain)**
-
-  - Adjusting for `\(E\)` (a mediator) *blocks* the path between `\(A\)` and `\(C\)`
+- Adjusting for `\(E\)` (a mediator) *blocks* the path between `\(A\)` and `\(C\)`
 
 **Common Cause**
-
-  - Adjusting for `\(A\)` *blocks* the path between `\(E\)` and `\(C\)`
+- Adjusting for `\(A\)` *blocks* the path between `\(E\)` and `\(C\)`
 
 `$$\space$$`
 
 **Common Effect**
-
-  - `\(C\)` is called a collider
-  - Unadjusted colliders *block* the path
-  - Adjusting for `\(C\)` (or a descendent of `\(C\)`)  **unblocks or opens** the path
+- `\(C\)` is called a collider
+- Unadjusted colliders *block* the path
+- Adjusting for `\(C\)` (or a descendent of `\(C\)`)  **unblocks or opens** the path
 ]
 ???
 In the linear chain, adjusting for a child of the mediator `\(E\)` will block part of the causal path from `\(A\)` to `\(C\)`. A child of a mediator is sometimes called a descending proxy. Here `\(F\)` is a descending proxy:
@@ -540,7 +537,7 @@ In the linear chain, adjusting for a child of the mediator `\(E\)` will block pa
 If `\(F\)` was a parent of `\(E\)` adjusting for `\(F\)` would not affect the path from `\(A\)` to `\(C\)`.
 
 ---
-## Identifying the Total Effect of `\(A\)` on `\(C\)`
+## Identifying the Total and Direct Effects of `\(A\)` on `\(C\)`
 .pull-left[
 Observational Causal DAG
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-24-1.png" width="70%" /&gt;
@@ -548,16 +545,14 @@ Observational Causal DAG
 .pull-right[
 **Total Effect of `\(A\)` on `\(C\)`**
 
-No adjustments needed
-
-  - All paths from `\(A\)` to `\(C\)` are causal
-
-  * `\(A \rightarrow C\)`
-  * `\(A \rightarrow E \rightarrow C\)`
+- No adjustments needed
+    - All paths from `\(A\)` to `\(C\)` are causal
+        - `\(A \rightarrow C\)`
+        - `\(A \rightarrow E \rightarrow C\)`
 
 **Direct Effect of `\(A\)` on `\(C\)`**
 
-Adjusting for `\(E\)` blocks the path `\(A \rightarrow E \rightarrow C\)` leaving only the direct path `\(A \rightarrow C\)`
+- Adjusting for `\(E\)` blocks the path `\(A \rightarrow E \rightarrow C\)` leaving only the direct path `\(A \rightarrow C\)`
 ]
 
 ---
@@ -569,19 +564,16 @@ Observational Causal DAG
 .pull-right[
 **Total (and Direct) Effect of `\(A\)` on `\(E\)`**
 
-No adjustments needed
-
-  * Causal path
-
-    - `\(A \rightarrow E\)`
-
-  * Non-causal path, blocked by collider `\(C\)`
-  
-    - `\(A \rightarrow C \leftarrow  E\)`
-    
-    - Adjusting for `\(C\)` would distort the effect estimate
+- No adjustments needed
+    - Causal path
+        - `\(A \rightarrow E\)`
+    - Non-causal path, blocked by collider `\(C\)`
+        - `\(A \rightarrow C \leftarrow  E\)`
+        - Adjusting for `\(C\)` would distort the effect estimate
 ]
 
+???
+Show the effects and how adjusting distorts the effect
 ---
 ## Backdoor Criterion (Pearl 1995)
 A set of variables `\(\{Z\}\)` (possibly empty) satisfies the **backdoor criterion** relative to an ordered pair of variables `\(\{X, Y\}\)` in a DAG if:
@@ -697,7 +689,7 @@ What is the effect of `\(E\)` on `\(C\)` when we *observe* `\(D = d\)`?
 Estimate `\(P(C=c|do(E=e), D=d)\)`
 
 
-Must use an adjustment set$S$, such that `\(S \cup D\)` blocks all backdoor paths from `\(E\)` to `\(C\)`.
+Must use an adjustment set `\(S\)`, such that `\(S \cup D\)` blocks all backdoor paths from `\(E\)` to `\(C\)`.
 
 No need to block backdoor path from `\(D\)` to `\(C\)`.
 
@@ -879,8 +871,8 @@ The tests shown here form a basis set for this graph, even though I did not tell
 Independence tests for all implied independencies based on 11075 participants:
 
 
-<div id="htmlwidget-075798a6f904a1b8b405" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-075798a6f904a1b8b405">{"x":{"filter":"none","fillContainer":false,"data":[["bmigrp _||_ chdt","bmigrp _||_ chrx","bmigrp _||_ eageg | height, weight","bmigrp _||_ high","bmigrp _||_ sex | height, weight","chdt _||_ chrx | high","chdt _||_ eageg","chdt _||_ height","chdt _||_ sex","chdt _||_ weight","chrx _||_ eageg","chrx _||_ height","chrx _||_ sex","chrx _||_ weight","eageg _||_ height","eageg _||_ high","eageg _||_ sex","height _||_ high","height _||_ hychol | bmigrp, eageg, sex","high _||_ hychol | chdt, chrx","high _||_ sex","high _||_ weight","hychol _||_ weight | bmigrp, eageg, sex"],[-0.0179308785324686,-0.0182058340511013,0.0228753681185908,0.000851329733585205,-0.0365081686358653,0.824417380517762,-0.318976001165304,0.493525101080491,0.172901324008133,-0.00579892899739121,-0.296194305843892,0.413040938367666,0.198784829796576,-0.0067646444877462,-2.20546077982557,-0.00931156799939745,-0.0149104357779819,0.0010196582595209,-0.0041657672093972,0.142757366160619,-0.0562652406922311,0.00312719418633943,-0.000424718163713986],[5.52073487812076e-08,8.53580929965885e-09,1.15168619179284e-10,1,0.000932973908919401,0,2.69783114745325e-51,0.246792535811999,0.00123559547934948,0.00139962634047322,3.22626536883312e-41,0.44524700301215,0.00022993849789461,0.00022993849789461,1.43612913480551e-96,0.105203601177713,1,0.0268258056650251,0.0602961005434009,0.0819205520812919,1,0.417643107073126,1]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-935da6db022672446d0d" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-935da6db022672446d0d">{"x":{"filter":"none","fillContainer":false,"data":[["bmigrp _||_ chdt","bmigrp _||_ chrx","bmigrp _||_ eageg | height, weight","bmigrp _||_ high","bmigrp _||_ sex | height, weight","chdt _||_ chrx | high","chdt _||_ eageg","chdt _||_ height","chdt _||_ sex","chdt _||_ weight","chrx _||_ eageg","chrx _||_ height","chrx _||_ sex","chrx _||_ weight","eageg _||_ height","eageg _||_ high","eageg _||_ sex","height _||_ high","height _||_ hychol | bmigrp, eageg, sex","high _||_ hychol | chdt, chrx","high _||_ sex","high _||_ weight","hychol _||_ weight | bmigrp, eageg, sex"],[-0.0179308785324686,-0.0182058340511013,0.0228753681185908,0.000851329733585205,-0.0365081686358653,0.824417380517762,-0.318976001165304,0.493525101080491,0.172901324008133,-0.00579892899739121,-0.296194305843892,0.413040938367666,0.198784829796576,-0.0067646444877462,-2.20546077982557,-0.00931156799939745,-0.0149104357779819,0.0010196582595209,-0.0041657672093972,0.142757366160619,-0.0562652406922311,0.00312719418633943,-0.000424718163713986],[5.52073487812076e-08,8.53580929965885e-09,1.15168619179284e-10,1,0.000932973908919401,0,2.69783114745325e-51,0.246792535811999,0.00123559547934948,0.00139962634047322,3.22626536883312e-41,0.44524700301215,0.00022993849789461,0.00022993849789461,1.43612913480551e-96,0.105203601177713,1,0.0268258056650251,0.0602961005434009,0.0819205520812919,1,0.417643107073126,1]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 ]
 
 ???
@@ -1026,7 +1018,7 @@ All variables standardized before analysis
 
 
 ```
-lavaan 0.6-4.1415 ended normally after 123 iterations
+lavaan 0.6-4.1417 ended normally after 123 iterations
 
   Optimization method                           NLMINB
   Number of free parameters                         27
@@ -1157,8 +1149,8 @@ MI Indicates possible improvement in model test score
 ##       lhs op    rhs        mi     epc sepc.lv sepc.all sepc.nox
 ## 56   chdt ~~   chrx   625.573   0.826   0.826    0.868    0.868
 ## 58 height  ~ bmigrp    86.591  -3.398  -3.398   -9.660   -9.660
-## 63 weight  ~ bmigrp 10254.860 116.184 116.184  329.139  329.139
-## 64 weight  ~ hychol    39.515   0.142   0.142    0.150    0.150
+## 63 weight  ~ bmigrp 10255.842 116.194 116.194  329.168  329.168
+## 64 weight  ~ hychol    39.516   0.142   0.142    0.150    0.150
 ## 68 bmigrp  ~ hychol    63.675   0.708   0.708    0.263    0.263
 ## 78   chdt  ~ bmigrp    27.851  -0.014  -0.014   -0.039   -0.039
 ## 79   chdt  ~ hychol   262.852  -0.397  -0.397   -0.421   -0.421
@@ -1234,7 +1226,7 @@ There are 5 free parameters and 0 degrees of freedom.
 .scroll-box-18[
 
 ```
-## lavaan 0.6-4.1415 ended normally after 27 iterations
+## lavaan 0.6-4.1417 ended normally after 27 iterations
 ## 
 ##   Optimization method                           NLMINB
 ##   Number of free parameters                          5
@@ -1244,7 +1236,6 @@ There are 5 free parameters and 0 degrees of freedom.
 ##   Estimator                                         ML
 ##   Model Fit Test Statistic                       0.000
 ##   Degrees of freedom                                 0
-##   Minimum Function Value               0.0000000000000
 ## 
 ## Parameter Estimates:
 ## 
@@ -1255,15 +1246,15 @@ There are 5 free parameters and 0 degrees of freedom.
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   E ~                                                                   
-##     A                 0.299    0.001  299.707    0.000    0.299    0.949
+##     A                 0.300    0.001  307.306    0.000    0.300    0.951
 ##   C ~                                                                   
-##     A                 0.491    0.016   30.859    0.000    0.491    0.889
-##     E                -0.954    0.050  -18.898    0.000   -0.954   -0.544
+##     A                 0.485    0.016   30.223    0.000    0.485    0.895
+##     E                -0.964    0.051  -18.968    0.000   -0.964   -0.562
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .E                 0.989    0.014   70.711    0.000    0.989    0.100
-##    .C                25.194    0.356   70.711    0.000   25.194    0.831
+##    .E                 0.962    0.014   70.711    0.000    0.962    0.096
+##    .C                24.826    0.351   70.711    0.000   24.826    0.840
 ```
 ]
 
@@ -1341,8 +1332,8 @@ Graph implied by [Nature paper]
 ---
 ## Results of PC Algorithm.fn[1] on the WHO Dataset
 .pull-left[
-<div id="htmlwidget-48946fa1cff0fb486ff2" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-48946fa1cff0fb486ff2">{"x":{"diagram":"digraph g {\n \"chrx\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"sex\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-db2e5a74c6bbcc29bdd0" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-db2e5a74c6bbcc29bdd0">{"x":{"diagram":"digraph g {\n \"chrx\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"sex\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 ]
 
 .pull-right[
@@ -1384,8 +1375,8 @@ The temporal constraints indicate that lower tiers cannot have any directed edge
 ---
 # PC Algorithm with Knowledge
 .pull-left[
-<div id="htmlwidget-c33dee6344153cbbc69d" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-c33dee6344153cbbc69d">{"x":{"diagram":"digraph g {\n \"chrx\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-4c2d825055a5dfab7258" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4c2d825055a5dfab7258">{"x":{"diagram":"digraph g {\n \"chrx\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 ]
 
 .pull-right[
@@ -1446,9 +1437,9 @@ class: center, middle
 
 $$
 `\begin{align}
-c &amp;= 99.75+-0.95e + 0.49a \\
- &amp;= 99.75+-0.95\cdot 20 + 0.49\cdot 60 \\
- &amp;= 110.15
+c &amp;= 100.24+-0.96e + 0.48a \\
+ &amp;= 100.24+-0.96\cdot 20 + 0.48\cdot 60 \\
+ &amp;= 109.84
 \end{align}`
 $$
 - This is incorrect, because it ignores what we have learned about Joe by measuring what has already happened to him
@@ -1478,7 +1469,7 @@ $$
 `\begin{align}
 A &amp;= U_a \\
 E &amp;= 0.3 A + U_e \\
-C &amp;= 0.49 A + -0.95 E + U_c
+C &amp;= 0.48 A + -0.96 E + U_c
 \end{align}`
 $$
 
@@ -1506,11 +1497,11 @@ $$
 `\begin{align}
 A = 60 &amp;= U_a \\
 E = 10 &amp;= 0.3 \cdot 60 + U_e \\
-C = 140 &amp;= 0.49 \cdot 60 + -0.95\cdot 10 + U_c \\
+C = 140 &amp;= 0.48 \cdot 60 + -0.96\cdot 10 + U_c \\
 \\
 U_a &amp;= 60 \\
 U_e &amp;= -8 \\
-U_c &amp;= 120.1
+U_c &amp;= 120.8
 \end{align}`
 $$
 
@@ -1523,7 +1514,7 @@ $$
 `\begin{align}
 A &amp;= U_a \\
 E &amp;= 0.3 A + U_e \\
-C &amp;= 0.49 A + -0.95 E + U_c
+C &amp;= 0.48 A + -0.96 E + U_c
 \end{align}`
 $$
 
@@ -1534,25 +1525,25 @@ $$
 `\begin{align}
 A &amp;= 60 \\
 E &amp;= 20 \\
-C_{E=20} &amp;= 0.49 \cdot 60 + -0.95\cdot 20 + 120.1 = 130.5
+C_{E=20} &amp;= 0.48 \cdot 60 + -0.96\cdot 20 + 120.8 = 130.4
 \end{align}`
 $$
-naïve version had `\(C = 110.15\)`
+naïve version had `\(C = 109.84\)`
 ]
 
 ---
 ### Why the Difference?
 The naïve estimate,
 
-`$$E(C|do(E=20, A=60)) = 110.15$$`
+`$$E(C|do(E=20, A=60)) = 109.84$$`
 
 does not reflect the fact the Joe's cholesterol, at `\(140\)`, is higher than expected for a person of Age 60 with 10 units of exercise:
 
-`$$E(C|do(E=10, A=60)) = 119.65$$`
+`$$E(C|do(E=10, A=60)) = 119.44$$`
 
 By using Joe's observed data to estimate `\(U\)`, then substituting `\(E=20\)` for the original function `\(E = 0.3A+U_e\)` the resulting structural equations estimate Joe's counterfactual result:
 
-`$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = 130.5$$`
+`$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = 130.4$$`
 
 ---
 ## Counterfactual Reasoning Requires a Causal Model
@@ -1583,7 +1574,7 @@ Causal knowledge is required to reason about interventions--associative predicti
 
 Analysis of observational health data requires causal inference
 
-Causal Inferernce Remains Underutilized and Difficult to Master
+Causal Inference Remains Underutilized and Difficult to Master
 
 - Despite considerable research, textbooks, software packages and tutorials, the area is difficult and confusing to learn--there is no single best introductory textbook
 
@@ -1730,8 +1721,8 @@ xtabs(p_h ~ G+X, p_h)
 ```
 ##    X
 ## G            0          1
-##   0 0.29619238 0.39632441
-##   1 0.05407555 0.06272618
+##   0 0.30561082 0.38884331
+##   1 0.05116096 0.07496013
 ```
 ]
 
@@ -1749,16 +1740,16 @@ addmargins(xtabs(p_h ~ G+X, p_h))
 ```
 ##      X
 ## G              0          1        Sum
-##   0   0.29619238 0.39632441 0.69251680
-##   1   0.05407555 0.06272618 0.11680172
-##   Sum 0.35026793 0.45905059 0.80931852
+##   0   0.30561082 0.38884331 0.69445414
+##   1   0.05116096 0.07496013 0.12612109
+##   Sum 0.35677178 0.46380344 0.82057523
 ```
 
 ---
 exclude: true
 ## GGPlotly graph
-<div id="htmlwidget-32cd512eda572f09482f" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-32cd512eda572f09482f">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-82.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-11fdb321d0cb82b0c04d" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-11fdb321d0cb82b0c04d">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-82.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

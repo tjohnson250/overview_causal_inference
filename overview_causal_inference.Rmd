@@ -578,20 +578,17 @@ ggdag(gconverging, text_size=11) + theme_dag_gray()
 ]
 .pull-right[
 **Linear Path (or Chain)**
-
-  - Adjusting for $E$ (a mediator) *blocks* the path between $A$ and $C$
+- Adjusting for $E$ (a mediator) *blocks* the path between $A$ and $C$
 
 **Common Cause**
-
-  - Adjusting for $A$ *blocks* the path between $E$ and $C$
+- Adjusting for $A$ *blocks* the path between $E$ and $C$
 
 $$\space$$
 
 **Common Effect**
-
-  - $C$ is called a collider
-  - Unadjusted colliders *block* the path
-  - Adjusting for $C$ (or a descendent of $C$)  **unblocks or opens** the path
+- $C$ is called a collider
+- Unadjusted colliders *block* the path
+- Adjusting for $C$ (or a descendent of $C$)  **unblocks or opens** the path
 ]
 ???
 In the linear chain, adjusting for a child of the mediator $E$ will block part of the causal path from $A$ to $C$. A child of a mediator is sometimes called a descending proxy. Here $F$ is a descending proxy:
@@ -609,7 +606,7 @@ ggdag(gdescproxy, text_size=11) + theme_dag_gray()
 If $F$ was a parent of $E$ adjusting for $F$ would not affect the path from $A$ to $C$.
 
 ---
-## Identifying the Total Effect of $A$ on $C$
+## Identifying the Total and Direct Effects of $A$ on $C$
 .pull-left[
 Observational Causal DAG
 ```{r echo=FALSE, out.width="70%"}
@@ -619,16 +616,14 @@ pgobs
 .pull-right[
 **Total Effect of $A$ on $C$**
 
-No adjustments needed
-
-  - All paths from $A$ to $C$ are causal
-
-  * $A \rightarrow C$
-  * $A \rightarrow E \rightarrow C$
+- No adjustments needed
+    - All paths from $A$ to $C$ are causal
+        - $A \rightarrow C$
+        - $A \rightarrow E \rightarrow C$
 
 **Direct Effect of $A$ on $C$**
 
-Adjusting for $E$ blocks the path $A \rightarrow E \rightarrow C$ leaving only the direct path $A \rightarrow C$
+- Adjusting for $E$ blocks the path $A \rightarrow E \rightarrow C$ leaving only the direct path $A \rightarrow C$
 ]
 ```{r, echo=FALSE}
 AEadjustedfit = lm(E ~ A, dobs)
@@ -648,19 +643,16 @@ pgobs
 .pull-right[
 **Total (and Direct) Effect of $A$ on $E$**
 
-No adjustments needed
-
-  * Causal path
-
-    - $A \rightarrow E$
-
-  * Non-causal path, blocked by collider $C$
-  
-    - $A \rightarrow C \leftarrow  E$
-    
-    - Adjusting for $C$ would distort the effect estimate
+- No adjustments needed
+    - Causal path
+        - $A \rightarrow E$
+    - Non-causal path, blocked by collider $C$
+        - $A \rightarrow C \leftarrow  E$
+        - Adjusting for $C$ would distort the effect estimate
 ]
 
+???
+Show the effects and how adjusting distorts the effect
 ---
 ## Backdoor Criterion (Pearl 1995)
 A set of variables $\{Z\}$ (possibly empty) satisfies the **backdoor criterion** relative to an ordered pair of variables $\{X, Y\}$ in a DAG if:
@@ -805,7 +797,7 @@ pgaecdg
 Estimate $P(C=c|do(E=e), D=d)$
 
 
-Must use an adjustment set$S$, such that $S \cup D$ blocks all backdoor paths from $E$ to $C$.
+Must use an adjustment set $S$, such that $S \cup D$ blocks all backdoor paths from $E$ to $C$.
 
 No need to block backdoor path from $D$ to $C$.
 
