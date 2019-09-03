@@ -32,14 +32,14 @@ class: center, middle, inverse, title-slide
 # A Brief Overview of Causal Inference
 ### Todd R. Johnson, PhD <br> Professor<br><br>
 ### The University of Texas School of Biomedical Informatics at Houston
-### 2019-08-26<br><span class="footnote">Use arrow keys to navigate, press h for help</span>
+### 2019-09-03<br><span class="footnote">Use arrow keys to navigate, press h for help</span>
 
 ---
 
 
 
 
-# Disclaimer
+# Notes
 
 Use the arrow keys to navigate. Press `h` for help. Press `p` to see speaker notes. These notes often elaborate on slide content and include additional material and references.
 
@@ -52,7 +52,7 @@ All of these slides, including model outcomes, are generated in R using R Markdo
 If you find errors or have suggestions for improvement, open an issue on this project's Github repo.
 
 ---
-# Pearl's Three Layer Causal Hierarchy
+# Pearl's Three Layer Causal Hierarchy.fn[1]
 
 &lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
  &lt;thead&gt;
@@ -60,30 +60,33 @@ If you find errors or have suggestions for improvement, open an issue on this pr
    &lt;th style="text-align:left;"&gt; Level &lt;/th&gt;
    &lt;th style="text-align:left;"&gt; Typical.Activity &lt;/th&gt;
    &lt;th style="text-align:left;"&gt; Typical.Questions &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; Examples &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Example &lt;/th&gt;
   &lt;/tr&gt;
  &lt;/thead&gt;
 &lt;tbody&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;font-weight: bold;color: #1c5253 !important;"&gt; 1. Association&lt;br&gt;\(\mathbf{P(y|x)}\) &lt;/td&gt;
-   &lt;td style="text-align:left;width: 8em; "&gt; Seeing &lt;/td&gt;
-   &lt;td style="text-align:left;width: 8em; "&gt; What is?&lt;br&gt;How would seeing X change my belief in Y? &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; What does a symptom tell me about a disease?&lt;br&gt;What does a survey tell us about the election results? &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; Seeing,&lt;br&gt;Observing &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; How would seeing X change my belief in Y? &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; What is my chance of having prostate cancer if my PSA test is 3 ng/ml? &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;font-weight: bold;color: #1c5253 !important;"&gt; 2. Intervention&lt;br&gt;\(\mathbf{P(y|do(x), z)}\) &lt;/td&gt;
    &lt;td style="text-align:left;width: 8em; "&gt; Doing,&lt;br&gt;Intervening &lt;/td&gt;
-   &lt;td style="text-align:left;width: 8em; "&gt; What if?&lt;br&gt;What if I do X? &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; What if I take aspirin, will my headache be cured?&lt;br&gt;What if we ban cigarettes? &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; What if I do X? &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Will taking aspirin daily reduce my risk of stroke? &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;font-weight: bold;color: #1c5253 !important;"&gt; 3. Counterfactuals&lt;br&gt;\(\mathbf{P(y_x|x',y')}\) &lt;/td&gt;
    &lt;td style="text-align:left;width: 8em; "&gt; Imagining,&lt;br&gt;Retrospecting &lt;/td&gt;
-   &lt;td style="text-align:left;width: 8em; "&gt; Why?&lt;br&gt;Was it X that caused Y?&lt;br&gt;What if I had acted differently? &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; Was it the aspirin that stopped my headache?&lt;br&gt;Would Kennedy be alive had Oswald not shot him?&lt;br&gt;What if I had not been smoking the past 2 years? &lt;/td&gt;
+   &lt;td style="text-align:left;width: 8em; "&gt; Was it X that caused Y?&lt;br&gt;What if I had acted differently? &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; If I had stopped smoking 10 years earlier, could I have prevented lung cancer? &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
+
+.footnote[[1] Pearl, 2019]
+
 ???
 I have modified this with what I think are more illustrative questions. This is based on the paper below, but also appears in other publications by Pearl.
 
@@ -107,19 +110,6 @@ class: center, middle
 
 # Part I: Causation
 
----
-
-# Definitions
-
-**Causal Infererence** is the process of inferring the **causal effect** of one random variable on a second random variable.
-
-The **Causal Effect** of `\(X\)` on `\(Y\)` is the change in `\(Y\)` when we **intervene** and directly change `\(X\)` from one value to another.
-
-**Intervening** on `\(X\)` means to force `\(X\)` to take a specific value, independent of any of the variables that normally influence the value of `\(X\)`
-
- - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
-  
- - This is why RCTs are considered the gold standard for identifying causal effects
 
 ---
 # Example: Age, Exercise and Cholesterol
@@ -149,6 +139,49 @@ Causal DAG (Directed Acyclic Graph)
 ]
 
 ---
+## The Observational Model Produces Observational Data
+<div id="htmlwidget-834753aa4762bb45d431" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-834753aa4762bb45d431">{"x":{"filter":"none","fillContainer":false,"data":[["1","2","3","4","5","6","7","8"],[11.2963687536928,18.2955752400048,20.8530608819286,10.4755537229624,16.565439777002,16.0078893859725,15.0219199952986,14.4310409699664],[44.1036521361643,58.4046669704112,67.4957293375493,36.6331173625123,54.0425355045071,60.1288054005096,47.3141357714126,52.9950739653766],[117.876613253142,114.918687628259,112.440123501122,106.109704991957,109.497508131668,117.418774900885,105.589444782488,114.2178991823]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>E<\/th>\n      <th>A<\/th>\n      <th>C<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":8,"dom":"t","columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[8,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 3, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+---
+.pull-left[
+### The observational data show that exercise increases cholesterol!
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-4-1.png" width="70%" /&gt;
+
+
+`\(c = 102.66+0.5e \space (p&lt;.001)\)`
+]
+
+--
+
+.pull-right[
+### But in the model that generated the data exercise decreases cholesterol!
+
+```r
+n &lt;- 10000
+a &lt;- rnorm(n, mean = 50, sd = 10)
+e &lt;- 0.3*a + rnorm(n)
+*c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
+```
+![](overview_causal_inference_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+Why does the data show the opposite association?
+]
+
+---
+
+# Definitions
+
+**Causal Infererence** is the process of inferring the **causal effect** of one random variable, `\(X\)`, on a second random variable. `\(Y\)`.
+
+The **Causal Effect** of `\(X\)` on `\(Y\)` is the change in `\(Y\)` when we **intervene** and directly change `\(X\)` from one value to another.
+
+**Intervening** on `\(X\)` means to force `\(X\)` to take a specific value, independent of any of the variables that normally influence the value of `\(X\)`
+
+ - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
+  
+ - This is why RCTs are considered the gold standard for identifying causal effects
+
+
+---
 ## Intervening Changes the Generative Model
 Intervene by randomly setting `\(E\)` from `\(0 - 20\)`
 .pull-left[
@@ -160,7 +193,7 @@ a &lt;- rnorm(n, mean = 50, sd = 10)
 *e &lt;- 0.3*a + rnorm(n)
 c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ```
-![](overview_causal_inference_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -172,7 +205,7 @@ a &lt;- rnorm(n, mean = 50, sd = 10)
 *e &lt;- sample(0:20, n, replace = TRUE)
 c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ```
-![](overview_causal_inference_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
 ]
 ???
 Intervening on `\(E\)`, means replacing the expression for `\(e\)` from the observational model with a specific value, here one randomly assigned between `\(0\)` and `\(20\)`. This changes the generative model and also changes the causal DAG by removing the link `\(A \rightarrow E\)`, since in the intervential model, `\(e\)`'s value no longer directly depends on `\(a\)`. 
@@ -182,18 +215,18 @@ Intervening on `\(E\)`, means replacing the expression for `\(e\)` from the obse
 
 .pull-left[
 ### Observational Distribution
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-6-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
 
-`\(c = 102.59+0.5e \space (p&lt;.001)\)`
+`\(c = 102.66+0.5e \space (p&lt;.001)\)`
 ]
 
 --
 
 .pull-right[
 ### Interventional Distribution
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-7-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-11-1.png" width="70%" /&gt;
 
-`\(c = 124.86+-0.99e \space (p&lt;.001)\)`
+`\(c = 125.08+-1e \space (p&lt;.001)\)`
 ]
 
 ???
@@ -251,18 +284,18 @@ Step 1: Estimate functional relationship between C and E using linear regression
 
 
 
-`$$c = 124.86+-0.99e \space (p&lt;.001)$$`
+`$$c = 125.08+-1e \space (p&lt;.001)$$`
 
-`$$E(C|do(E=e))=124.86+-0.99e \space (p&lt;.001)$$`
+`$$E(C|do(E=e))=125.08+-1e \space (p&lt;.001)$$`
 
 Step 2: Use regression equation to calculate ACE
 
 $$
 `\begin{align}
   ACE &amp;= E(Y|do(E=1))-E(Y|do(E=2)) \\
-      &amp;= (124.86+-0.99*1) - (124.86+-0.99*2) \\
-      &amp;= 122.88 - 123.87 \\
-      &amp;= -0.99
+      &amp;= (125.08+-1*1) - (125.08+-1*2) \\
+      &amp;= 123.08 - 124.08 \\
+      &amp;= -1
 \end{align}`
 $$
 Equivalently: The regression coefficent on `\(e\)` directly tells us how much `\(C\)` will change for each unit increase in `\(E\)`.
@@ -282,18 +315,18 @@ class: center, middle
 ## With Observational Data...
 .pull-left[
 #### using E to predict C gives an incorrect estimate,
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-9-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-13-1.png" width="70%" /&gt;
 
-`\(c = 102.59+0.5e \space (p&lt;.001)\)`
+`\(c = 102.66+0.5e \space (p&lt;.001)\)`
 ]
 
 --
 
 .pull-right[
 #### but controlling for A gives the correct estimate
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-14-1.png" width="70%" /&gt;
 
-`\(c = 100.24+-0.96e + 0.48a \space (p&lt;.001)\)`
+`\(c = 100.23+-0.95e + 0.48a \space (p&lt;.001)\)`
 ]
 ???
 The graph on the right shows the observational data with a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between `\(C\)` and `\(E\)`. Lines near the left and right are incorrect due to sparse data. Stratifying by age (here age group) is one method for controlling or adjusting for a confounder, such as `\(A\)`.
@@ -319,7 +352,7 @@ lm(C ~ E, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E  
-##    102.5893       0.4963
+##    102.6561       0.4958
 ```
 ]
 .pull-right[
@@ -336,12 +369,12 @@ lm(C ~ E + A, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E            A  
-##    100.2437      -0.9635       0.4849
+##    100.2324      -0.9520       0.4829
 ```
 ]
 ---
 ### What is the Causal Effect of Age on Cholesterol?
-Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.24+-0.96e + 0.48a\)`
+Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.23+-0.95e + 0.48a\)`
 .pull-left[
 
 ```r
@@ -350,7 +383,7 @@ a &lt;- rnorm(n, mean = 50, sd = 10)
 e &lt;- 0.3*a + rnorm(n)
 *c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ```
-![](overview_causal_inference_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
 ]
 .pull-right[
 From the model, the **direct causal effect** of `\(A\)` on `\(C\)` is `\(0.5a\)`
@@ -375,20 +408,24 @@ $$
 ---
 ### A Single Analysis is Usually Insuffient to Measure All Effects
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-19-1.png" width="70%" /&gt;
 
-`\(c = 100.26+0.2a \space (p&lt;.001)\)`
+`\(c = 100.29+0.2a \space (p&lt;.001)\)`
 ]
 .pull-right[
 This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of `\(A\)` on `\(C\)` and `\(E\)` on `\(C\)`
   
 - Total effect of `\(E\)`, Direct effect of `\(A\)`:
 
-    `\(c = 100.24+-0.96e + 0.48a \space (p&lt;.001)\)`
+    `lm(C ~ A + E, dobs)`
+
+    `\(c = 100.23+-0.95e + 0.48a \space (p&lt;.001)\)`
 
 -  Total effect of `\(A\)`:
 
-    `\(c = 100.26+0.2a \space (p&lt;.001)\)`
+    `lm(C ~ A, dobs)`
+
+    `\(c = 100.29+0.2a \space (p&lt;.001)\)`
   
 Simply throwing all covariates into a single regression is insufficient... but this is what most machine learning models do
 ]
@@ -404,7 +441,7 @@ class: center, middle
 ## Paths in Causal DAGs
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-16-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-20-1.png" width="70%" /&gt;
 ]
 .pull-right[
 A **path** is a sequence of non-intersecting adjacent edges
@@ -432,7 +469,7 @@ class: center, middle
 ## Causal Paths
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-17-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-21-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Causal Path:** A path in which all arrows point away from the treatment to the outcome
@@ -450,7 +487,7 @@ The **total causal effect** of a treatment on an outcome consists of association
 ## Non-Causal Paths
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-18-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-22-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Non-Causal Path:** A path from the treatment to the outcome in which at least one arrow points back to the treatment
@@ -475,7 +512,7 @@ Hernán MA. Does water kill? A call for less casual causal inferences. Annals of
 ### Causal and Non-Causal Paths for Treatment E and Outcome C
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-19-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-23-1.png" width="70%" /&gt;
 ]
 .pull-right[
 Causal path:
@@ -511,9 +548,9 @@ we can adjust for a set of variables that
 All Causal DAGs are a combination of these three patterns:
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-20-1.png" width="70%" /&gt;
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-21-1.png" width="70%" /&gt;
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-22-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-24-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-25-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-26-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Linear Path (or Chain)**
@@ -532,7 +569,7 @@ All Causal DAGs are a combination of these three patterns:
 ???
 In the linear chain, adjusting for a child of the mediator `\(E\)` will block part of the causal path from `\(A\)` to `\(C\)`. A child of a mediator is sometimes called a descending proxy. Here `\(F\)` is a descending proxy:
 
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-23-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-27-1.png" width="70%" /&gt;
 
 If `\(F\)` was a parent of `\(E\)` adjusting for `\(F\)` would not affect the path from `\(A\)` to `\(C\)`.
 
@@ -540,7 +577,7 @@ If `\(F\)` was a parent of `\(E\)` adjusting for `\(F\)` would not affect the pa
 ## Identifying the Total and Direct Effects of `\(A\)` on `\(C\)`
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-24-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-28-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Total Effect of `\(A\)` on `\(C\)`**
@@ -549,17 +586,19 @@ Observational Causal DAG
     - All paths from `\(A\)` to `\(C\)` are causal
         - `\(A \rightarrow C\)`
         - `\(A \rightarrow E \rightarrow C\)`
+    - `lm(C ~ A, dobs)`
 
 **Direct Effect of `\(A\)` on `\(C\)`**
 
 - Adjusting for `\(E\)` blocks the path `\(A \rightarrow E \rightarrow C\)` leaving only the direct path `\(A \rightarrow C\)`
+    - `lm(C ~ A + E, dobs)`
 ]
 
 ---
 ## Identifying the Total Effect of `\(A\)` on `\(E\)`
 .pull-left[
 Observational Causal DAG
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-26-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-30-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Total (and Direct) Effect of `\(A\)` on `\(E\)`**
@@ -570,6 +609,7 @@ Observational Causal DAG
     - Non-causal path, blocked by collider `\(C\)`
         - `\(A \rightarrow C \leftarrow  E\)`
         - Adjusting for `\(C\)` would distort the effect estimate
+    - `lm(E ~ A, dobs)`
 ]
 
 ???
@@ -591,7 +631,7 @@ The backdoor criterion recognizes that all paths that descend from `\(X\)` are e
 
 ## Multiple Adjustment Sets
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-27-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-31-1.png" width="70%" /&gt;
 ]
 .pull-right[
 Adjustment sets for `\(X \rightarrow Y\)`:
@@ -620,7 +660,7 @@ lm(obsdata, Y ~ X + W1 + W2 + Z1)
 ---
 # Adjustment Sets for `\(X \rightarrow Y\)`
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
 ???
 Bold edges are unadjusted, light edges are adjusted
 
@@ -631,11 +671,12 @@ The backdoor criterion implicitly prevents adjusting for children of mediators. 
 where `\(Z\)`, a mediator, causes `\(Z_2\)`. It is clear that adjusting for `\(Z\)` would block the path between `\(X\)` and `\(Y\)`, but adjusting for `\(Z_2\)` would partially block the path.
 
 ---
+exclude: true
 # Frontdoor Adjustment Criterion
 .pull-left[
 U unmeasured: Cannot block backdoor path from `\(X \rightarrow Y\)`
 
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-31-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-35-1.png" width="70%" /&gt;
 ]
 .pull-right[
 `\(X \rightarrow Y\)` is still identifiable using a two step process:
@@ -656,7 +697,9 @@ Step 2. Identify `\(Z \rightarrow Y\)`:
 ]
 ???
 Since `\(U\)` is unmeasured, we cannot adjust for it. However, in this case, the frontdoor adjustment criterion allows us to identify the causal effect of `\(X\)` on `\(Y\)` in two steps.
+
 ---
+exclude: true
 ## Frontdoor Adjustment Criterion (Pearl 1995)
 A set of variables `\(\{Z\}\)` satisfies the **frontdoor criterion** relative to an ordered pair of variables `\(\{X, Y\}\)` in a DAG if:
 
@@ -678,12 +721,13 @@ exclude: true
 Instrumental variables are those that only affect the treatment, with no relationship to anything else
 
 ---
+exclude: true
 # Identifying Covariate Specific Effects
 Suppose a drug `\(D\)` affects `\(C\)`, and that gender `\(G\)` affects who takes the drug.
 
 .pull-left[
 What is the effect of `\(E\)` on `\(C\)` when we *observe* `\(D = d\)`?
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-32-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-36-1.png" width="70%" /&gt;
 ]
 .pull-right[
 Estimate `\(P(C=c|do(E=e), D=d)\)`
@@ -726,10 +770,11 @@ and
 `$$P(C=c|do(D=d), B=b) = P(C=c|D=d, B=b, G=g, E=e)P(B=b, G=g|B=b)$$`
 
 ---
+exclude: true
 ## Identifying the Effects of Multiple Interventions
 What is the effect of simultaneously intervening on `\(E\)` and `\(D\)`?
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-33-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-37-1.png" width="70%" /&gt;
 ]
 .pull-right[
 Estimate `\(P(C=c|do(E=e, D=d))\)`
@@ -791,9 +836,9 @@ From: Kline RB. Principles and practice of structural equation modeling. Guilfor
 Causal DAG's imply independence relations
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-35-1.png" width="70%" /&gt;
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-36-1.png" width="70%" /&gt;
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-37-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-39-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-40-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-41-1.png" width="70%" /&gt;
 ]
 .pull-right[
 **Linear Path (or Chain)**
@@ -820,7 +865,7 @@ Causal DAG's imply independence relations
 .small[Causal DAG Implied by Gostynski M, Gutzwiller F, Kuulasmaa K, Döring A, Ferrario M, Grafnetter D, Pajak A. [**Analysis of the relationship between total cholesterol, age, body mass index among males and females in the WHO MONICA Project.**](https://www.nature.com/articles/0802714) *International Journal of Obesity.* 2004 Aug;28(8):1082.]
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-38-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-42-1.png" width="70%" /&gt;
 ]
 
 .pull-right[
@@ -829,29 +874,29 @@ This Causal DAG implies the following conditional independencies
 .scroll-box-8[
 
 ```
-bmigrp _||_ chdt
-bmigrp _||_ chrx
-bmigrp _||_ eageg | height, weight
-bmigrp _||_ high
-bmigrp _||_ sex | height, weight
+bmi _||_ chdt
+bmi _||_ chrx
+bmi _||_ eage | height, weight
+bmi _||_ high
+bmi _||_ sex | height, weight
 chdt _||_ chrx | high
-chdt _||_ eageg
+chdt _||_ eage
 chdt _||_ height
 chdt _||_ sex
 chdt _||_ weight
-chrx _||_ eageg
+chol _||_ height | bmi, eage, sex
+chol _||_ high | chdt, chrx
+chol _||_ weight | bmi, eage, sex
+chrx _||_ eage
 chrx _||_ height
 chrx _||_ sex
 chrx _||_ weight
-eageg _||_ height
-eageg _||_ high
-eageg _||_ sex
+eage _||_ height
+eage _||_ high
+eage _||_ sex
 height _||_ high
-height _||_ hychol | bmigrp, eageg, sex
-high _||_ hychol | chdt, chrx
 high _||_ sex
 high _||_ weight
-hychol _||_ weight | bmigrp, eageg, sex
 ```
 ]
 
@@ -864,15 +909,15 @@ The tests shown here form a basis set for this graph, even though I did not tell
 ### Testing Implied Independencies with Observed Data
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-40-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-44-1.png" width="70%" /&gt;
 ]
 
 .pull-right[
-Independence tests for all implied independencies based on 11075 participants:
+Independence tests for all implied independencies based on 9006 participants:
 
 
-<div id="htmlwidget-935da6db022672446d0d" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-935da6db022672446d0d">{"x":{"filter":"none","fillContainer":false,"data":[["bmigrp _||_ chdt","bmigrp _||_ chrx","bmigrp _||_ eageg | height, weight","bmigrp _||_ high","bmigrp _||_ sex | height, weight","chdt _||_ chrx | high","chdt _||_ eageg","chdt _||_ height","chdt _||_ sex","chdt _||_ weight","chrx _||_ eageg","chrx _||_ height","chrx _||_ sex","chrx _||_ weight","eageg _||_ height","eageg _||_ high","eageg _||_ sex","height _||_ high","height _||_ hychol | bmigrp, eageg, sex","high _||_ hychol | chdt, chrx","high _||_ sex","high _||_ weight","hychol _||_ weight | bmigrp, eageg, sex"],[-0.0179308785324686,-0.0182058340511013,0.0228753681185908,0.000851329733585205,-0.0365081686358653,0.824417380517762,-0.318976001165304,0.493525101080491,0.172901324008133,-0.00579892899739121,-0.296194305843892,0.413040938367666,0.198784829796576,-0.0067646444877462,-2.20546077982557,-0.00931156799939745,-0.0149104357779819,0.0010196582595209,-0.0041657672093972,0.142757366160619,-0.0562652406922311,0.00312719418633943,-0.000424718163713986],[5.52073487812076e-08,8.53580929965885e-09,1.15168619179284e-10,1,0.000932973908919401,0,2.69783114745325e-51,0.246792535811999,0.00123559547934948,0.00139962634047322,3.22626536883312e-41,0.44524700301215,0.00022993849789461,0.00022993849789461,1.43612913480551e-96,0.105203601177713,1,0.0268258056650251,0.0602961005434009,0.0819205520812919,1,0.417643107073126,1]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-5f81ccfcfdcd0a68e956" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5f81ccfcfdcd0a68e956">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ chdt","bmi _||_ chrx","bmi _||_ eage | height, weight","bmi _||_ high","bmi _||_ sex | height, weight","chdt _||_ chrx | high","chdt _||_ eage","chdt _||_ height","chdt _||_ sex","chdt _||_ weight","chol _||_ height | bmi, eage, sex","chol _||_ high | chdt, chrx","chol _||_ weight | bmi, eage, sex","chrx _||_ eage","chrx _||_ height","chrx _||_ sex","chrx _||_ weight","eage _||_ height","eage _||_ high","eage _||_ sex","height _||_ high","high _||_ sex","high _||_ weight"],[-1.23067725357363,-1.23355869140642,0.000786009396347763,-1.34320860032269,0.0229297239733698,0.985337536852835,-0.00694528710948228,0.0749577248650493,0.0376077990917615,-0.00181798716979704,-0.347444740387063,-1.18673719938979,-0.00238351457247724,-0.00693142715608561,0.0724766326464175,0.0378092096767193,-0.00182787137919673,-22.4348307179151,-6.26761976706577,-0.277776000625562,0.00856308919789195,0.0244429516365817,-0.00175429520713193],[4.8663369267197e-19,4.55255798844105e-19,0.487097674672083,1.19787586564446e-21,0.487097674672083,0,2.33933984958371e-85,0.379683296779327,9.13169214277496e-06,3.21107129605543e-11,0.325854832361472,2.99376097098296e-16,0.487097674672083,3.49633547322941e-85,0.379683296779327,8.58920696631395e-06,2.51742189430978e-11,8.34304340270124e-79,1.57379463631955e-86,0.487097674672083,0.0184536889051569,0.0101011426233696,6.07231435788752e-11]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 ]
 
 ???
@@ -920,42 +965,45 @@ cdcov.test(as.matrix(monicasamp$bmigrp), monicasamp$weight, as.matrix(monicasamp
 # Coefficients where `\(p &lt; .05\)`
 
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-47-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
-The data suggests that `\(eage\)` and `\(height\)` are *not* marginally independent
+The data suggests that `\(eage\)` and `\(height\)`, and `\(eage\)` and `\(high\)` are *not* marginally independent
 
 This contradicts our model
+
+Any ideas as to why `\(eage\)` and `\(high\)` are not marginally independent?
 ]
+
+???
+`\(high\)` indicates that a patient was told that he or she had high cholesterol. This means that  `\(high\)` is dependent on a past measurement of high cholesterol, which itself is likely tied to past age, weight, etc. A more accurate model would have these past values along with edges leading to the present values.
 ---
-## Add `\(eage \rightarrow height\)` and Retest
+## Add `\(eage \rightarrow height\)` and `\(eage \rightarrow high\)` and Retest
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-44-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-48-1.png" width="70%" /&gt;
 ]
 
 .pull-right[
 Coefficients where `\(p &lt; .05\)`
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-49-1.png)&lt;!-- --&gt;
 ]
 ???
-This is close enough to 0 to ignore
+There are still many discrepencies here
 
 ---
+exclude: true
 ## Summarizing Independence Tests: Fisher's C
 - Statistical test of the set of independence test results
 
 `$$C = -2\sum \ln p_i$$`
  - `\(p_i\)` are the `\(p\)`-values of all tests of conditional independence for the **basis set**
 - **Basis Set**: the smallest set of independence relations implied by a DAG
+- Fisher's C requires a basis set constructed by listing "each unique pair of nonadjacent
+vertices `\((v_i, v_j)\)` and then forming the conditioning set of this pair by listing all other vertices in the DAG that are parents of either `\(v_i\)` or of `\(v_j\)`.".fn[1]
 
-```r
-# Use package dagitty to return the basis set
-library(dagitty)
-impliedConditionalIndependencies(dag, type = "basis.set")
-```
 
 - `\(C\)` has a `\(\chi^2\)` distribution with `\(2k\)` degrees of freedom, where `\(k\)` is the number of elements in the basis set
 
@@ -963,8 +1011,16 @@ impliedConditionalIndependencies(dag, type = "basis.set")
  - If `\(p &lt; .05\)` reject model, consider alternatives: more links, different structure, etc.
 
 - For the WHO MONICA DAG: `\(C\)` = \infty{}, `\(p\)` = 0
+
+.footnote[[1] Shipley, B. A new inferential test for path models based on directed acyclic graphs. *Structural Equation Modeling*. 2000 Jun 1;7(2):206-18.]
 ???
+See Shipley: A New Inferential Test for Path Models Based on Directed Acyclic Graphs: https://pdfs.semanticscholar.org/23e5/29d073a66c314f19900e5e1e7fc510453812.pdf
+
+The basis set required for this test (according to Shipley is): "To obtain the basis set Bø from a DAG, simply list each unique pair of nonadjacent
+vertices (vi, vj) and then form the conditioning set of this pair by listing all other vertices in the DAG that are parents of either vi or of vj."
+
 To calculate `\(C\)` and the `\(\chi^2\)` `\(p\)`-value in R, given that the `\(p\)`-values for the WHO MONICA DAG are in `r$p.value`:
+
 
 ```r
 C = -2*sum(log(r$p.value))
@@ -984,9 +1040,7 @@ all basis sets are mutually independent in finite data samples.
 
 Section 3.4 of 
 
-Shipley B. Cause and correlation in biology: a user's guide to path analysis, structural equations and causal inference with R. Cambridge University Press; 2016 Apr 18.
-
-discusses these issues and includes a description of Shipley's method for producing a basis set that is independent in finite samples. This is also described in the paper:
+Shipley B. Cause and correlation in biology: a user's guide to path analysis, structural equations and causal inference with R. Cambridge University Press; 2016 Apr 18. discusses these issues and includes a description of Shipley's method for producing a basis set that is independent in finite samples. This is also described in the paper:
 
 Shipley B. A new inferential test for path models based on directed acyclic graphs. Structural Equation Modeling. 2000 Jun 1;7(2):206-18. https://pdfs.semanticscholar.org/23e5/29d073a66c314f19900e5e1e7fc510453812.pdf
 
@@ -1018,106 +1072,86 @@ All variables standardized before analysis
 
 
 ```
-lavaan 0.6-4.1417 ended normally after 123 iterations
+lavaan 0.6-4.1415 ended normally after 75 iterations
 
   Optimization method                           NLMINB
-  Number of free parameters                         27
+  Number of free parameters                         20
 
-  Number of observations                         11075
+  Number of observations                          9006
 
-  Estimator                                       DWLS      Robust
-  Model Fit Test Statistic                     975.044     742.493
-  Degrees of freedom                                17          17
-  P-value (Chi-square)                           0.000       0.000
-  Scaling correction factor                                  1.323
-  Shift parameter                                            5.513
-    for simple second-order correction (Mplus variant)
+  Estimator                                         ML
+  Model Fit Test Statistic                   28601.806
+  Degrees of freedom                                19
+  P-value (Chi-square)                           0.000
 
 Model test baseline model:
 
-  Minimum Function Test Statistic            23225.972   16289.219
-  Degrees of freedom                                15          15
-  P-value                                        0.000       0.000
+  Minimum Function Test Statistic           130110.094
+  Degrees of freedom                                33
+  P-value                                        0.000
 
 User model versus baseline model:
 
-  Comparative Fit Index (CFI)                    0.959       0.955
-  Tucker-Lewis Index (TLI)                       0.964       0.961
+  Comparative Fit Index (CFI)                    0.780
+  Tucker-Lewis Index (TLI)                       0.618
 
-  Robust Comparative Fit Index (CFI)                            NA
-  Robust Tucker-Lewis Index (TLI)                               NA
+Loglikelihood and Information Criteria:
+
+  Loglikelihood user model (H0)             10583937.038
+  Loglikelihood unrestricted model (H1)     -17698.358
+
+  Number of free parameters                         20
+  Akaike (AIC)                              -21167834.075
+  Bayesian (BIC)                            -21167691.962
+  Sample-size adjusted Bayesian (BIC)       -21167755.519
 
 Root Mean Square Error of Approximation:
 
-  RMSEA                                          0.071       0.062
-  90 Percent Confidence Interval          0.068  0.075       0.058  0.066
-  P-value RMSEA &lt;= 0.05                          0.000       0.000
-
-  Robust RMSEA                                                  NA
-  90 Percent Confidence Interval                                NA     NA
+  RMSEA                                          0.409
+  90 Percent Confidence Interval          0.405  0.413
+  P-value RMSEA &lt;= 0.05                          0.000
 
 Standardized Root Mean Square Residual:
 
-  SRMR                                           0.193       0.193
+  SRMR                                           0.019
 
 Parameter Estimates:
 
   Information                                 Expected
-  Information saturated (h1) model        Unstructured
-  Standard Errors                           Robust.sem
+  Information saturated (h1) model          Structured
+  Standard Errors                             Standard
 
 Regressions:
                    Estimate  Std.Err  z-value  P(&gt;|z|)
   height ~                                            
-    eageg            -0.207    0.007  -30.808    0.000
-    sex              -0.676    0.007 -100.463    0.000
+    eage             -0.019    0.001  -27.675    0.000
+    sex              -1.357    0.015  -90.876    0.000
   weight ~                                            
-    height            0.482    0.010   50.543    0.000
-    eageg             0.217    0.009   25.069    0.000
-    sex              -0.100    0.011   -9.325    0.000
-  bmigrp ~                                            
-    weight            3.249    3.905    0.832    0.406
-    height           -1.857    2.233   -0.832    0.406
+    height            0.492    0.012   39.602    0.000
+    eage              0.019    0.001   22.077    0.000
+    sex              -0.159    0.024   -6.512    0.000
+  bmi ~                                               
+    weight            1.149    0.001  843.146    0.000
+    height           -0.656    0.001 -481.813    0.000
   hychol ~                                            
-    bmigrp            0.074    0.089    0.833    0.405
-    weight           -0.087    0.033   -2.603    0.009
-    sex              -0.065    0.019   -3.483    0.000
-    eageg             0.279    0.015   18.740    0.000
-    chdt             -0.194    0.011  -17.406    0.000
-    chrx             -0.191    0.011  -17.531    0.000
+    bmi               0.071    0.010    6.937    0.000
+    sex              -0.008    0.020   -0.414    0.679
+    eage              0.017    0.001   17.014    0.000
+    chdt              0.195    0.030    6.617    0.000
+    chrx             -0.406    0.030  -13.770    0.000
   chdt ~                                              
-    high              0.268    0.009   28.355    0.000
+    high              2.725    0.007  378.606    0.000
   chrx ~                                              
-    high              0.084    0.007   11.504    0.000
-
-Intercepts:
-                   Estimate  Std.Err  z-value  P(&gt;|z|)
-   .height           -0.000    0.007   -0.000    1.000
-   .weight            0.000    0.009    0.000    1.000
-   .bmigrp            0.000                           
-   .hychol            0.000                           
-   .chdt             -0.000    0.035   -0.000    1.000
-   .chrx             -0.000    0.041   -0.000    1.000
-
-Thresholds:
-                   Estimate  Std.Err  z-value  P(&gt;|z|)
-    bmigrp|t1        -0.382    0.460   -0.830    0.406
-    bmigrp|t2         2.632    3.164    0.832    0.405
-    hychol|t1         0.728    0.019   39.140    0.000
+    high              2.726    0.007  381.041    0.000
 
 Variances:
                    Estimate  Std.Err  z-value  P(&gt;|z|)
-   .height            0.500    0.006   80.565    0.000
-   .weight            0.693    0.007   92.671    0.000
-   .bmigrp            0.113                           
-   .hychol            0.911                           
-   .chdt              0.920    0.032   28.789    0.000
-   .chrx              0.984    0.046   21.301    0.000
-
-Scales y*:
-                   Estimate  Std.Err  z-value  P(&gt;|z|)
-    bmigrp            0.366    0.440    0.832    0.405
-    hychol            1.000                           
+   .height            0.501    0.007   67.104    0.000
+   .weight            0.697    0.010   67.104    0.000
+   .bmi               0.012    0.000   67.104    0.000
+   .hychol            0.893    0.013   67.104    0.000
+   .chdt              0.059    0.001   67.104    0.000
+   .chrx              0.058    0.001   67.104    0.000
 ```
 ]
 ]
@@ -1140,26 +1174,27 @@ Pearl argues against global fit tests because they rarely tell you where your mo
 ---
 ### Visualize Mismatch between Model and Data Covariance Matrices
 This shows observed - model-implied correlations
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-50-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-54-1.png" width="70%" /&gt;
 ---
+exclude: true
 ## Examine Modification Indices
 MI Indicates possible improvement in model test score
 
 ```
-##       lhs op    rhs        mi     epc sepc.lv sepc.all sepc.nox
-## 56   chdt ~~   chrx   625.573   0.826   0.826    0.868    0.868
-## 58 height  ~ bmigrp    86.591  -3.398  -3.398   -9.660   -9.660
-## 63 weight  ~ bmigrp 10255.842 116.194 116.194  329.168  329.168
-## 64 weight  ~ hychol    39.516   0.142   0.142    0.150    0.150
-## 68 bmigrp  ~ hychol    63.675   0.708   0.708    0.263    0.263
-## 78   chdt  ~ bmigrp    27.851  -0.014  -0.014   -0.039   -0.039
-## 79   chdt  ~ hychol   262.852  -0.397  -0.397   -0.421   -0.421
-## 80   chdt  ~   chrx   625.573   0.839   0.839    0.839    0.839
-## 81   chdt  ~  eageg   154.406  -0.138  -0.138   -0.138   -0.138
-## 85   chrx  ~ bmigrp    27.592  -0.014  -0.014   -0.041   -0.041
-## 86   chrx  ~ hychol   249.865  -0.472  -0.472   -0.501   -0.501
-## 87   chrx  ~   chdt   625.573   0.898   0.898    0.898    0.898
-## 88   chrx  ~  eageg   113.388  -0.127  -0.127   -0.128   -0.128
+##       lhs op    rhs       mi    epc sepc.lv sepc.all sepc.nox
+## 39 hychol ~~   chdt   64.346  0.028   0.028    0.122    0.122
+## 40 hychol ~~   chrx   64.347  0.028   0.028    0.121    0.121
+## 41   chdt ~~   chrx 8623.979  0.057   0.057    0.979    0.979
+## 52 weight  ~   high   25.967 -0.129  -0.129   -0.046   -0.129
+## 61 hychol  ~   high   64.351 -1.291  -1.291   -0.458   -1.287
+## 62   chdt  ~ height   20.421 -0.012  -0.012   -0.012   -0.012
+## 65   chdt  ~ hychol   35.382 -0.022  -0.022   -0.022   -0.022
+## 66   chdt  ~   chrx 8623.983  0.984   0.984    0.984    0.984
+## 68   chdt  ~    sex   51.703  0.037   0.037    0.018    0.037
+## 69   chrx  ~ height   23.030 -0.012  -0.012   -0.012   -0.012
+## 72   chrx  ~ hychol  186.354  0.050   0.050    0.050    0.050
+## 73   chrx  ~   chdt 8623.958  0.973   0.973    0.973    0.973
+## 75   chrx  ~    sex   54.104  0.038   0.038    0.019    0.038
 ```
 
 Biggest improvement would come from adding edge `\(bmigrp \rightarrow weight\)`.
@@ -1173,7 +1208,7 @@ The next highest MI involved adding an undirected edge between `\(chdt\)` and `\
 ---
 ## Age, Exercise, Cholesterol Model Implies No Independence Relations
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-52-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-56-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -1198,7 +1233,7 @@ Two Causal DAGs over the same set of variables are independence equivalent iff t
 These graphs are all independence equivalent.  (Verma and Pearl, 1988)
 ]
 .pull-right[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
 ]
 ???
 This concept is explained in detail in the following lecture at around 28 minutes:
@@ -1208,9 +1243,10 @@ From https://www.youtube.com/watch?v=TISSNwWDfw4&amp;list=PLO5mmwQolPRX858CyOOIH
 (CCD Summer short course 2016:Day 2 Part 1)
 
 ---
+exclude: true
 ### Completed Partially Directed Acyclic Graph (CPDAG)
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
 ]
 .pull-right[
 A CPDAG represents an equivalance class of independence equivalent graphs
@@ -1220,13 +1256,14 @@ A CPDAG represents an equivalance class of independence equivalent graphs
 ]
 
 ---
+exclude: true
 ### Global Tests of AEC Model are Uninformative
 There are 5 free parameters and 0 degrees of freedom.
 
 .scroll-box-18[
 
 ```
-## lavaan 0.6-4.1417 ended normally after 27 iterations
+## lavaan 0.6-4.1415 ended normally after 27 iterations
 ## 
 ##   Optimization method                           NLMINB
 ##   Number of free parameters                          5
@@ -1236,6 +1273,7 @@ There are 5 free parameters and 0 degrees of freedom.
 ##   Estimator                                         ML
 ##   Model Fit Test Statistic                       0.000
 ##   Degrees of freedom                                 0
+##   Minimum Function Value               0.0000000000000
 ## 
 ## Parameter Estimates:
 ## 
@@ -1246,15 +1284,15 @@ There are 5 free parameters and 0 degrees of freedom.
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   E ~                                                                   
-##     A                 0.300    0.001  307.306    0.000    0.300    0.951
+##     A                 0.301    0.001  305.460    0.000    0.301    0.950
 ##   C ~                                                                   
-##     A                 0.485    0.016   30.223    0.000    0.485    0.895
-##     E                -0.964    0.051  -18.968    0.000   -0.964   -0.562
+##     A                 0.483    0.016   30.002    0.000    0.483    0.885
+##     E                -0.952    0.051  -18.749    0.000   -0.952   -0.553
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .E                 0.962    0.014   70.711    0.000    0.962    0.096
-##    .C                24.826    0.351   70.711    0.000   24.826    0.840
+##    .E                 1.000    0.014   70.711    0.000    1.000    0.097
+##    .C                25.785    0.365   70.711    0.000   25.785    0.841
 ```
 ]
 
@@ -1264,12 +1302,12 @@ exclude: true
 .pull-left[
 Hypothesized Graph
 
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-57-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-61-1.png" width="70%" /&gt;
 ]
 .pull-right[
 CPDAG
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1282,34 +1320,42 @@ class: middle, center
 .center[**Causal DAG `\\(\Rightarrow\\)` Independence Relations**]
 
 .pull-left[
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-59-1.png" width="70%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-63-1.png" width="70%" /&gt;
 ]
 
 .pull-right[
 
 ```
-bmigrp _||_ chdt
-bmigrp _||_ chrx
-bmigrp _||_ eageg | height, weight
-bmigrp _||_ high
-bmigrp _||_ sex | height, weight
+bmi _||_ chdt | high
+bmi _||_ chdt | eage
+bmi _||_ chdt | height, weight
+bmi _||_ chrx | high
+bmi _||_ chrx | eage
+bmi _||_ chrx | height, weight
+bmi _||_ eage | height, weight
+bmi _||_ high | eage
+bmi _||_ high | height, weight
+bmi _||_ sex | height, weight
 chdt _||_ chrx | high
-chdt _||_ eageg
-chdt _||_ height
+chdt _||_ eage | high
+chdt _||_ height | eage
+chdt _||_ height | high
 chdt _||_ sex
-chdt _||_ weight
-chrx _||_ eageg
-chrx _||_ height
+chdt _||_ weight | eage
+chdt _||_ weight | high
+chol _||_ height | bmi, eage, sex
+chol _||_ high | chdt, chrx, eage
+chol _||_ weight | bmi, eage, sex
+chrx _||_ eage | high
+chrx _||_ height | eage
+chrx _||_ height | high
 chrx _||_ sex
-chrx _||_ weight
-eageg _||_ high
-eageg _||_ sex
-height _||_ high
-height _||_ hychol | bmigrp, eageg, sex
-high _||_ hychol | chdt, chrx
+chrx _||_ weight | eage
+chrx _||_ weight | high
+eage _||_ sex
+height _||_ high | eage
 high _||_ sex
-high _||_ weight
-hychol _||_ weight | bmigrp, eageg, sex
+high _||_ weight | eage
 ```
 ]
 
@@ -1321,24 +1367,24 @@ exclude: true
 ### Results of the PC Algorithm (Spirtes and Glymour, 1991) On The WHO Monica Dataset 
 
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-61-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
 Graph implied by [Nature paper]
-![](overview_causal_inference_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-66-1.png)&lt;!-- --&gt;
 ]
 
 ---
 ## Results of PC Algorithm.fn[1] on the WHO Dataset
 .pull-left[
-<div id="htmlwidget-db2e5a74c6bbcc29bdd0" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-db2e5a74c6bbcc29bdd0">{"x":{"diagram":"digraph g {\n \"chrx\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"sex\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-7a3b85a25123bfae1b81" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-7a3b85a25123bfae1b81">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=none]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmigrp\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"chol\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 ]
 
 .pull-right[
 Hypothesized DAG
-![](overview_causal_inference_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-68-1.png)&lt;!-- --&gt;
 ]
 
 .footnote[[1] Spirtes and Glymour, 1991]
@@ -1375,8 +1421,8 @@ The temporal constraints indicate that lower tiers cannot have any directed edge
 ---
 # PC Algorithm with Knowledge
 .pull-left[
-<div id="htmlwidget-4c2d825055a5dfab7258" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-4c2d825055a5dfab7258">{"x":{"diagram":"digraph g {\n \"chrx\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"eageg\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eageg\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eageg\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"hychol\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"eageg\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-c2fc6eb654bdb4968af1" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-c2fc6eb654bdb4968af1">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmigrp\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"bmigrp\" [arrowtail=none, arrowhead=normal]; \n \"bmigrp\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"hychol\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"high\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 ]
 
 .pull-right[
@@ -1414,7 +1460,7 @@ exclude: true
 
 .pull-right[
 Graph implied by [Nature paper]
-![](overview_causal_inference_files/figure-html/unnamed-chunk-70-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -1437,9 +1483,9 @@ class: center, middle
 
 $$
 `\begin{align}
-c &amp;= 100.24+-0.96e + 0.48a \\
- &amp;= 100.24+-0.96\cdot 20 + 0.48\cdot 60 \\
- &amp;= 109.84
+c &amp;= 100.23+-0.95e + 0.48a \\
+ &amp;= 100.23+-0.95\cdot 20 + 0.48\cdot 60 \\
+ &amp;= 110.03
 \end{align}`
 $$
 - This is incorrect, because it ignores what we have learned about Joe by measuring what has already happened to him
@@ -1461,7 +1507,7 @@ e &lt;- 0.3*a + rnorm(n)
 c &lt;- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)
 ```
 
-![](overview_causal_inference_files/figure-html/unnamed-chunk-72-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -1469,7 +1515,7 @@ $$
 `\begin{align}
 A &amp;= U_a \\
 E &amp;= 0.3 A + U_e \\
-C &amp;= 0.48 A + -0.96 E + U_c
+C &amp;= 0.48 A + -0.95 E + U_c
 \end{align}`
 $$
 
@@ -1497,11 +1543,11 @@ $$
 `\begin{align}
 A = 60 &amp;= U_a \\
 E = 10 &amp;= 0.3 \cdot 60 + U_e \\
-C = 140 &amp;= 0.48 \cdot 60 + -0.96\cdot 10 + U_c \\
+C = 140 &amp;= 0.48 \cdot 60 + -0.95\cdot 10 + U_c \\
 \\
 U_a &amp;= 60 \\
 U_e &amp;= -8 \\
-U_c &amp;= 120.8
+U_c &amp;= 120.7
 \end{align}`
 $$
 
@@ -1514,7 +1560,7 @@ $$
 `\begin{align}
 A &amp;= U_a \\
 E &amp;= 0.3 A + U_e \\
-C &amp;= 0.48 A + -0.96 E + U_c
+C &amp;= 0.48 A + -0.95 E + U_c
 \end{align}`
 $$
 
@@ -1525,25 +1571,25 @@ $$
 `\begin{align}
 A &amp;= 60 \\
 E &amp;= 20 \\
-C_{E=20} &amp;= 0.48 \cdot 60 + -0.96\cdot 20 + 120.8 = 130.4
+C_{E=20} &amp;= 0.48 \cdot 60 + -0.95\cdot 20 + 120.7 = 130.5
 \end{align}`
 $$
-naïve version had `\(C = 109.84\)`
+naïve version had `\(C = 110.03\)`
 ]
 
 ---
 ### Why the Difference?
 The naïve estimate,
 
-`$$E(C|do(E=20, A=60)) = 109.84$$`
+`$$E(C|do(E=20, A=60)) = 110.03$$`
 
 does not reflect the fact the Joe's cholesterol, at `\(140\)`, is higher than expected for a person of Age 60 with 10 units of exercise:
 
-`$$E(C|do(E=10, A=60)) = 119.44$$`
+`$$E(C|do(E=10, A=60)) = 119.53$$`
 
 By using Joe's observed data to estimate `\(U\)`, then substituting `\(E=20\)` for the original function `\(E = 0.3A+U_e\)` the resulting structural equations estimate Joe's counterfactual result:
 
-`$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = 130.4$$`
+`$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = 130.5$$`
 
 ---
 ## Counterfactual Reasoning Requires a Causal Model
@@ -1643,7 +1689,7 @@ Harvard researchers argued that such an analysis could find an association betwe
 exclude: true
 ## Causal DAGs for each hypothesis
 .pull-left[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-78-1.png)&lt;!-- --&gt;
 ]
 ---
 exclude: true
@@ -1661,7 +1707,7 @@ where `\(V_1, V_2,..., V_n\)` are the variables in `\(M\)`, and `\(pa_i\)` are t
 ]
 
 .pull-right[
-![](overview_causal_inference_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
+![](overview_causal_inference_files/figure-html/unnamed-chunk-79-1.png)&lt;!-- --&gt;
 
 `$$P(a,e,c)=P(a)*P(e|a)*P(c|a, e)$$`
 ]
@@ -1697,7 +1743,7 @@ g &lt;- rbinom(n, 1, .5)
 p_h_gx = c(.3, .4, .05, .075)
 h &lt;- rbinom(n, 1, p_h_gx[g*2+x+1])
 ```
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-77-1.png" width="100%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-81-1.png" width="100%" /&gt;
 ]
 .pull-right[
 Dichotomous Interventional Generative Model
@@ -1710,7 +1756,7 @@ g &lt;- rbinom(n, 1, .5)
 p_h_gx = c(.3, .4, .05, .075) # p(H|M,T)
 h &lt;- rbinom(n, 1, p_h_gx[g*2+x+1])
 ```
-&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-79-1.png" width="100%" /&gt;
+&lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-83-1.png" width="100%" /&gt;
 
 ```r
 # CPT of h given g and x
@@ -1721,8 +1767,8 @@ xtabs(p_h ~ G+X, p_h)
 ```
 ##    X
 ## G            0          1
-##   0 0.30561082 0.38884331
-##   1 0.05116096 0.07496013
+##   0 0.31522173 0.41072148
+##   1 0.04712042 0.08172128
 ```
 ]
 
@@ -1740,16 +1786,16 @@ addmargins(xtabs(p_h ~ G+X, p_h))
 ```
 ##      X
 ## G              0          1        Sum
-##   0   0.30561082 0.38884331 0.69445414
-##   1   0.05116096 0.07496013 0.12612109
-##   Sum 0.35677178 0.46380344 0.82057523
+##   0   0.31522173 0.41072148 0.72594322
+##   1   0.04712042 0.08172128 0.12884170
+##   Sum 0.36234215 0.49244276 0.85478492
 ```
 
 ---
 exclude: true
 ## GGPlotly graph
-<div id="htmlwidget-11fdb321d0cb82b0c04d" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-11fdb321d0cb82b0c04d">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-82.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-898dd14cea3204f46578" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-898dd14cea3204f46578">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-86.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

@@ -25,21 +25,34 @@ monicaform048
 
 ```{r}
 library(lubridate)
-mf = monicaform048 %>% mutate(dexam=parse_date_time(gsub("(99)+", "", dexam), orders=c("dmy", "my", "y")), mbirth=parse_date_time(gsub("99", "", substr(mbirth, 3, nchar(mbirth))), orders=c("my", "y")),
-                              high = as.integer(high), # ever told by doc or provider that you have high cholesterol 1=yes, 2=no, 9=insufficient data
-                              chdt = as.integer(chdt), # on a special diet for high chol? 1 = yes, 2=no, 3=uncertain, 8=never told they had high chol, 9=insufficient data
-                              chrx = as.integer(chrx), # taking meds (in last two weeks) 1=yes, 2=no, 3=uncertain, 8=never told had high chol, 9=insufficient
-                              agem = as.integer(agem),
-                              dchol=dmy(dchol),
-                              chol=as.integer(chol)/10,
-                              choldl=as.integer(choldl),
-                              hdl=as.integer(hdl)/100.,
-                              hdldl=as.integer(hdldl),
-                              height=as.integer(height)/100,
-                              weight=as.integer(weight)*100) # recorded in 100 g units
-mf <- mf %>% select(sex, eage, eageg, high, chdt, chrx, chol, choldl, weight, height)
+mf = monicaform048 %>% mutate(
+    dexam=parse_date_time(gsub("(99)+", "", dexam), orders=c("dmy", "my", "y")),
+    mbirth=parse_date_time(gsub("99", "", substr(mbirth, 3, nchar(mbirth))), orders=c("my", "y")),
+    high = as.integer(high), # ever told by doc or provider that you have high cholesterol 1=yes, 2=no, 9=insufficient data
+    chdt = as.integer(chdt), # on a special diet for high chol? 1 = yes, 2=no, 3=uncertain, 8=never told they had high chol, 9=insufficient data
+    chrx = as.integer(chrx), # taking meds (in last two weeks) 1=yes, 2=no, 3=uncertain, 8=never told had high chol, 9=insufficient
+    dchol=dmy(dchol),
+    chol=as.integer(chol)/10, # Total serum cholesterol (mmol/l)
+    choldl=as.integer(choldl), # Total serum cholesterol (mg/dl)
+    hdl=as.integer(hdl)/100.,
+    hdldl=as.integer(hdldl),
+    height=as.integer(height)/100,
+    weight=as.integer(weight)*100, # recorded in 100 g units
+    eage=as.integer(eage), # Age on date of examination
+    eageg=as.integer(eageg)) # Age group on date of exam, but see data dict above, because coding varies by data collection center
+mf <- mf %>% select(sex, eage, high, chdt, chrx, chol, choldl, weight, height)
 mf
-mf <- mf %>% filter(eageg < 9, chol < 99.9, eage < 99, choldl < 999, (chol < 88.8 | choldl < 888), weight < 999900, height < 9.99) %>% mutate(weight=weight/1000) %>% mutate(bmi=weight/height^2) %>% mutate(chol=ifelse(chol < 88.8, chol, choldl*0.02586)) %>% mutate(hychol=ifelse(chol>=6.5, 1, 0), bmigrp=case_when(bmi<25 ~ 1, bmi<30~2, TRUE ~3)) %>% select(-choldl)
+mf <- mf %>% 
+    filter(chol < 99.9, eage < 99, high < 9, chdt != 3, chdt != 9,
+           chrx != 3, chrx != 9,
+           choldl < 999, (chol < 88.8 | choldl < 888), 
+            weight < 999900, height < 9.99) %>% 
+    mutate(weight=weight/1000) %>% 
+    mutate(bmi=weight/height^2) %>% 
+    mutate(chol=ifelse(chol < 88.8, chol, choldl*0.02586)) %>% 
+    mutate(hychol=ifelse(chol>=6.5, 1, 0), bmigrp=case_when(bmi<25 ~ 1, bmi<30~2, TRUE ~3)) %>%
+    mutate(chdt=ifelse(chdt==8, 2, 1), chrx=ifelse(chrx==8, 2, 1)) %>% # If either indicates high was no, assume they are not on diet or meds for high cholesterol
+    select(-choldl)
 mf
 write_csv(mf, "monica-chol.csv")
 ```

@@ -42,7 +42,7 @@ library(corrplot)
 library(lavaan)
 ```
 
-# Disclaimer
+# Notes
 
 Use the arrow keys to navigate. Press `h` for help. Press `p` to see speaker notes. These notes often elaborate on slide content and include additional material and references.
 
@@ -55,18 +55,18 @@ All of these slides, including model outcomes, are generated in R using R Markdo
 If you find errors or have suggestions for improvement, open an issue on this project's Github repo.
 
 ---
-# Pearl's Three Layer Causal Hierarchy
+# Pearl's Three Layer Causal Hierarchy.fn[1]
 
 ```{r, echo=FALSE}
 text_tbl <- data.frame(
 Level = c("1. Association<br><&nbsp>\\(\\mathbf{P(y|x)}\\)", "2. Intervention<br>\\(\\mathbf{P(y|do(x), z)}\\)", "3. Counterfactuals<br>\\(\\mathbf{P(y_x|x',y')}\\)"),
 "Typical Activity" = c(
-"Seeing",
+"Seeing,<br>Observing",
 "Doing,<br>Intervening",
 "Imagining,<br>Retrospecting"
 ),
-"Typical Questions" = c("What is?<br>How would seeing X change my belief in Y?", "What if?<br>What if I do X?", "Why?<br>Was it X that caused Y?<br>What if I had acted differently?"),
-Examples = c("What does a symptom tell me about a disease?<br>What does a survey tell us about the election results?", "What if I take aspirin, will my headache be cured?<br>What if we ban cigarettes?", "Was it the aspirin that stopped my headache?<br>Would Kennedy be alive had Oswald not shot him?<br>What if I had not been smoking the past 2 years?")
+"Typical Questions" = c("How would seeing X change my belief in Y?", "What if I do X?", "Was it X that caused Y?<br>What if I had acted differently?"),
+Example = c("What is my chance of having prostate cancer if my PSA test is 3 ng/ml?", "Will taking aspirin daily reduce my risk of stroke?", "If I had stopped smoking 10 years earlier, could I have prevented lung cancer?")
 )
 ladder <- text_tbl %>% knitr::kable(format="html", booktabs = FALSE, escape=FALSE, booktabs = TRUE) %>%
 kable_styling(full_width = F) %>%
@@ -74,7 +74,11 @@ column_spec(1, bold = T, color = "#1c5253") %>%
 column_spec(2, width = "8em") %>%
 column_spec(3, width = "8em") 
 ladder
+
 ```
+
+.footnote[[1] Pearl, 2019]
+
 ???
 I have modified this with what I think are more illustrative questions. This is based on the paper below, but also appears in other publications by Pearl.
 
@@ -98,19 +102,6 @@ class: center, middle
 
 # Part I: Causation
 
----
-
-# Definitions
-
-**Causal Infererence** is the process of inferring the **causal effect** of one random variable on a second random variable.
-
-The **Causal Effect** of $X$ on $Y$ is the change in $Y$ when we **intervene** and directly change $X$ from one value to another.
-
-**Intervening** on $X$ means to force $X$ to take a specific value, independent of any of the variables that normally influence the value of $X$
-
- - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
-  
- - This is why RCTs are considered the gold standard for identifying causal effects
 
 ---
 # Example: Age, Exercise and Cholesterol
@@ -146,6 +137,57 @@ Causal DAG (Directed Acyclic Graph)
   - Missing links indicate the strong assumption of no direct causal effect
   - Must include all common causes of any pair of variables already in the DAG
 ]
+
+---
+## The Observational Model Produces Observational Data
+```{r, echo=FALSE, out.width="80%", comment=NA}
+DT::datatable(head(dobs, n=8), fillContainer = FALSE, class = "nowrap hover", options = list(pageLength=8, dom = "t")) %>% formatRound(c("E", "A", "C"), 2)
+```
+---
+.pull-left[
+### The observational data show that exercise increases cholesterol!
+```{r, echo=FALSE, out.width="70%"}
+formula <- y ~ x
+pobs <- ggplot(dobs, aes(x = E, y = C)) + geom_point() + geom_smooth(method = "lm", formula = formula)
+pobs
+fitobs = lm(C ~ E, dobs)
+Cobs <- coef(fitobs)
+```
+
+
+$c = `r round(Cobs[1], digits=2)`+`r round(Cobs[2], digits=2)`e \space `r ifelse(summary(fitobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
+]
+
+--
+
+.pull-right[
+### But in the model that generated the data exercise decreases cholesterol!
+```{r, eval=FALSE}
+n <- 10000
+a <- rnorm(n, mean = 50, sd = 10)
+e <- 0.3*a + rnorm(n)
+{{c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)}}
+```
+```{r, echo=FALSE, fig.height=3}
+pgobs
+```
+Why does the data show the opposite association?
+]
+
+---
+
+# Definitions
+
+**Causal Infererence** is the process of inferring the **causal effect** of one random variable, $X$, on a second random variable. $Y$.
+
+The **Causal Effect** of $X$ on $Y$ is the change in $Y$ when we **intervene** and directly change $X$ from one value to another.
+
+**Intervening** on $X$ means to force $X$ to take a specific value, independent of any of the variables that normally influence the value of $X$
+
+ - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
+  
+ - This is why RCTs are considered the gold standard for identifying causal effects
+
 
 ---
 ## Intervening Changes the Generative Model
@@ -416,9 +458,13 @@ This simple 3 variable dataset requires two different regression analyses to est
   
 - Total effect of $E$, Direct effect of $A$:
 
+    `lm(C ~ A + E, dobs)`
+
     $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \space `r ifelse(summary(fitobsstrat)$coefficients[2,4] < .001, "(p<.001)", "")`$
 
 -  Total effect of $A$:
+
+    `lm(C ~ A, dobs)`
 
     $c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
   
@@ -620,10 +666,12 @@ pgobs
     - All paths from $A$ to $C$ are causal
         - $A \rightarrow C$
         - $A \rightarrow E \rightarrow C$
+    - `lm(C ~ A, dobs)`
 
 **Direct Effect of $A$ on $C$**
 
 - Adjusting for $E$ blocks the path $A \rightarrow E \rightarrow C$ leaving only the direct path $A \rightarrow C$
+    - `lm(C ~ A + E, dobs)`
 ]
 ```{r, echo=FALSE}
 AEadjustedfit = lm(E ~ A, dobs)
@@ -649,6 +697,7 @@ pgobs
     - Non-causal path, blocked by collider $C$
         - $A \rightarrow C \leftarrow  E$
         - Adjusting for $C$ would distort the effect estimate
+    - `lm(E ~ A, dobs)`
 ]
 
 ???
@@ -717,6 +766,7 @@ $$Z \rightarrow Z_2$$
 where $Z$, a mediator, causes $Z_2$. It is clear that adjusting for $Z$ would block the path between $X$ and $Y$, but adjusting for $Z_2$ would partially block the path.
 
 ---
+exclude: true
 # Frontdoor Adjustment Criterion
 .pull-left[
 U unmeasured: Cannot block backdoor path from $X \rightarrow Y$
@@ -754,7 +804,9 @@ $$Z \leftarrow X \leftarrow U \rightarrow Y$$
 ]
 ???
 Since $U$ is unmeasured, we cannot adjust for it. However, in this case, the frontdoor adjustment criterion allows us to identify the causal effect of $X$ on $Y$ in two steps.
+
 ---
+exclude: true
 ## Frontdoor Adjustment Criterion (Pearl 1995)
 A set of variables $\{Z\}$ satisfies the **frontdoor criterion** relative to an ordered pair of variables $\{X, Y\}$ in a DAG if:
 
@@ -776,6 +828,7 @@ exclude: true
 Instrumental variables are those that only affect the treatment, with no relationship to anything else
 
 ---
+exclude: true
 # Identifying Covariate Specific Effects
 Suppose a drug $D$ affects $C$, and that gender $G$ affects who takes the drug.
 
@@ -834,6 +887,7 @@ and
 $$P(C=c|do(D=d), B=b) = P(C=c|D=d, B=b, G=g, E=e)P(B=b, G=g|B=b)$$
 
 ---
+exclude: true
 ## Identifying the Effects of Multiple Interventions
 What is the effect of simultaneously intervening on $E$ and $D$?
 .pull-left[
@@ -941,22 +995,22 @@ $$\space$$
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
 gmonica <- dagitty('dag{
-    eageg [pos="0,3"]
+    eage [pos="0,3"]
     sex [pos="2,3"]
     height [pos="0,2"]
     weight [pos="1, 2"]
-    bmigrp [pos="0,0"]
-    hychol [pos="1,0"]
+    bmi [pos="0,0"]
+    chol [pos="1,0"]
     chrx [pos="2,0"]
     chdt [pos="2,2"]
     high [pos="2,1"]
-    eageg -> {weight hychol}
-    sex -> {hychol height weight}
-    height -> {weight bmigrp}
-    weight -> bmigrp
-    bmigrp -> hychol
-    chrx -> hychol
-    chdt -> hychol
+    eage -> {weight chol}
+    sex -> {chol height weight}
+    height -> {weight bmi}
+    weight -> bmi
+    bmi -> chol
+    chrx -> chol
+    chdt -> chol
     high -> {chrx chdt}
 }')
 pgmonica <- ggdag(gmonica) + theme_dag_gray()
@@ -985,7 +1039,7 @@ The tests shown here form a basis set for this graph, even though I did not tell
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
 monica <- as_tibble(read.csv("monica-chol.csv"))
-monica <- select(monica, -one_of(c('eage', 'bmi', 'chol')))
+#monica <- select(monica, -one_of(c('eage', 'bmi', 'chol')))
 pgmonica
 ```
 ]
@@ -1053,35 +1107,40 @@ pr
 ]
 
 .pull-right[
-The data suggests that $eage$ and $height$ are *not* marginally independent
+The data suggests that $eage$ and $height$, and $eage$ and $high$ are *not* marginally independent
 
 This contradicts our model
+
+Any ideas as to why $eage$ and $high$ are not marginally independent?
 ]
+
+???
+$high$ indicates that a patient was told that he or she had high cholesterol. This means that  $high$ is dependent on a past measurement of high cholesterol, which itself is likely tied to past age, weight, etc. A more accurate model would have these past values along with edges leading to the present values.
 ---
-## Add $eage \rightarrow height$ and Retest
+## Add $eage \rightarrow height$ and $eage \rightarrow high$ and Retest
 
 .pull-left[
 ```{r, echo=FALSE, out.width="70%"}
 gmonica <- dagitty('dag{
-    eageg [pos="0,3"]
+    eage [pos="0,3"]
     sex [pos="2,3"]
     height [pos="0,2"]
     weight [pos="1, 2"]
-    bmigrp [pos="0,0"]
-    hychol [pos="1,0"]
+    bmi [pos="0,0"]
+    chol [pos="1,0"]
     chrx [pos="2,0"]
     chdt [pos="2,2"]
-    high [pos="2,1"]
-    eageg -> {weight hychol height}
-    sex -> {hychol height weight}
-    height -> {weight bmigrp}
-    weight -> bmigrp
-    bmigrp -> hychol
-    chrx -> hychol
-    chdt -> hychol
+    high [pos="2,1.5"]
+    eage -> {weight chol height high}
+    sex -> {chol height weight}
+    height -> {weight bmi}
+    weight -> bmi
+    bmi -> chol
+    chrx -> chol
+    chdt -> chol
     high -> {chrx chdt}
 }')
-pgmonica <- ggdag(gmonica) + theme_dag_gray()
+pgmonica <- ggdag(gmonica, layout="circle") + theme_dag_gray()
 pgmonica
 ```
 ]
@@ -1092,25 +1151,43 @@ Coefficients where $p < .05$
 ```{r, echo=FALSE, fig.height=6}
 r <- localTests( gmonica, monica, "cis" )
 r$p.value <- p.adjust(r$p.value)
-r <- r[r$p.value<0.05,] 
-pr <- ggplot(r, aes(x=estimate, y=rownames(r))) + geom_point() + geom_errorbarh(mapping=aes(y=rownames(r), xmin=!!sym("2.5%"), xmax = !!sym("97.5%")), height=0) +theme_bw(base_size = 15)
+rlowp <- r[r$p.value<0.05,] 
+pr <- ggplot(rlowp, aes(x=estimate, y=rownames(rlowp))) + geom_point() + geom_errorbarh(mapping=aes(y=rownames(rlowp), xmin=!!sym("2.5%"), xmax = !!sym("97.5%")), height=0) +theme_bw(base_size = 15)
 pr
 ```
 ]
 ???
-This is close enough to 0 to ignore
+There are still many discrepencies here
 
 ---
+exclude: true
 ## Summarizing Independence Tests: Fisher's C
 - Statistical test of the set of independence test results
 
 $$C = -2\sum \ln p_i$$
  - $p_i$ are the $p$-values of all tests of conditional independence for the **basis set**
 - **Basis Set**: the smallest set of independence relations implied by a DAG
-```{R, eval=FALSE}
-# Use package dagitty to return the basis set
+- Fisher's C requires a basis set constructed by listing "each unique pair of nonadjacent
+vertices $(v_i, v_j)$ and then forming the conditioning set of this pair by listing all other vertices in the DAG that are parents of either $v_i$ or of $v_j$.".fn[1]
+```{R, echo=FALSE}
+# dagitty does not return the basis set required for Fisher's C
+# so we define functions based on Shipley, 2000 that return
+# the correct basis set
 library(dagitty)
-impliedConditionalIndependencies(dag, type = "basis.set")
+basisSet <- function(dag, v) {
+  vars <- unique(tidy_dagitty(gmonica)$data$name)
+  vars2 <- vars[!vars %in% c(adjacentNodes(gmonica, v), v)]
+  lapply(vars2, function(v2) list(X = v, Y=v2, Z=unique(c(parents(dag, v), parents(dag, v2)))))
+}
+shipleyBasisSet <- function(dag) {
+  vars <- unique(tidy_dagitty(gmonica)$data$name)
+  result <- unlist(lapply(vars, function(v) basisSet(gmonica, v)), recursive=FALSE)
+  return(result)
+}
+
+gmonicaBasisSet <- shipleyBasisSet(gmonica)
+
+r = localTests(gmonica, monica, tests=gmonicaBasisSet)
 ```
 
 - $C$ has a $\chi^2$ distribution with $2k$ degrees of freedom, where $k$ is the number of elements in the basis set
@@ -1119,8 +1196,16 @@ impliedConditionalIndependencies(dag, type = "basis.set")
  - If $p < .05$ reject model, consider alternatives: more links, different structure, etc.
 
 - For the WHO MONICA DAG: $C$ = `r round(-2*sum(log(r$p.value)), 2)`, $p$ = `r round(1 - pchisq(-2*sum(log(r$p.value)), 2 * length(r$p.value)), 2)`
+
+.footnote[[1] Shipley, B. A new inferential test for path models based on directed acyclic graphs. *Structural Equation Modeling*. 2000 Jun 1;7(2):206-18.]
 ???
+See Shipley: A New Inferential Test for Path Models Based on Directed Acyclic Graphs: https://pdfs.semanticscholar.org/23e5/29d073a66c314f19900e5e1e7fc510453812.pdf
+
+The basis set required for this test (according to Shipley is): "To obtain the basis set Bø from a DAG, simply list each unique pair of nonadjacent
+vertices (vi, vj) and then form the conditioning set of this pair by listing all other vertices in the DAG that are parents of either vi or of vj."
+
 To calculate $C$ and the $\chi^2$ $p$-value in R, given that the $p$-values for the WHO MONICA DAG are in `r$p.value`:
+
 ```{r}
 C = -2*sum(log(r$p.value))
 k = length(r$p.value) # Number of tests in basis set
@@ -1135,9 +1220,7 @@ all basis sets are mutually independent in finite data samples.
 
 Section 3.4 of 
 
-Shipley B. Cause and correlation in biology: a user's guide to path analysis, structural equations and causal inference with R. Cambridge University Press; 2016 Apr 18.
-
-discusses these issues and includes a description of Shipley's method for producing a basis set that is independent in finite samples. This is also described in the paper:
+Shipley B. Cause and correlation in biology: a user's guide to path analysis, structural equations and causal inference with R. Cambridge University Press; 2016 Apr 18. discusses these issues and includes a description of Shipley's method for producing a basis set that is independent in finite samples. This is also described in the paper:
 
 Shipley B. A new inferential test for path models based on directed acyclic graphs. Structural Equation Modeling. 2000 Jun 1;7(2):206-18. https://pdfs.semanticscholar.org/23e5/29d073a66c314f19900e5e1e7fc510453812.pdf
 
@@ -1164,15 +1247,14 @@ Shipley B. A new inferential test for path models based on directed acyclic grap
 ```{r, echo=FALSE, message=FALSE, warning = FALSE}
 model <- '
   # regressions
-  height ~ eageg + sex
-  weight ~ height + eageg + sex
-  bmigrp ~ weight + height
-  hychol ~ bmigrp + weight + sex + eageg + chdt + chrx
+  height ~ eage + sex
+  weight ~ height + eage + sex
+  bmi ~ weight + height
+  hychol ~ bmi + sex + eage + chdt + chrx
   chdt ~ high
   chrx ~ high
-  bmigrp ~*~ bmigrp
   '
-fit <- sem(model, data=monica, ordered = c("bmigrp", "hychol"), std.ov=TRUE)
+fit <- sem(model, data=monica, std.ov=TRUE) # , ordered = c("hychol")
 ```
 
 .pull-left-65[
@@ -1213,10 +1295,11 @@ corrplot::corrplot(matrix_toplot, is.corr = FALSE,
                order = "original",
                tl.col='black', tl.cex=.75)
 }
-plot_matrix(residuals(fit, type="cor")$res.cov) # 
-# plot_matrix(residuals(fit)$res.cov)
+plot_matrix(residuals(fit, type="cor")$cov) # 
+#plot_matrix(residuals(fit))
 ```
 ---
+exclude: true
 ## Examine Modification Indices
 MI Indicates possible improvement in model test score
 ```{r, echo=FALSE}
@@ -1272,6 +1355,7 @@ From https://www.youtube.com/watch?v=TISSNwWDfw4&list=PLO5mmwQolPRX858CyOOIHqYnm
 (CCD Summer short course 2016:Day 2 Part 1)
 
 ---
+exclude: true
 ### Completed Partially Directed Acyclic Graph (CPDAG)
 .pull-left[
 ```{r, echo=FALSE, fig.height = 7}
@@ -1288,6 +1372,7 @@ A CPDAG represents an equivalance class of independence equivalent graphs
 ]
 
 ---
+exclude: true
 ### Global Tests of AEC Model are Uninformative
 There are 5 free parameters and 0 degrees of freedom.
 
