@@ -414,10 +414,14 @@ n <- 10000
 a <- rnorm(n, mean = 50, sd = 10)
 e <- 0.3*a + rnorm(n)
 {{c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)}}
+
+`lm(C ~ A, dobs)`
 ```
 ```{r, echo=FALSE, fig.height=4}
 pgobs
 ```
+???
+To get the total causal effect of A on C, we must regress C on A alone (`lm(C ~ A, dobs)`), controlling for E in the regression (`lm(C ~ A + E, dobs)`) gives us the direct effect of A on C.
 ]
 .pull-right[
 From the model, the **direct causal effect** of $A$ on $C$ is $0.5a$
@@ -442,6 +446,7 @@ $$
 ---
 ### A Single Analysis is Usually Insuffient to Measure All Effects
 .pull-left[
+`lm(C ~ A, dobs)`
 ```{r, echo=FALSE, out.width="70%"}
 formula <- y ~ x
 p <- ggplot(dobs, aes(x = A, y = C)) + geom_point() + geom_smooth(method = "lm", formula = formula)
@@ -1424,9 +1429,11 @@ pgmonica
 ]
 
 .pull-right[
+.scroll-box-16[
 ```{r, echo=FALSE, out.width="70%", comment=NA}
 impliedConditionalIndependencies( gmonica, max.results = Inf )
 ```
+]
 ]
 
 .center[**Causal DAGS `\\(\Leftarrow\\)` Independence Relations**]
@@ -1438,8 +1445,9 @@ exclude: true
 
 .pull-left[
 ```{r, echo=FALSE, fig.height=6}
-suffStat <- list(C = cor(monica), n = nrow(monica))
-pc.monica <- pc(suffStat, indepTest = gaussCItest, labels = names(monica), alpha = 0.01, skel.method="stable", maj.rule = TRUE)
+pcmonica <- monica %>% select(-bmigrp) %>% select(-hychol) # Remove bmigrp and hychol to match earlier model
+suffStat <- list(C = cor(pcmonica), n = nrow(pcmonica))
+pc.monica <- pc(suffStat, indepTest = gaussCItest, labels = names(pcmonica), alpha = 0.01, skel.method="stable", maj.rule = TRUE)
 plot(pc.monica)
 ```
 ]
@@ -1455,7 +1463,8 @@ pgmonica
 ## Results of PC Algorithm.fn[1] on the WHO Dataset
 .pull-left[
 ```{r, echo=FALSE}
-res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, colliderDiscoveryRule = 2)
+pcmonica <- monica %>% select(-bmigrp) %>% select(-hychol) # Remove bmigrp and hychol to match earlier model
+res <- tetradrunner(algoId = "pc-all", df = pcmonica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, colliderDiscoveryRule = 2)
 graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
 grViz(graph_dot)
 ```
@@ -1480,29 +1489,31 @@ See: Spirtes P, Glymour C. An algorithm for fast recovery of sparse causal graph
 
 ```{r, results="hide"}
 # List of forbidden directed edges
-forbid <- list(c('chol', 'bmigrp'), c('eage', 'bmigrp'), c('sex', 'bmigrp'))
+forbid <- list(c('chol', 'bmi'), c('eage', 'bmi'), c('sex', 'bmi'))
 
 # List of required directed edges
-require <- list(c('height', 'bmigrp'), c('weight', 'bmigrp'))
+require <- list(c('height', 'bmi'), c('weight', 'bmi'))
 
 # Forbid edges between eage and sex
 forbiddenWithin <- c('sex', 'eage')
 class(forbiddenWithin) <- 'forbiddenWithin'
 
 # Add Temporal constraints
-temporal <- list(forbiddenWithin, c('eageg','height', 'weight', 'chrx', 'chdt', 'high'), c('bmigrp', 'hychol')) 
+temporal <- list(forbiddenWithin, c('height', 'weight', 'chrx', 'chdt', 'high'), c('bmi', 'chol')) 
 
 prior <- priorKnowledge(requiredirect = require, addtemporal = temporal, forbiddirect = forbid)
 ```
 ???
-Since bmigrp is defined only by bmi, we forbid other variables from causing it. We could likewise forbid the two other defined variables in the dataset, eageg and hychol, but the algorithm works fine as is.
+Since bmi is defined only by bmi, we forbid other variables from causing it. We could likewise forbid the two other defined variables in the dataset, eageg and hychol, but the algorithm works fine as is.
 
 The temporal constraints indicate that lower tiers cannot have any directed edges to higher tiers. For instance, `bmi` and `chol` can have directed edges to `bmigrp` and `hychol`, as well as between themselves, but cannot have directed edges to the other variables that appear before them in the temporal list.
 ---
+
 # PC Algorithm with Knowledge
 .pull-left[
 ```{r, echo=FALSE}
-res <- tetradrunner(algoId = "pc-all", df = monica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, priorKnowledge = prior, verbose = TRUE, colliderDiscoveryRule = 2)
+pcmonica <- monica %>% select(-bmigrp) %>% select(-hychol) # Remove bmigrp and hychol to match earlier model
+res <- tetradrunner(algoId = "pc-all", df = pcmonica, alpha = .01, testId = "fisher-z", dataType = 'continuous', stableFAS = TRUE, priorKnowledge = prior, verbose = TRUE, colliderDiscoveryRule = 2)
 graph_dot <- tetradrunner.tetradGraphToDot(res$graph)
 grViz(graph_dot)
 ```
