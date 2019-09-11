@@ -982,3 +982,5 @@
 2019-09-04 15:01:11 INFO  org.reflections.Reflections:229 - Reflections took 12 ms to scan 1 urls, producing 7 keys and 38 values 
 2019-09-04 15:02:20 INFO  org.reflections.Reflections:229 - Reflections took 85 ms to scan 1 urls, producing 16 keys and 214 values 
 2019-09-04 15:02:20 INFO  org.reflections.Reflections:229 - Reflections took 14 ms to scan 1 urls, producing 7 keys and 38 values 
+2019-09-10 16:19:00 INFO  org.reflections.Reflections:229 - Reflections took 73 ms to scan 1 urls, producing 16 keys and 214 values 
+2019-09-10 16:19:00 INFO  org.reflections.Reflections:229 - Reflections took 10 ms to scan 1 urls, producing 7 keys and 38 values 
