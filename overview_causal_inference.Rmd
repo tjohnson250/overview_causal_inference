@@ -52,6 +52,8 @@ This presentation is hosted on Github Pages at: https://tjohnson250.github.io/ov
 
 All of these slides, including model outcomes, are generated in R using R Markdown and the [xaringan](https://github.com/yihui/xaringan) presentation package. The source code to generate the presentation is at: https://github.com/tjohnson250/overview_causal_infererence
 
+A shorter version, suitable for a one hour seminar, may be checked out from the `short` branch: https://github.com/tjohnson250/overview_causal_inference/tree/short
+
 If you find errors or have suggestions for improvement, open an issue on this project's Github repo.
 
 ---
@@ -102,6 +104,12 @@ class: center, middle
 
 # Part I: Causation
 
+---
+# Part I Learning Objectives: Causation
+- Define and identify interventions, causal effects, and average causal effects
+- Given a generative model, draw the corresponding causal DAG
+- Given a causal DAG describe the DAG that would result from an intervention on one of the variables
+- Given data on two interventions, calculate the average causal effect
 
 ---
 # Example: Age, Exercise and Cholesterol
@@ -178,15 +186,11 @@ Why does the data show the opposite association?
 
 # Definitions
 
-**Causal Infererence** is the process of inferring the **causal effect** of one random variable, $X$, on a second random variable. $Y$.
-
-The **Causal Effect** of $X$ on $Y$ is the change in $Y$ when we **intervene** and directly change $X$ from one value to another.
-
-**Intervening** on $X$ means to force $X$ to take a specific value, independent of any of the variables that normally influence the value of $X$
-
- - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
-  
- - This is why RCTs are considered the gold standard for identifying causal effects
+- **Causal Infererence** is the process of inferring the **causal effect** of one random variable, $X$, on a second random variable. $Y$
+- The **Causal Effect** of $X$ on $Y$ is the expected value of $Y$ when we **intervene** to directly set the value of $X$
+- **Intervening** on $X$ means to force $X$ to take a specific value, independent of any of the variables that normally influence the value of $X$
+    - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
+- This is why RCTs are considered the gold standard for identifying causal effects
 
 
 ---
@@ -349,6 +353,17 @@ class: center, middle
 ## Observational Data
 
 ---
+# Part 2 Learning Objectives: Identifying and Estimating Causal Effects from
+## Observational Data
+
+- Distinguish between total and direct causal effects with respect to a Causal DAG
+- Define adjustment and show how to adjust for a variable when doing linear regression
+- Given a causal DAG identify the causal and non-causal paths between two variables
+- Apply the backdoor criterion to identify which variables must be adjusted for in order to identify direct and total causal effects
+- Write a regression expression to estimate the causal effect of $X$ on $Y$ given a set of variables that meet the backdoor criterion
+- Given the results of a linear regression that satisfies the backdoor criterion for the causal effect of $X$ on $Y$ give the causal effect estimate of $X$ on $Y$
+
+---
 ## With Observational Data...
 .pull-left[
 #### using E to predict C gives an incorrect estimate,
@@ -414,14 +429,10 @@ n <- 10000
 a <- rnorm(n, mean = 50, sd = 10)
 e <- 0.3*a + rnorm(n)
 {{c <- 0.5*a + -1*e + rnorm(n, mean = 100, sd = 5)}}
-
-`lm(C ~ A, dobs)`
 ```
 ```{r, echo=FALSE, fig.height=4}
 pgobs
 ```
-???
-To get the total causal effect of A on C, we must regress C on A alone (`lm(C ~ A, dobs)`), controlling for E in the regression (`lm(C ~ A + E, dobs)`) gives us the direct effect of A on C.
 ]
 .pull-right[
 From the model, the **direct causal effect** of $A$ on $C$ is $0.5a$
@@ -443,10 +454,13 @@ $$
 
 ]
 
+
+???
+To get the total causal effect of A on C, we must regress C on A alone (`lm(C ~ A, dobs)`), controlling for E in the regression (`lm(C ~ A + E, dobs)`) gives us the direct effect of A on C.
+
 ---
 ### A Single Analysis is Usually Insuffient to Measure All Effects
 .pull-left[
-`lm(C ~ A, dobs)`
 ```{r, echo=FALSE, out.width="70%"}
 formula <- y ~ x
 p <- ggplot(dobs, aes(x = A, y = C)) + geom_point() + geom_smooth(method = "lm", formula = formula)
@@ -455,6 +469,8 @@ p
 fitCAobs = lm(C ~ A, dobs)
 CAobs <- coef(fitCAobs)
 ```
+
+`lm(C ~ A, dobs)`
 
 $c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
 ]
@@ -466,9 +482,7 @@ This simple 3 variable dataset requires two different regression analyses to est
     `lm(C ~ A + E, dobs)`
 
     $c = `r round(Cintadjusted[1], 2)`+`r round(Cintadjusted[2], 2)`e + `r round(Cintadjusted[3], 2)`a \space `r ifelse(summary(fitobsstrat)$coefficients[2,4] < .001, "(p<.001)", "")`$
-
 -  Total effect of $A$:
-
     `lm(C ~ A, dobs)`
 
     $c = `r round(CAobs[1], digits=2)`+`r round(CAobs[2], digits=2)`a \space `r ifelse(summary(fitCAobs)$coefficients[2,4] < .001, "(p<.001)", "")`$
@@ -771,7 +785,7 @@ $$Z \rightarrow Z_2$$
 where $Z$, a mediator, causes $Z_2$. It is clear that adjusting for $Z$ would block the path between $X$ and $Y$, but adjusting for $Z_2$ would partially block the path.
 
 ---
-exclude: true
+exclude: FALSE
 # Frontdoor Adjustment Criterion
 .pull-left[
 U unmeasured: Cannot block backdoor path from $X \rightarrow Y$
@@ -811,7 +825,7 @@ $$Z \leftarrow X \leftarrow U \rightarrow Y$$
 Since $U$ is unmeasured, we cannot adjust for it. However, in this case, the frontdoor adjustment criterion allows us to identify the causal effect of $X$ on $Y$ in two steps.
 
 ---
-exclude: true
+exclude: false
 ## Frontdoor Adjustment Criterion (Pearl 1995)
 A set of variables $\{Z\}$ satisfies the **frontdoor criterion** relative to an ordered pair of variables $\{X, Y\}$ in a DAG if:
 
@@ -892,7 +906,7 @@ and
 $$P(C=c|do(D=d), B=b) = P(C=c|D=d, B=b, G=g, E=e)P(B=b, G=g|B=b)$$
 
 ---
-exclude: true
+exclude: false
 ## Identifying the Effects of Multiple Interventions
 What is the effect of simultaneously intervening on $E$ and $D$?
 .pull-left[
@@ -937,9 +951,16 @@ Causal Inference Requires a Causal Model,
 But...
 
 How Do we Know if Our Model is Correct?
+
 ---
 class: center, middle
 # Part III: Model Evaluation
+
+---
+# Part III Learning Objectives: Model Evaluation
+- Identify two different approaches for evaluating causal models
+- Describe the advantages and disadvantages of each approach
+- Define what constitutes an equivalence class of causal DAGs
 
 ---
 # Two Approaches to Model Evaluation
@@ -1418,6 +1439,12 @@ class: middle, center
 # Part IV: Causal Discovery from Observational Data
 
 ---
+# Part IV Learning Objectives: Causal Discovery from Observational Data
+
+- Describe how conditional independence tests of a dataset constrains the possible causal DAGs that may have generated the data
+- Describe the steps of the PC causal discovery algorithm
+
+---
 # Inferring Causal Structure from Data
 
 .center[**Causal DAG `\\(\Rightarrow\\)` Independence Relations**]
@@ -1438,6 +1465,87 @@ impliedConditionalIndependencies( gmonica, max.results = Inf )
 
 .center[**Causal DAGS `\\(\Leftarrow\\)` Independence Relations**]
 
+---
+# PC Algorithm.fn[1]
+1. Adjacency Phase
+    - Determine which variables are adjacent
+1. Orientation Phase
+    - Orient direction of arrows if possible
+
+.footnote[[1] Spirtes and Glymour, 1991]
+
+---
+### PC Algorithm: Adjacency Phase
+
+$X$ and $Y$ are not adjacent if they are conditionally independent given any subset of variables that does not contain $X$ and $Y$
+
+- Begin with a fully connected graph
+- Remove edge between $X$ and $Y$ if $X \perp\!\!\!\perp Y | \text{ any set } S$
+    - Begin with the empty set and test all connected pairs for marginal independence $X \perp\!\!\!\perp Y$
+        - Remove edges for any pair that is independent 
+    - For any remaining connected pair, test conditional independence vs. each single other variable, ie., $S$ of size 1
+        - Remove edge between $X$ and $Y$ if $X \perp\!\!\!\perp Y | S \text{ of size 1}$
+    - Repeat for $S$ of size 2, 3, etc.
+
+---
+background-image: url(PCAlignmentPhaseExample.png)
+background-size: contain
+.footnote[From https://www.ccd.pitt.edu/wp-content/uploads/2017/02/CCD_Summer_Course_2016_Day3_morning.pdf]
+
+---
+background-image: url(PCOrientationRules.png)
+background-size: contain
+.footnote[From https://www.ccd.pitt.edu/wp-content/uploads/2017/02/CCD_Summer_Course_2016_Day3_morning.pdf]
+???
+X -- Y -- Z, X and Z must not be adjacent. If Y is not in S, then X and Z, then Y is a collider for X and Z. If Y separates X and Z, then we cannot orient the edges (other than to say that Y is not a collider)
+
+---
+background-image: url(PCOrientationPhaseExample.png)
+background-size: contain
+.footnote[From https://www.ccd.pitt.edu/wp-content/uploads/2017/02/CCD_Summer_Course_2016_Day3_morning.pdf]
+
+---
+exclude: true
+## PC Algorithm: Adjacency Phase Example
+.pull-left[
+Generative DAG
+```{r, echo=FALSE}
+knownDAG <- dagitty('dag{
+  X1 [pos="0,2"]
+  X2 [pos="0,0"]
+  X3 [pos="1,1"]
+  X4 [pos="2,1"]
+  X1 -> X3
+  X2 -> X3
+  X3 -> X4}')
+ggdag(knownDAG, text_size=4)  + theme_dag_blank()
+```
+
+Begin with: 
+]
+.pull-right[
+Independencies
+
+\begin{align}
+X1 \perp\!\!\!\perp X2 & \\
+X1 \perp\!\!\!\perp X4 &\mid X3 \\
+X2 \perp\!\!\!\perp X4 &\mid X3 \\
+\end{align}
+
+```{r, echo=FALSE}
+fcDAG <- dagitty('dag{
+  X1 [pos="0,2"]
+  X2 [pos="0,0"]
+  X3 [pos="1,1"]
+  X4 [pos="2,1"]
+  X1 <-> X2
+  X1 <-> X3
+  X1 <-> X4
+  X2 <-> {X3 X4}
+  X3 <-> X4}')
+ggdag(fcDAG, text_size=4) + theme_dag_blank()
+```
+]
 
 ---
 exclude: true
@@ -1460,7 +1568,7 @@ pgmonica
 ]
 
 ---
-## Results of PC Algorithm.fn[1] on the WHO Dataset
+## Results of PC Algorithm on the WHO Dataset
 .pull-left[
 ```{r, echo=FALSE}
 pcmonica <- monica %>% select(-bmigrp) %>% select(-hychol) # Remove bmigrp and hychol to match earlier model
@@ -1477,7 +1585,7 @@ pgmonica
 ```
 ]
 
-.footnote[[1] Spirtes and Glymour, 1991]
+
 ???
 The PC algorithm is one of the first causal discovery algorithms. As you can see from the inferred graph, many of the arrows are incorrect and some edges are not directional, meaning the algorithm could not orient the edge.
 
