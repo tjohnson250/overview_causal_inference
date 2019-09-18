@@ -847,7 +847,7 @@ exclude: true
 Instrumental variables are those that only affect the treatment, with no relationship to anything else
 
 ---
-exclude: true
+exclude: false
 # Identifying Covariate Specific Effects
 Suppose a drug $D$ affects $C$, and that gender $G$ affects who takes the drug.
 
@@ -1186,7 +1186,7 @@ pr
 There are still many discrepencies here
 
 ---
-exclude: true
+exclude: false
 ## Summarizing Independence Tests: Fisher's C
 - Statistical test of the set of independence test results
 
@@ -1325,7 +1325,7 @@ plot_matrix(residuals(fit, type="cor")$cov) #
 #plot_matrix(residuals(fit))
 ```
 ---
-exclude: true
+exclude: false
 ## Examine Modification Indices
 MI Indicates possible improvement in model test score
 ```{r, echo=FALSE}
