@@ -42,6 +42,7 @@ mf = monicaform048 %>% mutate(
     eageg=as.integer(eageg)) # Age group on date of exam, but see data dict above, because coding varies by data collection center
 mf <- mf %>% select(sex, eage, high, chdt, chrx, chol, choldl, weight, height)
 mf
+write_csv(mf, "monica-chol-full-raw.csv")
 mf <- mf %>% 
     filter(chol < 99.9, eage < 99, high < 9, chdt != 3, chdt != 9,
            chrx != 3, chrx != 9,
