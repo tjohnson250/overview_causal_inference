@@ -1,0 +1,324 @@
+---
+title: "Causal Inference Quiz Examples"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dagitty)
+library(ggdag)
+library(tidyverse)
+```
+1. Which of the following specify an intervention on X?
+    + You randomly extract patients from an EHR. X is the patient’s gender and Y is the patient’s total cholesterol.  
+    + **You randomly assign patients with high blood pressure, who have not yet taken blood pressure lowering medication to take one of two drugs (X) and then record their blood pressure one month later (Y).**
+    + You randomly assign patients to one of two mobile health apps for weight loss: one that allows them to track their food and calories (the control group) and another that also gives feedback based on the food they are eating (the experimental group). You measure how many days each group uses the assigned app (X) over three months and measure each patient’s difference in weight at the end of the three months (Y).
+    +  You randomly extract patients from the EHR who are taking oral insulin (X) over the last three months and also record their last measured HbA1c test result. (HbA1c measures the average level of blood sugar over the past 2 months.)
+    + **You give all patients who are newly diagnosed with high blood pressure, Lisonipril 10mg (a blood pressure lowering drug) for one month (X), then measure their blood pressure at the end of the month (Y).**
+
+
+1. Identify which of the following estimates the average causal effect of X on Y. In each case, you use linear regression to measure the association between X and Y, by regressing Y as a function of X. In each case, assume you have enough patients (say 10,000) to get a statistically meaningful association.
+
+    a) You randomly extract patients from an EHR. X is the patient’s gender and Y is the patient’s total cholesterol.  
+    b) **You randomly assign patients with high blood pressure, who have not yet taken blood pressure lowering medication to take one of two drugs (X) and then record their blood pressure one month later (Y). **
+    c) You randomly assign patients with high blood pressure, who have not yet taken blood pressure lowering medication to take one of two drugs, and then record their blood pressure one month later (Y) along with each patient’s average minutes of exercise each day (X).
+    d) You randomly distribute a survey to type 2 diabetic patients that includes a question asking them to estimate the amount of non-diet sodas they consumed per day (X) and what age they were when they were diagnosed with type 2 diabetes (Y).
+       
+
+3.  Identify which of the following estimates the causal effect of X on Y. In each case, you will measure the E(Y|X)--the expected value of Y given the value of X as specified in the example. In this case, the expected value of X is just the average of Y for the patients in the dataset. Assume the sample size is large enough to give a statistically meaningful association.
+a. **You give all patients who are newly diagnosed with high blood pressure, Lisonipril 10mg (a blood pressure lowering drug) for one month (X), then measure their blood pressure at the end of the month (Y).**
+
+b. You randomly extract patients from the EHR who are taking oral insulin (X) over the last three months and also record their last measured HbA1c test result. (HbA1c measures the average level of blood sugar over the past 2 months.)
+
+c. You randomly assign patients to one of two mobile health apps for weight loss: one that allows them to track their food and calories (the control group) and another that also gives feedback based on the food they are eating (the experimental group). You measure how many days each group uses the assigned app (X) over three months and measure each patient’s difference in weight at the end of the three months (Y).
+
+d. **You randomly assign patients to one of two mobile health apps for weight loss (X): one that allows them to track their food and calories (the control group) and another that also gives feedback based on the food they are eating (the experimental group). You measure each patient’s difference in weight at the end of the three months (Y).**
+
+# DAG from SEM
+Given the following generative model select the DAG that represents it
+
+```{r}
+n <- 10000
+x <- rnorm(n)
+y <- rnorm(n)
+z <- 0.5*x + 2*y
+```
+Correct answer:
+```{r echo=FALSE}
+correct <- dagitty('dag{
+  X [pos="0,2"]
+  Y [pos="0,0"]
+  Z [pos="1,1"]
+  X -> Z
+  Y -> Z}')
+pgobs <- ggdag(correct, text_size=11) + theme_dag_blank()
+pgobs
+```
+Foils:
+```{r echo=FALSE}
+foil1 <- dagitty('dag{
+  X [pos="0,2"]
+  Y [pos="0,0"]
+  Z [pos="1,1"]
+  X <- Z
+  Y <- Z}')
+pgobs <- ggdag(foil1, text_size=11) + theme_dag_blank()
+pgobs
+```
+
+```{r echo=FALSE}
+foil2 <- dagitty('dag{
+  X [pos="0,0"]
+  Y [pos="1,0"]
+  Z [pos="2,0"]
+  X -> Y
+  Y -> Z}')
+pgobs <- ggdag(foil2, text_size=11) + theme_dag_blank()
+pgobs
+```
+
+```{r echo=FALSE}
+foil3 <- dagitty('dag{
+  X [pos="0,0"]
+  Y [pos="1,0"]
+  Z [pos="2,0"]
+  X <- Y
+  Y <- Z}')
+pgobs <- ggdag(foil2, text_size=11) + theme_dag_blank()
+pgobs
+```
+
+# Describe causal dag after intervening on D
+
+Suppose that the following model shows how socio-economic status (S) and gender (G) affects diet (D) and weight (W). Select the causal DAG that results from intervening on Diet.
+
+```{r echo=FALSE}
+weight <- dagitty('dag{
+  S [pos="0,0"]
+  G [pos="2,1"]
+  D [pos="1,0"]
+  W [pos="3,0"]
+  S -> D
+  G -> {D W}
+  D -> W}')
+gweight <- ggdag(weight, text_size=11) + theme_dag_gray()
+gweight
+```
+Answer:
+
+```{r echo=FALSE, out.width="50%"}
+answer <- dagitty('dag{
+  S [pos="0,0"]
+  G [pos="2,1"]
+  D [pos="1,0"]
+  W [pos="3,0"]
+  G -> W
+  D -> W}')
+pgobs <- ggdag(answer, text_size=11) + theme_dag_gray()
+pgobs
+```
+
+Foils:
+
+```{r echo=FALSE, out.width="50%"}
+weight <- dagitty('dag{
+  S [pos="0,0"]
+  G [pos="2,1"]
+  D [pos="1,0"]
+  W [pos="3,0"]
+  S -> D
+  G -> W
+  D -> W}')
+gfoil1 <- ggdag(weight, text_size=11) + theme_dag_gray()
+gfoil1
+```
+
+```{r echo=FALSE, out.width="50%"}
+weight <- dagitty('dag{
+  S [pos="0,0"]
+  G [pos="2,1"]
+  D [pos="1,0"]
+  W [pos="3,0"]
+  D -> W}')
+gfoil2 <- ggdag(weight, text_size=11) + theme_dag_gray()
+gfoil2
+```
+
+```{r echo=FALSE, out.width="50%"}
+weight <- dagitty('dag{
+  S [pos="0,0"]
+  G [pos="2,1"]
+  D [pos="1,0"]
+  W [pos="3,0"]
+  G -> {D W}
+  D -> W}')
+gfoil3 <- ggdag(weight, text_size=11) + theme_dag_gray()
+gfoil3
+```
+
+```{r echo=FALSE, out.width="50%"}
+weight <- dagitty('dag{
+  S [pos="0,0"]
+  G [pos="2,1"]
+  D [pos="1,0"]
+  W [pos="3,0"]
+  S -> D
+  G -> {D W}}')
+gfoil4 <- ggdag(weight, text_size=11) + theme_dag_gray()
+gfoil4
+```
+
+# Describe causal DAG after intervening on S
+Suppose that the following model shows how socio-economic status (S) and gender (G) affects diet (D) and weight (W). Select the causal DAG that results from intervening on S.
+
+```{r echo=FALSE}
+weight <- dagitty('dag{
+  S [pos="0,0"]
+  G [pos="2,1"]
+  D [pos="1,0"]
+  W [pos="3,0"]
+  S -> D
+  G -> {D W}
+  D -> W}')
+pgobs <- ggdag(weight, text_size=11) + theme_dag_gray()
+pgobs
+```
+Answer:
+
+```{r echo=FALSE, out.width="50%"}
+pgobs
+```
+
+Foils:
+
+```{r echo=FALSE, out.width="50%"}
+gfoil1
+gfoil2
+gfoil3
+gfoil4
+```
+
+## Suppose that you intervene and randomly assign patients to either 10 units of exercise or 20 units of exercise (E) per week. At the end of 1 month you measure resting pulse rate (R). You find that the E(R| E = 20) = 40, while the E(R | E = 10) = 45. What is the average causal effect of exercise on resting pulse rate according to these results? Enter the absolute value of the causal effect.
+
+Numerical answer: 5
+
+## Given the causal DAG below select the answer that shows all causal paths from D to W
+```{r, echo=FALSE}
+gweight
+```
+
+Answer: D -> W
+
+Foils:
+
+D -> W, D <- G -> W
+
+W <- D
+
+D <- G -> W
+
+## Given the causal DAG below select the answer that shows all non-causal paths from D to W
+```{r, echo=FALSE}
+gweight
+```
+
+Answer: D <- G -> W
+
+Foils:
+
+W <- D,  D <- G -> W
+
+W <- D
+
+D <- G -> W
+
+## Given the causal DAG below select the answer that shows all variables that you must adjust for to estimate the causal effect of D on W
+```{r, echo=FALSE}
+gweight
+```
+
+Answer: G
+
+Foils:
+
+S
+
+W
+
+S and G
+
+No variables require adjustment
+
+## Given the causal DAG below select the answer that shows all variables that you must adjust for to estimate the total causal effect of G on W
+```{r, echo=FALSE}
+gweight
+```
+
+Answer: No variables require adjustment
+
+Foils:
+
+S
+
+W
+
+S and D
+
+D
+
+## Given the causal DAG below select the answer that shows all variables that you must adjust for to estimate the direct causal effect of G on W
+```{r, echo=FALSE}
+gweight
+```
+
+Answer: D
+
+Foils:
+
+S
+
+W
+
+D
+
+No variables require adjustment
+
+## Given the causal DAG below select the answer that shows all variables that you must adjust for to estimate the direct causal effect of G on D
+```{r, echo=FALSE}
+gweight
+```
+
+Answer: No variables require adjustment
+
+Foils:
+
+S
+
+W
+
+D
+
+S and W
+
+## Given the causal DAG below to estimate the causal effect of S on W you must adjust for G. Assuming that observational data is stored in a variable named dobs, which of the following R regression expressions will give the correct causal effect estimate:
+```{r, echo=FALSE}
+gweight
+```
+
+Answer: lm(W ~ S + G)
+
+Foils:
+
+lm(S ~ W, dobs)
+
+lm(S ~ D + G)
+
+lm(W ~ S + G + D)
+
+## Given the causal DAG below to estimate the direct causal effect of D on W, with the observational data stored in a variable called dobs, you perform the regression lm(W ~ D + G, dobs) which returns: W = 50 + 10*D + 5*G, Given this result, what is the direct causal effect of D on W?
+```{r, echo=FALSE}
+gweight
+```
+
+Answer: 10
+
