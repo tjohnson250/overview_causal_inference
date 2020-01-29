@@ -190,7 +190,7 @@ Why does the data show the opposite association?
 - The **Causal Effect** of $X$ on $Y$ is the expected value of $Y$ when we **intervene** to directly set the value of $X$
 - **Intervening** on $X$ means to force $X$ to take a specific value, independent of any of the variables that normally influence the value of $X$
     - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
-- This is why RCTs are considered the gold standard for identifying causal effects
+- This is why Randomized Controlled Trials (RCT's) are considered the gold standard for identifying causal effects
 
 
 ---
@@ -294,13 +294,13 @@ $$E(C|e) = E(C|do(e))$$
 ### Average Causal Effect (ACE) for a Population
 Contrast of the mean values of $Y$ (outcome) given two specific interventions on $X$ (treatment)
 
-- Dichotomous (binary) outcomes: 
+- Dichotomous (binary) treatment and outcomes: 
 
     $$P(Y=1|do(X = 1)-P(Y=1|do(X = 0)))$$
     
     $$P(Survival|do(Treat))-P(Survival|do(Don't Treat))$$
 
-- Continuous outcomes:  
+- Continuous treatment and outcomes:  
 
     $$E(Y|do(X=x)) - E(Y|do(X=x^{\prime})$$
 

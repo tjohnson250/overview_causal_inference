@@ -148,15 +148,15 @@ Causal DAG (Directed Acyclic Graph)
 
 ---
 ## The Observational Model Produces Observational Data
-<div id="htmlwidget-c1598d6d8570e9e2ff58" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-c1598d6d8570e9e2ff58">{"x":{"filter":"none","fillContainer":false,"data":[["1","2","3","4","5","6","7","8"],[16.163752115308,15.1933360487015,17.4013881291049,12.2539798605589,19.8578848230704,16.8121931715758,18.1189068362922,12.3161439424594],[58.2078692127137,53.1996348804754,57.1985478290149,40.9710029175255,64.3663498566649,56.4207104574991,63.6770053446223,35.2525361901768],[110.271888609066,124.085027295003,119.322924348446,100.318765512717,108.419363512695,113.267456595776,121.480688019442,105.983585909374]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>E<\/th>\n      <th>A<\/th>\n      <th>C<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":8,"dom":"t","columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[8,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 3, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-745af58405b926a79eba" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-745af58405b926a79eba">{"x":{"filter":"none","fillContainer":false,"data":[["1","2","3","4","5","6","7","8"],[13.7050127765112,17.0515885441924,15.4935220814147,17.1871789556037,13.1181986551747,13.1660155190106,17.6000182171819,15.6733591928627],[46.2851358864092,57.7423770829926,54.4420617124673,65.3006498623439,46.2210486060666,43.9229474023515,59.2799953509384,51.1127620421077],[113.487427149988,106.219917368661,120.91440315668,114.404410320439,107.961258000775,106.808830055522,110.717659952274,102.594621309805]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>E<\/th>\n      <th>A<\/th>\n      <th>C<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":8,"dom":"t","columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[8,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 3, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 ---
 .pull-left[
 ### The observational data show that exercise increases cholesterol!
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-4-1.png" width="70%" /&gt;
 
 
-`\(c = 102.53+0.5e \space (p&lt;.001)\)`
+`\(c = 102.09+0.52e \space (p&lt;.001)\)`
 ]
 
 --
@@ -182,7 +182,7 @@ Why does the data show the opposite association?
 - The **Causal Effect** of `\(X\)` on `\(Y\)` is the expected value of `\(Y\)` when we **intervene** to directly set the value of `\(X\)`
 - **Intervening** on `\(X\)` means to force `\(X\)` to take a specific value, independent of any of the variables that normally influence the value of `\(X\)`
     - Suppose that the decision to treat is normally influenced only by gender, *intervening* means ignoring gender when deciding on treatment, such as by randomly assigning whether to treat or not  
-- This is why RCTs are considered the gold standard for identifying causal effects
+- This is why Randomized Controlled Trials (RCT's) are considered the gold standard for identifying causal effects
 
 
 ---
@@ -221,7 +221,7 @@ Intervening on `\(E\)`, means replacing the expression for `\(e\)` from the obse
 ### Observational Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-10-1.png" width="70%" /&gt;
 
-`\(c = 102.53+0.5e \space (p&lt;.001)\)`
+`\(c = 102.09+0.52e \space (p&lt;.001)\)`
 ]
 
 --
@@ -230,7 +230,7 @@ Intervening on `\(E\)`, means replacing the expression for `\(e\)` from the obse
 ### Interventional Distribution
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-11-1.png" width="70%" /&gt;
 
-`\(c = 124.73+-0.98e \space (p&lt;.001)\)`
+`\(c = 124.99+-1e \space (p&lt;.001)\)`
 ]
 
 ???
@@ -261,13 +261,13 @@ In the interventional data
 ### Average Causal Effect (ACE) for a Population
 Contrast of the mean values of `\(Y\)` (outcome) given two specific interventions on `\(X\)` (treatment)
 
-- Dichotomous (binary) outcomes: 
+- Dichotomous (binary) treatment and outcomes: 
 
     `$$P(Y=1|do(X = 1)-P(Y=1|do(X = 0)))$$`
     
     `$$P(Survival|do(Treat))-P(Survival|do(Don't Treat))$$`
 
-- Continuous outcomes:  
+- Continuous treatment and outcomes:  
 
     `$$E(Y|do(X=x)) - E(Y|do(X=x^{\prime})$$`
 
@@ -288,18 +288,18 @@ Step 1: Estimate functional relationship between C and E using linear regression
 
 
 
-`$$c = 124.73+-0.98e \space (p&lt;.001)$$`
+`$$c = 124.99+-1e \space (p&lt;.001)$$`
 
-`$$E(C|do(E=e))=124.73+-0.98e \space (p&lt;.001)$$`
+`$$E(C|do(E=e))=124.99+-1e \space (p&lt;.001)$$`
 
 Step 2: Use regression equation to calculate ACE
 
 $$
 `\begin{align}
   ACE &amp;= E(Y|do(E=1))-E(Y|do(E=2)) \\
-      &amp;= (124.73+-0.98*1) - (124.73+-0.98*2) \\
-      &amp;= 122.78 - 123.76 \\
-      &amp;= -0.98
+      &amp;= (124.99+-1*1) - (124.99+-1*2) \\
+      &amp;= 122.99 - 123.99 \\
+      &amp;= -1
 \end{align}`
 $$
 Equivalently: The regression coefficent on `\(e\)` directly tells us how much `\(C\)` will change for each unit increase in `\(E\)`.
@@ -332,7 +332,7 @@ class: center, middle
 #### using E to predict C gives an incorrect estimate,
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-13-1.png" width="70%" /&gt;
 
-`\(c = 102.53+0.5e \space (p&lt;.001)\)`
+`\(c = 102.09+0.52e \space (p&lt;.001)\)`
 ]
 
 --
@@ -341,7 +341,7 @@ class: center, middle
 #### but controlling for A gives the correct estimate
 &lt;img src="overview_causal_inference_files/figure-html/unnamed-chunk-14-1.png" width="70%" /&gt;
 
-`\(c = 100.02+-0.94e + 0.48a \space (p&lt;.001)\)`
+`\(c = 99.47+-1.06e + 0.53a \space (p&lt;.001)\)`
 ]
 ???
 The graph on the right shows the observational data with a regression line for each of several age groups. As you can see, most of the lines show the appropriate negative correlation between `\(C\)` and `\(E\)`. Lines near the left and right are incorrect due to sparse data. Stratifying by age (here age group) is one method for controlling or adjusting for a confounder, such as `\(A\)`.
@@ -367,7 +367,7 @@ lm(C ~ E, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E  
-##    102.5301       0.5017
+##    102.0916       0.5192
 ```
 ]
 .pull-right[
@@ -384,12 +384,12 @@ lm(C ~ E + A, dobs)
 ## 
 ## Coefficients:
 ## (Intercept)            E            A  
-##    100.0193      -0.9428       0.4833
+##     99.4681      -1.0647       0.5284
 ```
 ]
 ---
 ### What is the Causal Effect of Age on Cholesterol?
-Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 100.02+-0.94e + 0.48a\)`
+Using the observational dataset, regressing `\(C\)` on `\(A\)` and `\(E\)` gave us: `\(c = 99.47+-1.06e + 0.53a\)`
 .pull-left[
 
 ```r
@@ -431,7 +431,7 @@ To get the total causal effect of A on C, we must regress C on A alone (`lm(C ~ 
 
 `lm(C ~ A, dobs)`
 
-`\(c = 100.05+0.2a \space (p&lt;.001)\)`
+`\(c = 99.49+0.21a \space (p&lt;.001)\)`
 ]
 .pull-right[
 This simple 3 variable dataset requires two different regression analyses to estimate the causal effects of `\(A\)` on `\(C\)` and `\(E\)` on `\(C\)`
@@ -440,11 +440,11 @@ This simple 3 variable dataset requires two different regression analyses to est
 
     `lm(C ~ A + E, dobs)`
 
-    `\(c = 100.02+-0.94e + 0.48a \space (p&lt;.001)\)`
+    `\(c = 99.47+-1.06e + 0.53a \space (p&lt;.001)\)`
 -  Total effect of `\(A\)`:
     `lm(C ~ A, dobs)`
 
-    `\(c = 100.05+0.2a \space (p&lt;.001)\)`
+    `\(c = 99.49+0.21a \space (p&lt;.001)\)`
   
 Simply throwing all covariates into a single regression is insufficient... but this is what most machine learning models do
 ]
@@ -942,8 +942,8 @@ The tests shown here form a basis set for this graph, even though I did not tell
 Independence tests for all implied independencies based on 9006 participants:
 
 
-<div id="htmlwidget-971b100cc07e11855f33" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-971b100cc07e11855f33">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ chdt","bmi _||_ chrx","bmi _||_ eage | height, weight","bmi _||_ high","bmi _||_ sex | height, weight","chdt _||_ chrx | high","chdt _||_ eage","chdt _||_ height","chdt _||_ sex","chdt _||_ weight","chol _||_ height | bmi, eage, sex","chol _||_ high | chdt, chrx","chol _||_ weight | bmi, eage, sex","chrx _||_ eage","chrx _||_ height","chrx _||_ sex","chrx _||_ weight","eage _||_ height","eage _||_ high","eage _||_ sex","height _||_ high","high _||_ sex","high _||_ weight"],[-1.23067725357363,-1.23355869140642,0.000786009396347763,-1.34320860032269,0.0229297239733698,0.985337536852835,-0.00694528710948228,0.0749577248650493,0.0376077990917615,-0.00181798716979704,-0.347444740387063,-1.18673719938979,-0.00238351457247724,-0.00693142715608561,0.0724766326464175,0.0378092096767193,-0.00182787137919673,-22.4348307179151,-6.26761976706577,-0.277776000625562,0.00856308919789195,0.0244429516365817,-0.00175429520713193],[4.8663369267197e-19,4.55255798844105e-19,0.487097674672083,1.19787586564446e-21,0.487097674672083,0,2.33933984958371e-85,0.379683296779327,9.13169214277496e-06,3.21107129605543e-11,0.325854832361472,2.99376097098296e-16,0.487097674672083,3.49633547322941e-85,0.379683296779327,8.58920696631395e-06,2.51742189430978e-11,8.34304340270124e-79,1.57379463631955e-86,0.487097674672083,0.0184536889051569,0.0101011426233696,6.07231435788752e-11]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-793582c8bc257251fe05" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-793582c8bc257251fe05">{"x":{"filter":"none","fillContainer":false,"data":[["bmi _||_ chdt","bmi _||_ chrx","bmi _||_ eage | height, weight","bmi _||_ high","bmi _||_ sex | height, weight","chdt _||_ chrx | high","chdt _||_ eage","chdt _||_ height","chdt _||_ sex","chdt _||_ weight","chol _||_ height | bmi, eage, sex","chol _||_ high | chdt, chrx","chol _||_ weight | bmi, eage, sex","chrx _||_ eage","chrx _||_ height","chrx _||_ sex","chrx _||_ weight","eage _||_ height","eage _||_ high","eage _||_ sex","height _||_ high","high _||_ sex","high _||_ weight"],[-1.23067725357363,-1.23355869140642,0.000786009396347763,-1.34320860032269,0.0229297239733698,0.985337536852835,-0.00694528710948228,0.0749577248650493,0.0376077990917615,-0.00181798716979704,-0.347444740387063,-1.18673719938979,-0.00238351457247724,-0.00693142715608561,0.0724766326464175,0.0378092096767193,-0.00182787137919673,-22.4348307179151,-6.26761976706577,-0.277776000625562,0.00856308919789195,0.0244429516365817,-0.00175429520713193],[4.8663369267197e-19,4.55255798844105e-19,0.487097674672083,1.19787586564446e-21,0.487097674672083,0,2.33933984958371e-85,0.379683296779327,9.13169214277496e-06,3.21107129605543e-11,0.325854832361472,2.99376097098296e-16,0.487097674672083,3.49633547322941e-85,0.379683296779327,8.58920696631395e-06,2.51742189430978e-11,8.34304340270124e-79,1.57379463631955e-86,0.487097674672083,0.0184536889051569,0.0101011426233696,6.07231435788752e-11]],"container":"<table class=\"nowrap hover\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>estimate<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"dom":"tp","order":[[2,"asc"]],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100],"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 ]
 
 ???
@@ -1289,7 +1289,7 @@ There are 5 free parameters and 0 degrees of freedom.
 .scroll-box-18[
 
 ```
-## lavaan 0.6-4.1417 ended normally after 23 iterations
+## lavaan 0.6-4.1417 ended normally after 25 iterations
 ## 
 ##   Optimization method                           NLMINB
 ##   Number of free parameters                          5
@@ -1309,15 +1309,15 @@ There are 5 free parameters and 0 degrees of freedom.
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   E ~                                                                   
-##     A                 0.301    0.001  297.124    0.000    0.301    0.948
+##     A                 0.301    0.001  302.638    0.000    0.301    0.950
 ##   C ~                                                                   
-##     A                 0.483    0.016   30.149    0.000    0.483    0.867
-##     E                -0.943    0.051  -18.650    0.000   -0.943   -0.536
+##     A                 0.528    0.016   33.232    0.000    0.528    0.959
+##     E                -1.065    0.050  -21.210    0.000   -1.065   -0.612
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .E                 0.997    0.014   70.711    0.000    0.997    0.102
-##    .C                25.481    0.360   70.711    0.000   25.481    0.842
+##    .E                 1.003    0.014   70.711    0.000    1.003    0.098
+##    .C                25.266    0.357   70.711    0.000   25.266    0.820
 ```
 ]
 
@@ -1470,8 +1470,8 @@ Graph implied by [Nature paper]
 ---
 ## Results of PC Algorithm on the WHO Dataset
 .pull-left[
-<div id="htmlwidget-9a25fc5ca50fef77b266" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-9a25fc5ca50fef77b266">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"chol\" [arrowtail=none, arrowhead=none]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-794174f717e4fe87f759" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-794174f717e4fe87f759">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"eage\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"bmi\" -> \"chol\" [arrowtail=none, arrowhead=none]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 ]
 
 .pull-right[
@@ -1514,8 +1514,8 @@ The temporal constraints indicate that lower tiers cannot have any directed edge
 
 # PC Algorithm with Knowledge
 .pull-left[
-<div id="htmlwidget-99e46fde203f0b3ad678" style="width:504px;height:504px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-99e46fde203f0b3ad678">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"chdt\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"chrx\" -> \"high\" [arrowtail=none, arrowhead=none]; \n \"eage\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"high\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"high\" [arrowtail=none, arrowhead=normal]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-b6224da8769118794e61" style="width:504px;height:504px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b6224da8769118794e61">{"x":{"diagram":"digraph g {\n \"chol\" -> \"eage\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"bmi\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"weight\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"height\" [arrowtail=none, arrowhead=normal]; \n \"sex\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"eage\" -> \"weight\" [arrowtail=none, arrowhead=normal]; \n \"height\" -> \"weight\" [arrowtail=none, arrowhead=none]; \n \"height\" -> \"sex\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"chol\" -> \"high\" [dir=both, arrowtail=normal, arrowhead=none]; \n \"eage\" -> \"high\" [arrowtail=none, arrowhead=normal]; \n \"chdt\" -> \"chrx\" [arrowtail=none, arrowhead=none]; \n \"bmi\" -> \"height\" [dir=both, arrowtail=normal, arrowhead=none]; \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 ]
 
 .pull-right[
@@ -1576,9 +1576,9 @@ class: center, middle
 
 $$
 `\begin{align}
-c &amp;= 100.02+-0.94e + 0.48a \\
- &amp;= 100.02+-0.94\cdot 20 + 0.48\cdot 60 \\
- &amp;= 110.02
+c &amp;= 99.47+-1.06e + 0.53a \\
+ &amp;= 99.47+-1.06\cdot 20 + 0.53\cdot 60 \\
+ &amp;= 110.07
 \end{align}`
 $$
 - This is incorrect, because it ignores what we have learned about Joe by measuring what has already happened to him
@@ -1608,7 +1608,7 @@ $$
 `\begin{align}
 A &amp;= U_a \\
 E &amp;= 0.3 A + U_e \\
-C &amp;= 0.48 A + -0.94 E + U_c
+C &amp;= 0.53 A + -1.06 E + U_c
 \end{align}`
 $$
 
@@ -1636,11 +1636,11 @@ $$
 `\begin{align}
 A = 60 &amp;= U_a \\
 E = 10 &amp;= 0.3 \cdot 60 + U_e \\
-C = 140 &amp;= 0.48 \cdot 60 + -0.94\cdot 10 + U_c \\
+C = 140 &amp;= 0.53 \cdot 60 + -1.06\cdot 10 + U_c \\
 \\
 U_a &amp;= 60 \\
 U_e &amp;= -8 \\
-U_c &amp;= 120.6
+U_c &amp;= 118.8
 \end{align}`
 $$
 
@@ -1653,7 +1653,7 @@ $$
 `\begin{align}
 A &amp;= U_a \\
 E &amp;= 0.3 A + U_e \\
-C &amp;= 0.48 A + -0.94 E + U_c
+C &amp;= 0.53 A + -1.06 E + U_c
 \end{align}`
 $$
 
@@ -1664,25 +1664,25 @@ $$
 `\begin{align}
 A &amp;= 60 \\
 E &amp;= 20 \\
-C_{E=20} &amp;= 0.48 \cdot 60 + -0.94\cdot 20 + 120.6 = 130.6
+C_{E=20} &amp;= 0.53 \cdot 60 + -1.06\cdot 20 + 118.8 = 129.4
 \end{align}`
 $$
-naïve version had `\(C = 110.02\)`
+naïve version had `\(C = 110.07\)`
 ]
 
 ---
 ### Why the Difference?
 The naïve estimate,
 
-`$$E(C|do(E=20, A=60)) = 110.02$$`
+`$$E(C|do(E=20, A=60)) = 110.07$$`
 
 does not reflect the fact the Joe's cholesterol, at `\(140\)`, is higher than expected for a person of Age 60 with 10 units of exercise:
 
-`$$E(C|do(E=10, A=60)) = 119.42$$`
+`$$E(C|do(E=10, A=60)) = 120.67$$`
 
 By using Joe's observed data to estimate `\(U\)`, then substituting `\(E=20\)` for the original function `\(E = 0.3A+U_e\)` the resulting structural equations estimate Joe's counterfactual result:
 
-`$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = 130.6$$`
+`$$E(C_{E=20}|E=10, A=60, C=C_{E=10}=140) = 129.4$$`
 
 ---
 ## Counterfactual Reasoning Requires a Causal Model
@@ -1860,8 +1860,8 @@ xtabs(p_h ~ G+X, p_h)
 ```
 ##    X
 ## G            0          1
-##   0 0.29936558 0.39321511
-##   1 0.05079885 0.07900123
+##   0 0.29606880 0.39509537
+##   1 0.04731610 0.07356508
 ```
 ]
 
@@ -1879,16 +1879,16 @@ addmargins(xtabs(p_h ~ G+X, p_h))
 ```
 ##      X
 ## G              0          1        Sum
-##   0   0.29936558 0.39321511 0.69258069
-##   1   0.05079885 0.07900123 0.12980008
-##   Sum 0.35016444 0.47221634 0.82238078
+##   0   0.29606880 0.39509537 0.69116416
+##   1   0.04731610 0.07356508 0.12088118
+##   Sum 0.34338490 0.46866044 0.81204534
 ```
 
 ---
 exclude: true
 ## GGPlotly graph
-<div id="htmlwidget-c4bec57bec758353d3fe" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-c4bec57bec758353d3fe">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-88.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-5d4d359c49656dc21604" style="width:100%;height:504px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5d4d359c49656dc21604">{"x":{"url":"overview_causal_inference_files/figure-html//widgets/widget_unnamed-chunk-88.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
