@@ -1332,13 +1332,7 @@ MI Indicates possible improvement in model test score
 modificationindices(fit, minimum.value = 20)
 ```
 
-Biggest improvement would come from adding edge $bmigrp \rightarrow weight$.
-
-However, $weight$ is not caused by $bmigrp$.
-
-Adding this link would violate our background knowledge.
-
-The next highest MI involved adding an undirected edge between $chdt$ and $chrx$, indicating an unmeasured common cause.
+The highest MI involved adding an undirected edge between $chdt$ and $chrx$, indicating an unmeasured common cause.
 
 ---
 ## Age, Exercise, Cholesterol Model Implies No Independence Relations
