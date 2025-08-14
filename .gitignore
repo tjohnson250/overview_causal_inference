@@ -39,3 +39,4 @@ vignettes/*.pdf
 *.nb
 
 *.log
+.DS_Store
